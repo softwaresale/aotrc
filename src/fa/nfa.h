@@ -27,9 +27,9 @@ namespace aotrc::fa {
          * @param state starting states
          * @return set of states accessible by this state
          */
-        std::unordered_set<unsigned int> epsilonClosure(unsigned int state);
+        std::unordered_set<unsigned int> epsilonClosure(unsigned int state) const;
 
-        std::unordered_set<unsigned int> epsilonClosure(const std::unordered_set<unsigned int> &states);
+        std::unordered_set<unsigned int> epsilonClosure(const std::unordered_set<unsigned int> &states) const;
     };
 }
 

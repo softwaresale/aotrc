@@ -50,6 +50,16 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::characterClass(const std::vector<Range> 
 }
 
 static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&right, unsigned int leftStartState, bool startEpsilon) {
+
+    // if either left or right are empty, then just return through
+    if (left.stateCount() == 0 && right.stateCount() > 0) {
+        return right;
+    } else if (right.stateCount() == 0 && left.stateCount() > 0) {
+        return left;
+    } else if (left.stateCount() == 0 && right.startState() == 0) {
+        return left;
+    }
+
     // For each state in right, add one to left, except for the first state
     std::unordered_map<unsigned int, unsigned int> rightStateTranslations;
     if (startEpsilon) {

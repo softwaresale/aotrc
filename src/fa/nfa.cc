@@ -7,7 +7,7 @@
 #include <queue>
 #include <algorithm>
 
-std::unordered_set<unsigned int> aotrc::fa::NFA::epsilonClosure(unsigned int state) {
+std::unordered_set<unsigned int> aotrc::fa::NFA::epsilonClosure(unsigned int state) const {
     // Start with this state
     std::unordered_set<unsigned int> states;
 
@@ -31,8 +31,9 @@ std::unordered_set<unsigned int> aotrc::fa::NFA::epsilonClosure(unsigned int sta
     return states;
 }
 
-std::unordered_set<unsigned int> aotrc::fa::NFA::epsilonClosure(const std::unordered_set<unsigned int> &states) {
-    std::unordered_set<unsigned int> closureStates;
+std::unordered_set<unsigned int> aotrc::fa::NFA::epsilonClosure(const std::unordered_set<unsigned int> &states) const {
+    // states copies over
+    std::unordered_set<unsigned int> closureStates = states;
 
     for (const auto &state : states) {
         auto foundStates = this->epsilonClosure(state);
