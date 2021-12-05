@@ -155,7 +155,7 @@ namespace aotrc::fa {
          */
         std::unordered_map<unsigned int, Edge> &operator[](unsigned int state);
 
-        inline bool hasState(unsigned int state) {
+        inline bool hasState(unsigned int state) const {
             return state < this->transitions.size();
         }
 
@@ -163,8 +163,16 @@ namespace aotrc::fa {
             return this->transitions;
         }
 
+        const std::unordered_map<unsigned int, Edge> &edgesForState(unsigned int state) const {
+            return this->transitions[state];
+        }
+
         inline unsigned int stateCount() const {
             return this->transitions.size();
+        }
+
+        inline bool isLeaf(unsigned int state) const {
+            return this->transitions[state].empty();
         }
 
     protected:
