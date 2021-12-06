@@ -11,7 +11,10 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 add_library(aotrc_compiler
         compiler_context.cc compiler_context.h
         match_function_state.cc match_function_state.h
-        match_function.cc match_function.h)
+        match_function.cc match_function.h
+        code_gen.cc code_gen.h)
 
-llvm_map_components_to_libnames(llvm_libs support core irreader)
-target_link_libraries(aotrc_compiler ${llvm_libs})
+# llvm_map_components_to_libnames(llvm_libs support core irreader codegen target passes x86)
+execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)
+string(STRIP ${llvm_libs} llvm_libs_stripped)
+target_link_libraries(aotrc_compiler ${llvm_libs_stripped})

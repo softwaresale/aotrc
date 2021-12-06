@@ -1,19 +1,21 @@
 #include <iostream>
 
-#include <getopt.h>
+#include <llvm/Support/InitLLVM.h>
 
 #include "parser/regex_parser.h"
-#include "fa/nfa.h"
 #include "compiler/compiler_context.h"
 #include "compiler/match_function.h"
 #include "args_parser.h"
+#include "compiler/code_gen.h"
 
 int main(int argc, char **argv) {
 
-    aotrc::ArgsParser parser(argc, argv);
+    llvm::InitLLVM initLLVM(argc, argv);
 
-    if (parser.hasHelp()) {
-        parser.displayHelp();
+    aotrc::ArgsParser argsParser(argc, argv);
+
+    if (argsParser.hasHelp()) {
+        argsParser.displayHelp();
         return 0;
     }
 
@@ -22,7 +24,7 @@ int main(int argc, char **argv) {
     auto defaultModule = ctx->addModule("defaultModule");
 
     std::vector<aotrc::fa::DFA> dfas;
-    for (const auto &regex : parser.getRemainingData()) {
+    for (const auto &regex : argsParser.getRemainingData()) {
         auto nfa = aotrc::parser::parse_regex(regex);
         dfas.emplace_back(nfa);
     }
@@ -38,6 +40,21 @@ int main(int argc, char **argv) {
     }
 
     llvm::outs() << *defaultModule;
+
+    std::cout << "Generating code..." << std::endl;
+    aotrc::compiler::CodeGen codeGen;
+
+    std::stringstream outputFileName;
+    outputFileName << defaultModule->getName().str();
+    if (argsParser.getOutputType() == llvm::CGFT_AssemblyFile) {
+        outputFileName << ".s";
+    } else {
+        outputFileName << ".o";
+    }
+    auto res = codeGen.compileModule(defaultModule, outputFileName.str(), argsParser.getOutputType());
+    if (!res) {
+        return 1;
+    }
 
     return 0;
 }

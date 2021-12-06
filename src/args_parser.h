@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <llvm/Support/CodeGen.h>
 
 namespace aotrc {
     class ArgsParser {
@@ -22,6 +23,10 @@ namespace aotrc {
             return this->version;
         }
 
+        llvm::CodeGenFileType getOutputType() const {
+            return outputType;
+        }
+
         const std::vector<std::string> &getRemainingData() const {
             return remainingData;
         }
@@ -29,6 +34,7 @@ namespace aotrc {
     private:
         int help;
         int version;
+        llvm::CodeGenFileType outputType;
         std::vector<std::string> remainingData;
     };
 }

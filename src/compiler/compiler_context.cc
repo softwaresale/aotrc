@@ -4,9 +4,14 @@
 
 #include "compiler_context.h"
 
+#include <llvm/Support/TargetSelect.h>
+
 aotrc::compiler::CompilerContext::CompilerContext()
 : llvmContext()
 , irBuilder(this->llvmContext) {
+
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
 }
 
 std::shared_ptr<llvm::Module> aotrc::compiler::CompilerContext::addModule(const std::string &name) {
