@@ -18,7 +18,7 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
     };
 
     int c;
-    int optionIndex;
+    int optionIndex = 1;
     while ((c = getopt_long(argc, argv, "hv", progOptions, &optionIndex)) != -1) {
         switch (c) {
             case 0:
@@ -36,6 +36,11 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
             default:
                 break;
         }
+    }
+
+    // Eat the remaining things
+    while (optionIndex < argc) {
+        this->remainingData.emplace_back(argv[optionIndex++]);
     }
 }
 

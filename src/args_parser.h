@@ -5,6 +5,9 @@
 #ifndef _ARGS_PARSER_H
 #define _ARGS_PARSER_H
 
+#include <string>
+#include <vector>
+
 namespace aotrc {
     class ArgsParser {
     public:
@@ -19,9 +22,14 @@ namespace aotrc {
             return this->version;
         }
 
+        const std::vector<std::string> &getRemainingData() const {
+            return remainingData;
+        }
+
     private:
         int help;
         int version;
+        std::vector<std::string> remainingData;
     };
 }
 
