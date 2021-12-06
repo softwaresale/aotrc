@@ -23,7 +23,7 @@ aotrc::compiler::MatchFunction::MatchFunction(aotrc::fa::DFA &&dfa,
     this->initialBlock = llvm::BasicBlock::Create(ctx->context(), "setup", this->matchFunction);
     ctx->builder().SetInsertPoint(this->initialBlock);
     this->counterVar = ctx->builder().CreateAlloca(llvm::Type::getInt32Ty(ctx->context()), 0, nullptr, "counter");
-    ctx->builder().CreateStore(llvm::ConstantInt::get(llvm::Type::getInt1Ty(ctx->context()), 0), this->counterVar);
+    ctx->builder().CreateStore(llvm::ConstantInt::get(llvm::Type::getInt32Ty(ctx->context()), 0), this->counterVar);
 
     // Add the accept block
     this->acceptBlock = llvm::BasicBlock::Create(ctx->context(), "accept", this->matchFunction);
@@ -36,6 +36,14 @@ aotrc::compiler::MatchFunction::MatchFunction(aotrc::fa::DFA &&dfa,
     ctx->builder().SetInsertPoint(this->rejectBlock);
     // default return true
     ctx->builder().CreateRet(llvm::ConstantInt::get(llvm::Type::getInt1Ty(ctx->context()), 0));
+
+    // Create state blocks for everything
+    for (unsigned int state = 0; state < this->dfa.stateCount(); state++) {
+        // Create a new state
+        MatchFunctionState matchState(state, dfa.isAcceptState(state), dfa.isLeaf(state), this->matchFunction, ctx);
+        // Add it to states
+        this->states[state] = matchState;
+    }
 }
 
 llvm::Value *aotrc::compiler::MatchFunction::getPatternLengthArg() {
@@ -47,13 +55,32 @@ llvm::Value *aotrc::compiler::MatchFunction::getPatternArg() {
 }
 
 void aotrc::compiler::MatchFunction::build() {
-    // construct a state graph and build it out
-    StateGraph stateGraph(this->dfa, this->ctx, this);
-    auto firstStateBlock = stateGraph.build();
+    // Build out all the state stuff
+    for (unsigned int state = 0; state < this->dfa.stateCount(); state++) {
+        // Build out the initial state
+        this->states[state].buildInitialState(this->counterVar, this->getPatternLengthArg(), this->acceptBlock, this->rejectBlock);
 
-    // append this block after the initial block
-    auto firstBasicBlock = this->matchFunction->begin();
-    this->matchFunction->getBasicBlockList().insertAfter(firstBasicBlock, firstStateBlock);
+        // Build out the compute block if there is one
+        if (!this->states[state].leaf()) {
+            this->states[state].buildComputeBlock(this->counterVar, this->getPatternArg());
+        }
 
-    // fin
+        // for each outgoing edge, build an edge
+        for (const auto &transition : this->dfa.edgesForState(state)) {
+            unsigned int destState = transition.first;
+            auto edge = transition.second;
+
+            // Build outgoing edges everywhere
+            this->states[state].buildEdgeTo(this->matchFunction, this->states[destState], edge, this->rejectBlock);
+        }
+
+        // Build the link to the first edge if it's not a leaf and therefore has a compute block and a first edge
+        if (!this->states[state].leaf()) {
+            this->states[state].buildLinkToFirstEdge();
+        }
+    }
+
+    // Build a link from the initial block to the start state
+    ctx->builder().SetInsertPoint(this->initialBlock);
+    ctx->builder().CreateBr(this->states[0].getInitialBlock());
 }

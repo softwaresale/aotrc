@@ -57,7 +57,7 @@ std::unordered_map<unsigned int, aotrc::fa::Edge> &aotrc::fa::TransitionTable::o
         this->addState(state);
     }
 
-    // State now is guaranteed to exist (more or less)
+    // MatchFunctionState now is guaranteed to exist (more or less)
     return this->transitions[state];
 }
 

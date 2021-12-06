@@ -119,7 +119,7 @@ namespace aotrc::fa {
 
         /**
          * Adds a new state with the given id
-         * @param stateId State to add
+         * @param stateId MatchFunctionState to add
          * @return id of new state
          */
         unsigned int addState(unsigned int stateId);
@@ -140,7 +140,7 @@ namespace aotrc::fa {
 
         /**
          * Get's all of the states that can be transitions away from state given the range
-         * @param state State to start from
+         * @param state MatchFunctionState to start from
          * @param range range to move by
          * @return set of accessible states
          */
