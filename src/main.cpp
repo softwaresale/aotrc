@@ -51,6 +51,8 @@ int main(int argc, char **argv) {
         if (!success) {
             throw std::runtime_error("Failed to compile module " + module.first);
         }
+
+        codeGen.generateHeader(module.second, module.first + ".h");
     }
 
     return 0;

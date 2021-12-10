@@ -14,6 +14,7 @@ namespace aotrc::compiler {
         CodeGen();
 
         bool compileModule(const std::shared_ptr<llvm::Module> &module, const std::string &outputPath, llvm::CodeGenFileType outputType);
+        void generateHeader(const std::shared_ptr<llvm::Module> &module, const std::string &outputPath);
 
     private:
         std::unique_ptr<llvm::TargetMachine> machine;

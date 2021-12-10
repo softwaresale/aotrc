@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <getopt.h>
-#include <iomanip>
 #include <llvm/Support/CodeGen.h>
 
 aotrc::ArgsParser::ArgsParser(int argc, char **argv)
