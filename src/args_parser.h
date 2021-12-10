@@ -27,15 +27,15 @@ namespace aotrc {
             return outputType;
         }
 
-        const std::vector<std::string> &getRemainingData() const {
-            return remainingData;
+        const std::vector<std::string> &getInputFilePaths() const {
+            return inputFilePaths;
         }
 
     private:
         int help;
         int version;
         llvm::CodeGenFileType outputType;
-        std::vector<std::string> remainingData;
+        std::vector<std::string> inputFilePaths;
     };
 }
 

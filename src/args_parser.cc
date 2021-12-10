@@ -22,7 +22,7 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
 
     int c;
     int optionIndex = 1;
-    while ((c = getopt_long(argc, argv, "hvt::", progOptions, &optionIndex)) != -1) {
+    while ((c = getopt_long(argc, argv, "hvt:", progOptions, &optionIndex)) != -1) {
         switch (c) {
             case 0:
                 // Do nothing
@@ -56,7 +56,7 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
 
     // Eat the remaining things
     while (optionIndex < argc) {
-        this->remainingData.emplace_back(argv[optionIndex++]);
+        this->inputFilePaths.emplace_back(argv[optionIndex++]);
     }
 }
 

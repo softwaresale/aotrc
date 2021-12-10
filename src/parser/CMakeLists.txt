@@ -1,10 +1,4 @@
 
-find_program(antlr4 4.9.3)
-find_package(antlr4-runtime REQUIRED 4.9.3)
-find_package(antlr4-generator REQUIRED)
-
-set(ANTLR4_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.9.3-complete.jar)
-
 antlr4_generate(
         PCRE
         ${CMAKE_CURRENT_SOURCE_DIR}/PCRE.g4

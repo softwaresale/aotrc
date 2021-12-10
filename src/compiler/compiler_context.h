@@ -29,6 +29,10 @@ namespace aotrc::compiler {
             return irBuilder;
         }
 
+        const std::unordered_map<std::string, std::shared_ptr<llvm::Module>> &getModules() const {
+            return modules;
+        }
+
     private:
         llvm::LLVMContext llvmContext;
         llvm::IRBuilder<> irBuilder;

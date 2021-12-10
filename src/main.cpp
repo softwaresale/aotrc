@@ -7,6 +7,7 @@
 #include "compiler/match_function.h"
 #include "args_parser.h"
 #include "compiler/code_gen.h"
+#include "input/aotrc_input_parser.h"
 
 int main(int argc, char **argv) {
 
@@ -19,41 +20,37 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    aotrc::input::AotrcInputParser inputFileParser(argsParser.getInputFilePaths()[0]);
+
     // Setup compiler context
     auto ctx = aotrc::compiler::CompilerContext::instance();
-    auto defaultModule = ctx->addModule("defaultModule");
+    for (const auto &moduleDef : inputFileParser.getModules()) {
+        auto module = ctx->addModule(moduleDef.first);
 
-    std::vector<aotrc::fa::DFA> dfas;
-    for (const auto &regex : argsParser.getRemainingData()) {
-        auto nfa = aotrc::parser::parse_regex(regex);
-        dfas.emplace_back(nfa);
+        // Build all the regexes
+        for (const auto &regexDef : moduleDef.second) {
+            // Turn pattern into fa
+            aotrc::fa::NFA nfa = aotrc::parser::parse_regex(regexDef.pattern);
+            aotrc::fa::DFA dfa(nfa);
+
+            // Make a match function out of the dfa
+            aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, module, ctx);
+
+            // Compile the match function
+            matchFunction.build();
+        }
     }
-
-    std::vector<aotrc::compiler::MatchFunction> matchFunctions;
-    int counter = 0;
-    for (auto dfa : dfas) {
-        matchFunctions.emplace_back(std::move(dfa), "re" + std::to_string(counter++), defaultModule, ctx);
-    }
-
-    for (auto &func : matchFunctions) {
-        func.build();
-    }
-
-    llvm::outs() << *defaultModule;
 
     std::cout << "Generating code..." << std::endl;
     aotrc::compiler::CodeGen codeGen;
 
-    std::stringstream outputFileName;
-    outputFileName << defaultModule->getName().str();
-    if (argsParser.getOutputType() == llvm::CGFT_AssemblyFile) {
-        outputFileName << ".s";
-    } else {
-        outputFileName << ".o";
-    }
-    auto res = codeGen.compileModule(defaultModule, outputFileName.str(), argsParser.getOutputType());
-    if (!res) {
-        return 1;
+    for (const auto &module : ctx->getModules()) {
+        // Create the file name
+        std::string filename = module.first + '.' + (argsParser.getOutputType() == llvm::CGFT_AssemblyFile ? 's' : 'o');
+        auto success = codeGen.compileModule(module.second, filename, argsParser.getOutputType());
+        if (!success) {
+            throw std::runtime_error("Failed to compile module " + module.first);
+        }
     }
 
     return 0;
