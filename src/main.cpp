@@ -41,7 +41,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    std::cout << "Generating code..." << std::endl;
     aotrc::compiler::CodeGen codeGen;
 
     for (const auto &module : ctx->getModules()) {

@@ -13,15 +13,14 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
 , help(0)
 , outputType(llvm::CGFT_ObjectFile) {
     struct option progOptions[] = {
-            { "help", no_argument, &this->help, 'h' },
-            { "version", no_argument, &this->version, 'v' },
-            { "output-type", required_argument, nullptr, 't' },
+            { "help", no_argument, &this->help, 1 },
+            { "version", no_argument, &this->version, 1 },
+            { "output-type", required_argument, nullptr, 0 },
             {nullptr, 0, nullptr, 0 }
     };
 
     int c;
-    int optionIndex = 1;
-    while ((c = getopt_long(argc, argv, "hvt:", progOptions, &optionIndex)) != -1) {
+    while ((c = getopt_long(argc, argv, "hvt:", progOptions, nullptr)) != -1) {
         switch (c) {
             case 0:
                 // Do nothing
@@ -54,8 +53,9 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
     }
 
     // Eat the remaining things
-    while (optionIndex < argc) {
-        this->inputFilePaths.emplace_back(argv[optionIndex++]);
+    int lastOpt = optind;
+    while (lastOpt < argc) {
+        this->inputFilePaths.emplace_back(argv[lastOpt++]);
     }
 }
 
