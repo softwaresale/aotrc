@@ -6,10 +6,12 @@
 
 aotrc::compiler::MatchFunction::MatchFunction(aotrc::fa::DFA &&dfa,
                                               const std::string &label,
+                                              bool isSubMatch,
                                               std::shared_ptr<llvm::Module> &parentModule,
                                               const std::shared_ptr<CompilerContext> &ctx)
                                               : ctx(ctx)
-                                              , dfa(dfa) {
+                                              , dfa(dfa)
+                                              , isSubMatch(isSubMatch) {
     // match function type
     auto stringType = llvm::Type::getInt8PtrTy(ctx->context());
     auto lengthType = llvm::Type::getInt32Ty(ctx->context());
@@ -71,7 +73,13 @@ void aotrc::compiler::MatchFunction::build() {
             auto edge = transition.second;
 
             // Build outgoing edges everywhere
-            this->states[state].buildEdgeTo(this->matchFunction, this->states[destState], edge, this->rejectBlock);
+            llvm::BasicBlock *fallbackBlock = this->rejectBlock;
+            if (this->isSubMatch) {
+                // If we are submatching, then we don't want to go to the reject block. Instead, we want to go back to
+                // the start state
+                fallbackBlock = this->states[dfa.getStartState()].getInitialBlock();
+            }
+            this->states[state].buildEdgeTo(this->matchFunction, this->states[destState], edge, fallbackBlock);
         }
 
         // Build the link to the first edge if it's not a leaf and therefore has a compute block and a first edge

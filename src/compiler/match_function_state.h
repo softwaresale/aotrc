@@ -15,14 +15,14 @@ namespace aotrc::compiler {
      */
     class MatchFunctionState {
     public:
-        MatchFunctionState();
+        explicit MatchFunctionState(bool submatch = false);
 
         /**
          * Creates a new state, creates basic blocks and adds them all to the match function parent
          * @param ctx
          * @param matchFunction
          */
-        MatchFunctionState(unsigned int state, bool isAccept, bool isLeaf, llvm::Function *parentFunc, const std::shared_ptr<CompilerContext> &ctx);
+        MatchFunctionState(unsigned int state, bool isAccept, bool isLeaf, llvm::Function *parentFunc, const std::shared_ptr<CompilerContext> &ctx, bool isSubMatch = false);
 
         void buildInitialState(llvm::Value *counterVar, llvm::Value *lengthArg, llvm::BasicBlock *accept, llvm::BasicBlock *reject);
         void buildComputeBlock(llvm::Value *counterVar, llvm::Value *inputTextPtr);
@@ -49,6 +49,8 @@ namespace aotrc::compiler {
         std::vector<llvm::BasicBlock*> edgeBlocks;
         llvm::Value *counterVal;
         llvm::Value *cursorVal;
+
+        bool isSubMatch;
     };
 }
 

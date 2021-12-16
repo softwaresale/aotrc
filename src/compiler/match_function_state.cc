@@ -4,19 +4,21 @@
 
 #include "match_function_state.h"
 
-aotrc::compiler::MatchFunctionState::MatchFunctionState()
+aotrc::compiler::MatchFunctionState::MatchFunctionState(bool submatch)
 : computeBlock(nullptr)
 , initialBlock(nullptr)
 , isLeaf(false)
 , isAccept(false)
 , counterVal(nullptr)
-, cursorVal(nullptr) {
+, cursorVal(nullptr)
+, isSubMatch(submatch) {
 }
 
 aotrc::compiler::MatchFunctionState::MatchFunctionState(unsigned int state,
                                                         bool isAccept, bool isLeaf,
                                                         llvm::Function *parentFunc,
-                                                        const std::shared_ptr<CompilerContext> &ctx)
+                                                        const std::shared_ptr<CompilerContext> &ctx,
+                                                        bool isSubMatch)
                                                         : ctx(ctx)
                                                         , stateLabel("STATE" + std::to_string(state))
                                                         , isAccept(isAccept)
@@ -24,7 +26,8 @@ aotrc::compiler::MatchFunctionState::MatchFunctionState(unsigned int state,
                                                         , computeBlock(nullptr)
                                                         , initialBlock(nullptr)
                                                         , counterVal(nullptr)
-                                                        , cursorVal(nullptr) {
+                                                        , cursorVal(nullptr)
+                                                        , isSubMatch(isSubMatch) {
 
     // For now, just create the initial block and a compute block if it's not a leaf
     this->initialBlock = llvm::BasicBlock::Create(ctx->context(), this->stateLabel + "_INITIAL", parentFunc);

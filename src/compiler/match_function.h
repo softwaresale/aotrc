@@ -25,7 +25,7 @@ namespace aotrc::compiler {
          * @param parentModule module to add this function to
          * @param ctx compiler ctx singleton
          */
-        MatchFunction(aotrc::fa::DFA&& dfa, const std::string &label, std::shared_ptr<llvm::Module> &parentModule, const std::shared_ptr<CompilerContext>& ctx);
+        MatchFunction(aotrc::fa::DFA&& dfa, const std::string &label, bool isSubMatch, std::shared_ptr<llvm::Module> &parentModule, const std::shared_ptr<CompilerContext>& ctx);
 
         llvm::Value *getPatternLengthArg();
         llvm::Value *getPatternArg();
@@ -47,6 +47,7 @@ namespace aotrc::compiler {
         llvm::BasicBlock *rejectBlock;
         // Collection of state objects
         std::unordered_map<unsigned int, aotrc::compiler::MatchFunctionState> states;
+        bool isSubMatch;
     };
 }
 

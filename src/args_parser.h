@@ -7,9 +7,17 @@
 
 #include <string>
 #include <vector>
+#include <variant>
 #include <llvm/Support/CodeGen.h>
 
 namespace aotrc {
+
+    enum OutputType {
+        ASM,
+        OBJ,
+        IR,
+    };
+
     class ArgsParser {
     public:
         ArgsParser(int argc, char **argv);
@@ -23,7 +31,22 @@ namespace aotrc {
             return this->version;
         }
 
-        llvm::CodeGenFileType getOutputType() const {
+        bool hasCodeGenType() {
+            return this->outputType == OBJ || this->outputType == ASM;
+        }
+
+        llvm::CodeGenFileType outputTypeAsCodeGen() const {
+            switch(this->outputType) {
+                case OBJ:
+                    return llvm::CodeGenFileType::CGFT_ObjectFile;
+                case ASM:
+                    return llvm::CodeGenFileType::CGFT_AssemblyFile;
+                default:
+                    return llvm::CodeGenFileType::CGFT_Null;
+            }
+        }
+
+        OutputType getOutputType() const {
             return outputType;
         }
 
@@ -34,7 +57,7 @@ namespace aotrc {
     private:
         int help;
         int version;
-        llvm::CodeGenFileType outputType;
+        OutputType outputType;
         std::vector<std::string> inputFilePaths;
     };
 }

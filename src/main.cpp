@@ -9,6 +9,25 @@
 #include "compiler/code_gen.h"
 #include "input/aotrc_input_parser.h"
 
+static std::string getOutputFileName(const std::string &moduleName, aotrc::OutputType outputType) {
+    std::string filename = moduleName + '.';
+    switch (outputType) {
+        case aotrc::OutputType::ASM:
+            filename += 's';
+            break;
+        case aotrc::OutputType::OBJ:
+            filename += 'o';
+            break;
+        case aotrc::OutputType::IR:
+            filename += "ir";
+            break;
+        default:
+            break;
+    }
+
+    return filename;
+}
+
 int main(int argc, char **argv) {
 
     llvm::InitLLVM initLLVM(argc, argv);
@@ -34,7 +53,7 @@ int main(int argc, char **argv) {
             aotrc::fa::DFA dfa(nfa);
 
             // Make a match function out of the dfa
-            aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, module, ctx);
+            aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, true, module, ctx);
 
             // Compile the match function
             matchFunction.build();
@@ -45,13 +64,28 @@ int main(int argc, char **argv) {
 
     for (const auto &module : ctx->getModules()) {
         // Create the file name
-        std::string filename = module.first + '.' + (argsParser.getOutputType() == llvm::CGFT_AssemblyFile ? 's' : 'o');
-        auto success = codeGen.compileModule(module.second, filename, argsParser.getOutputType());
-        if (!success) {
-            throw std::runtime_error("Failed to compile module " + module.first);
-        }
+        std::string filename = getOutputFileName(module.first, argsParser.getOutputType());
 
-        codeGen.generateHeader(module.second, module.first + ".h");
+        // If we have a code gen type, then compile it
+        if (argsParser.hasCodeGenType()) {
+            auto success = codeGen.compileModule(module.second, filename, argsParser.outputTypeAsCodeGen());
+            if (!success) {
+                throw std::runtime_error("Failed to compile module " + module.first);
+            }
+
+            codeGen.generateHeader(module.second, module.first + ".h");
+        } else if (argsParser.getOutputType() == aotrc::OutputType::IR) {
+            std::error_code code;
+            llvm::raw_fd_ostream dumpFile(filename, code);
+            if (code) {
+                throw std::runtime_error(code.message());
+            }
+
+            // Write the dump file out
+            dumpFile << *module.second;
+        } else {
+            throw std::runtime_error("Invalid output type...");
+        }
     }
 
     return 0;
