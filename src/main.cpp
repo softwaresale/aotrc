@@ -50,13 +50,25 @@ int main(int argc, char **argv) {
         for (const auto &regexDef : moduleDef.second) {
             // Turn pattern into fa
             aotrc::fa::NFA nfa = aotrc::parser::parse_regex(regexDef.pattern);
-            aotrc::fa::DFA dfa(nfa);
 
             // Make a match function out of the dfa
-            aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, true, module, ctx);
+            if (regexDef.genFullMatch) {
+                // NOTE: this is probably not a very good practice... it will likely use a lot of memory
+                aotrc::fa::DFA dfa(nfa);
+                aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, false, module, ctx);
 
-            // Compile the match function
-            matchFunction.build();
+                // Compile the match function
+                matchFunction.build();
+            }
+
+            if (regexDef.genSubMatch) {
+                // NOTE: this is probably not a very good practice... it will likely use a lot of memory
+                aotrc::fa::DFA dfa(nfa);
+                aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, true, module, ctx);
+
+                // Compile the match function
+                matchFunction.build();
+            }
         }
     }
 

@@ -17,7 +17,12 @@ aotrc::compiler::MatchFunction::MatchFunction(aotrc::fa::DFA &&dfa,
     auto lengthType = llvm::Type::getInt32Ty(ctx->context());
     auto matchFunctionType = llvm::FunctionType::get(llvm::Type::getInt1Ty(ctx->context()), {stringType, lengthType}, false);
     // Create the function
-    std::string functionName = "match_" + label;
+    std::string functionName;
+    if (this->isSubMatch) {
+        functionName = "match_" + label;
+    } else {
+        functionName = "fullmatch_" + label;
+    }
     parentModule->getOrInsertFunction(functionName, matchFunctionType);
     this->matchFunction = parentModule->getFunction(functionName);
 

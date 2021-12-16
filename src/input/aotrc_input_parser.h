@@ -11,14 +11,18 @@ namespace aotrc::input {
 
     struct RegexDef {
     public:
-        RegexDef(const std::string &label, const std::string &pattern)
-        : label(label) {
+        RegexDef(const std::string &label, const std::string &pattern, bool fullmatch = true, bool submatch = false)
+        : label(label)
+        , genFullMatch(fullmatch)
+        , genSubMatch(submatch) {
             // Remove the //'s from pattern
             this->pattern = pattern.substr(1, pattern.size() - 2);
         }
 
         std::string label;
         std::string pattern;
+        bool genFullMatch;
+        bool genSubMatch;
     };
 
     class AotrcInputParser {

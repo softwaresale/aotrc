@@ -17,7 +17,8 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitElement(aotrc::parser::PCREParser:
             atomNfa = aotrc::fa::nfa_builders::star(std::move(atomNfa));
         } else {
             // unsupported, so just don't quantify
-            std::cerr << "WARNING: supported quantifier type: " << ctx->quantifier()->getText() << std::endl;
+            // std::cerr << "WARNING: supported quantifier type: " << ctx->quantifier()->getText() << std::endl;
+            throw std::runtime_error("Unsupported quantifier type: " + ctx->quantifier()->getText());
         }
     }
 
@@ -36,8 +37,7 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitAtom(aotrc::parser::PCREParser::At
         builtNFA = this->visitAlternation(ctx->capture()->alternation()).as<fa::NFA>();
     } else {
         // Otherwise, this feature is not supported, so do nothing
-        std::cerr << "WARNING: supported atom type: " << ctx->getText() << std::endl;
-        builtNFA = fa::nfa_builders::epsilon();
+        throw std::runtime_error("Unsupported atom type: " + ctx->getText());
     }
 
     return builtNFA;

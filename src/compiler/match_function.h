@@ -32,6 +32,7 @@ namespace aotrc::compiler {
         void build();
 
     private:
+
         // DFA to build out
         aotrc::fa::DFA dfa;
         // Pointer to the compiler ctx singleton. Holds llvm ctx, ir builder, and module repository
