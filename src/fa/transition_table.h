@@ -58,6 +58,11 @@ namespace aotrc::fa {
         : ranges(ranges) {
         }
 
+        /**
+         * Collapse any ranges with overlap in order to minimize the number of ranges involved
+         */
+        void optimizeRanges();
+
         void addRange(Range range) {
             this->ranges.push_back(range);
         }

@@ -44,6 +44,9 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::characterClass(const std::vector<Range> 
         edge.addRange(range);
     }
 
+    // Optimize the edge's ranges (remove anything that's redundant)
+    edge.optimizeRanges();
+
     cc.addEdge(start, end, std::move(edge));
 
     return cc;
@@ -136,4 +139,13 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::star(NFA &&nfa) {
     star.addEdge(enclosedEnd, finalState, Edge());
 
     return star;
+}
+
+aotrc::fa::NFA aotrc::fa::nfa_builders::plus(aotrc::fa::NFA &&nfa) {
+    // Build a star from the original
+    NFA copy = nfa;
+    // Star
+    auto starNFA = star(std::move(nfa));
+    // Concat the copy with star
+    return concat(std::move(copy), std::move(starNFA));
 }

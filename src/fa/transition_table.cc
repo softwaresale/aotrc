@@ -112,3 +112,28 @@ aotrc::fa::TransitionTable::move(const std::unordered_set<unsigned int> &states,
 
     return destinations;
 }
+
+void aotrc::fa::Edge::optimizeRanges() {
+    // Iterate over the ranges twice. If any two have any overlap, collapse the second one into the first one
+    for (auto first = this->ranges.begin(); first != this->ranges.end(); ++first) {
+        for (auto second = this->ranges.begin() + 1; second != this->ranges.end();) {
+            if (second->lower > first->lower && second->upper < first->upper) {
+                // If second fits inside of first, remove it
+                second = this->ranges.erase(second);
+            } else if (first->lower > second->lower && first->upper < second->upper) {
+                // First fits in second, then set first's values to second's and remove second
+                first->lower = second->lower;
+                first->upper = second->upper;
+                second = this->ranges.erase(second);
+            } else if (first->upper > second->lower && first->upper < second->upper) {
+                // first's upper bound and second's lower bound overlap, so merge them
+                first->upper = second->upper;
+                second = this->ranges.erase(second);
+            } else if (second->upper > first->lower && second->upper < first->upper) {
+                // second's upper bound and first's lower bound overlap, so merge them
+                first->lower = second->lower;
+                second = this->ranges.erase(second);
+            } else ++second; // Otherwise, do nothing and check the next one
+        }
+    }
+}
