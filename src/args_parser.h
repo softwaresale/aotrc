@@ -54,11 +54,16 @@ namespace aotrc {
             return inputFilePaths;
         }
 
+        const std::string &getLinkerPath() const {
+            return linkerPath;
+        }
+
     private:
         int help;
         int version;
         OutputType outputType;
         std::vector<std::string> inputFilePaths;
+        std::string linkerPath;
     };
 }
 

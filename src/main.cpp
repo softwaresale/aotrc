@@ -8,6 +8,7 @@
 #include "args_parser.h"
 #include "compiler/code_gen.h"
 #include "input/aotrc_input_parser.h"
+#include "compiler/shared_lib_linker.h"
 
 static std::string getOutputFileName(const std::string &moduleName, aotrc::OutputType outputType) {
     std::string filename = moduleName + '.';
@@ -73,6 +74,7 @@ int main(int argc, char **argv) {
     }
 
     aotrc::compiler::CodeGen codeGen;
+    aotrc::compiler::SharedLibLinker libLinker(argsParser.getLinkerPath());
 
     for (const auto &module : ctx->getModules()) {
         // Create the file name
@@ -84,6 +86,10 @@ int main(int argc, char **argv) {
             if (!success) {
                 throw std::runtime_error("Failed to compile module " + module.first);
             }
+
+            // Create a shared lib
+            std::string libname = "lib" + module.first + ".so";
+            libLinker.link(filename, libname, true);
 
             codeGen.generateHeader(module.second, module.first + ".h");
         } else if (argsParser.getOutputType() == aotrc::OutputType::IR) {

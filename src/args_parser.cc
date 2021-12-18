@@ -10,16 +10,19 @@
 aotrc::ArgsParser::ArgsParser(int argc, char **argv)
 : version(0)
 , help(0)
-, outputType(OutputType::OBJ) {
+, outputType(OutputType::OBJ)
+, linkerPath("/usr/bin/ld") {
     struct option progOptions[] = {
             { "help", no_argument, &this->help, 1 },
             { "version", no_argument, &this->version, 1 },
             { "output-type", required_argument, nullptr, 0 },
+            { "linker-path", optional_argument, nullptr, 0 },
             {nullptr, 0, nullptr, 0 }
     };
 
     int c;
-    while ((c = getopt_long(argc, argv, "hvt:", progOptions, nullptr)) != -1) {
+    int longId = 0;
+    while ((c = getopt_long(argc, argv, "hvt:", progOptions, &longId)) != -1) {
         switch (c) {
             case 0:
                 // Do nothing
@@ -48,6 +51,12 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
                 }
                 break;
 
+            case '?':
+                if (std::string(progOptions[longId].name) == "linker-path") {
+                    this->linkerPath = std::string(optarg);
+                }
+                break;
+
             default:
                 break;
         }
@@ -65,6 +74,7 @@ void aotrc::ArgsParser::displayHelp() const {
     std::cout << "aotrc - ahead of time regex compiler used for compiling regexes into machine code" << std::endl;
     std::cout << "options:" << std::endl;
     std::cout << "  --output-type, -t: output data type: asm, obj, ir. Default is obj" << std::endl;
+    std::cout << "  --linker-path: specify a path to the linker to use for linking shared libraries" << std::endl;
     std::cout << "  --help, -h: display this help screen" << std::endl;
     std::cout << "  --version, -v: display information about this program" << std::endl;
     std::cout << std::endl;
