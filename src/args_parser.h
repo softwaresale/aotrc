@@ -58,12 +58,17 @@ namespace aotrc {
             return linkerPath;
         }
 
+        bool skipBuildShared() const {
+            return this->skipShared;
+        }
+
     private:
         int help;
         int version;
         OutputType outputType;
         std::vector<std::string> inputFilePaths;
         std::string linkerPath;
+        int skipShared;
     };
 }
 

@@ -73,7 +73,6 @@ int main(int argc, char **argv) {
             }
 
             // Build a pattern global
-            // aotrc::compiler::build_pattern_func(regexDef.label, regexDef.pattern, module, ctx);
             if (!aotrc::compiler::build_pattern_func(regexDef.label, regexDef.pattern, module, ctx)) {
                 throw std::runtime_error("Error while creating pattern retrieval function");
             }
@@ -95,7 +94,7 @@ int main(int argc, char **argv) {
             }
 
             // Create a shared lib if it's an object file
-            if (argsParser.getOutputType() == aotrc::OutputType::OBJ) {
+            if (argsParser.getOutputType() == aotrc::OutputType::OBJ && !argsParser.skipBuildShared()) {
                 std::string libname = "lib" + module.first + ".so";
                 libLinker.link(filename, libname, true);
             }
