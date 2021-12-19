@@ -13,7 +13,8 @@ add_library(aotrc_compiler
         match_function_state.cc match_function_state.h
         match_function.cc match_function.h
         code_gen.cc code_gen.h
-        shared_lib_linker.cc shared_lib_linker.h)
+        shared_lib_linker.cc shared_lib_linker.h
+        build_pattern_func.cc build_pattern_func.h)
 
 # llvm_map_components_to_libnames(llvm_libs support core irreader codegen target passes x86)
 execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)

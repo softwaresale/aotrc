@@ -9,6 +9,7 @@
 #include "compiler/code_gen.h"
 #include "input/aotrc_input_parser.h"
 #include "compiler/shared_lib_linker.h"
+#include "compiler/build_pattern_func.h"
 
 static std::string getOutputFileName(const std::string &moduleName, aotrc::OutputType outputType) {
     std::string filename = moduleName + '.';
@@ -70,10 +71,16 @@ int main(int argc, char **argv) {
                 // Compile the match function
                 matchFunction.build();
             }
+
+            // Build a pattern global
+            // aotrc::compiler::build_pattern_func(regexDef.label, regexDef.pattern, module, ctx);
+            if (!aotrc::compiler::build_pattern_func(regexDef.label, regexDef.pattern, module, ctx)) {
+                throw std::runtime_error("Error while creating pattern retrieval function");
+            }
         }
     }
 
-    aotrc::compiler::CodeGen codeGen;
+    aotrc::compiler::CodeGen codeGen(ctx);
     aotrc::compiler::SharedLibLinker libLinker(argsParser.getLinkerPath());
 
     for (const auto &module : ctx->getModules()) {
@@ -87,9 +94,11 @@ int main(int argc, char **argv) {
                 throw std::runtime_error("Failed to compile module " + module.first);
             }
 
-            // Create a shared lib
-            std::string libname = "lib" + module.first + ".so";
-            libLinker.link(filename, libname, true);
+            // Create a shared lib if it's an object file
+            if (argsParser.getOutputType() == aotrc::OutputType::OBJ) {
+                std::string libname = "lib" + module.first + ".so";
+                libLinker.link(filename, libname, true);
+            }
 
             codeGen.generateHeader(module.second, module.first + ".h");
         } else if (argsParser.getOutputType() == aotrc::OutputType::IR) {
