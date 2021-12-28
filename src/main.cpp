@@ -8,7 +8,7 @@
 #include "args_parser.h"
 #include "compiler/code_gen.h"
 #include "input/aotrc_input_parser.h"
-#include "compiler/shared_lib_linker.h"
+#include "compiler/lib_linker.h"
 #include "compiler/build_pattern_func.h"
 
 static std::string getOutputFileName(const std::string &moduleName, aotrc::OutputType outputType) {
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     }
 
     aotrc::compiler::CodeGen codeGen(ctx);
-    aotrc::compiler::SharedLibLinker libLinker(argsParser.getLinkerPath());
+    aotrc::compiler::LibLinker libLinker(argsParser.getLinkerPath(), argsParser.getArPath());
 
     for (const auto &module : ctx->getModules()) {
         // Create the file name
@@ -94,9 +94,17 @@ int main(int argc, char **argv) {
             }
 
             // Create a shared lib if it's an object file
-            if (argsParser.getOutputType() == aotrc::OutputType::OBJ && !argsParser.skipBuildShared()) {
-                std::string libname = "lib" + module.first + ".so";
-                libLinker.link(filename, libname, true);
+            if (argsParser.getOutputType() == aotrc::OutputType::OBJ) {
+                std::string libnamePrefix = "lib" + module.first;
+                if (!argsParser.skipBuildShared()) {
+                    std::string libname = libnamePrefix + ".so";
+                    libLinker.linkShared(filename, libname, true);
+                }
+
+                if (!argsParser.skipBuildArchive()) {
+                    std::string libname = libnamePrefix + ".a";
+                    libLinker.linkStatic(filename, libname, true);
+                }
             }
 
             codeGen.generateHeader(module.second, module.first + ".h");

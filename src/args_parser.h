@@ -58,8 +58,16 @@ namespace aotrc {
             return linkerPath;
         }
 
+        const std::string &getArPath() const {
+            return arPath;
+        }
+
         bool skipBuildShared() const {
             return this->skipShared;
+        }
+
+        bool skipBuildArchive() const {
+            return this->skipArchive;
         }
 
     private:
@@ -69,6 +77,8 @@ namespace aotrc {
         std::vector<std::string> inputFilePaths;
         std::string linkerPath;
         int skipShared;
+        std::string arPath;
+        int skipArchive;
     };
 }
 
