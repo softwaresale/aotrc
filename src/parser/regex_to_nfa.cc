@@ -71,7 +71,7 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitAlternation(aotrc::parser::PCREPar
 
     // if there are more, alternate them all
     if (ctx->expr().size() > 1) {
-        for (int i = 1; i < ctx->expr().size(); i++) {
+        for (unsigned int i = 1; i < ctx->expr().size(); i++) {
             // Build the NFA
             auto exprNFA = this->visitExpr(ctx->expr(i)).as<fa::NFA>();
             // alternate it with the original one

@@ -12,7 +12,7 @@
 namespace aotrc::compiler {
     class CodeGen {
     public:
-        explicit CodeGen(const std::shared_ptr<CompilerContext> &ctx);
+        explicit CodeGen(std::shared_ptr<CompilerContext> ctx);
 
         bool compileModule(const std::shared_ptr<llvm::Module> &module, const std::string &outputPath, llvm::CodeGenFileType outputType);
         void generateHeader(const std::shared_ptr<llvm::Module> &module, const std::string &outputPath);

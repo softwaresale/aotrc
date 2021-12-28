@@ -9,8 +9,8 @@ aotrc::compiler::MatchFunction::MatchFunction(aotrc::fa::DFA &&dfa,
                                               bool isSubMatch,
                                               std::shared_ptr<llvm::Module> &parentModule,
                                               const std::shared_ptr<CompilerContext> &ctx)
-                                              : ctx(ctx)
-                                              , dfa(dfa)
+                                              : dfa(dfa)
+                                              , ctx(ctx)
                                               , isSubMatch(isSubMatch) {
     // match function type
     auto stringType = llvm::Type::getInt8PtrTy(ctx->context());

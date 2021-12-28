@@ -29,8 +29,9 @@ bool aotrc::fa::TransitionTable::addEdge(unsigned int source, unsigned int dest,
     if (source >= this->transitions.size() || dest >= this->transitions.size())
         return false;
 
-    // Set the edge
-    this->transitions[source][dest] = edge;
+    // Merge the new edge with the existing edge
+    // If the existing edge is empty, it'll just copy in everything from edge
+    this->transitions[source][dest].merge(std::move(edge));
 
     // Success
     return true;
@@ -43,7 +44,7 @@ unsigned int aotrc::fa::TransitionTable::addState(unsigned int key) {
 
     // Figure out how many states need to be added
     unsigned int statesToAdd = key - this->transitions.size() + 1;
-    for (int i = 0; i < statesToAdd; i++) {
+    for (unsigned int i = 0; i < statesToAdd; i++) {
         this->transitions.emplace_back();
     }
 
@@ -62,9 +63,9 @@ std::unordered_map<unsigned int, aotrc::fa::Edge> &aotrc::fa::TransitionTable::o
 }
 
 std::ostream &aotrc::fa::operator<<(std::ostream &os, const aotrc::fa::TransitionTable &table) {
-    for (int i = 0; i < table.transitions.size(); i++) {
+    for (unsigned int i = 0; i < table.getTransitions().size(); i++) {
         os << "[" << i << ": ";
-        for (const auto &transition : table.transitions[i]) {
+        for (const auto &transition : table.getTransitions()[i]) {
             os << "(" << transition.first << "," << transition.second << "), ";
         }
         os << "]" << std::endl;
@@ -116,7 +117,7 @@ aotrc::fa::TransitionTable::move(const std::unordered_set<unsigned int> &states,
 void aotrc::fa::Edge::optimizeRanges() {
     // Iterate over the ranges twice. If any two have any overlap, collapse the second one into the first one
     for (auto first = this->ranges.begin(); first != this->ranges.end(); ++first) {
-        for (auto second = this->ranges.begin() + 1; second != this->ranges.end();) {
+        for (auto second = first + 1; second != this->ranges.end();) {
             if (second->lower > first->lower && second->upper < first->upper) {
                 // If second fits inside of first, remove it
                 second = this->ranges.erase(second);

@@ -8,8 +8,8 @@
 #include <getopt.h>
 
 aotrc::ArgsParser::ArgsParser(int argc, char **argv)
-: version(0)
-, help(0)
+: help(0)
+, version(0)
 , outputType(OutputType::OBJ)
 , linkerPath("/usr/bin/ld")
 , skipShared(0) {

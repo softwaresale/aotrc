@@ -89,6 +89,18 @@ namespace aotrc::fa {
             return os;
         }
 
+        void merge(Edge &&other) {
+            for (auto &range : other.ranges) {
+                this->ranges.push_back(range);
+            }
+        }
+
+        void merge(const Edge &other) {
+            for (auto &range : other.ranges) {
+                this->ranges.push_back(range);
+            }
+        }
+
     private:
         std::vector<Range> ranges;
     };
@@ -128,14 +140,6 @@ namespace aotrc::fa {
          * @return id of new state
          */
         unsigned int addState(unsigned int stateId);
-
-        /**
-         * Used for printing the
-         * @param os stream to print to
-         * @param table table to print
-         * @return
-         */
-        friend std::ostream &operator<<(std::ostream &os, const TransitionTable &table);
 
         /**
          * Get's all of the ranges defined by this transition table
@@ -184,6 +188,8 @@ namespace aotrc::fa {
         // Sparse matrix of transitions
         std::vector<std::unordered_map<unsigned int, Edge>> transitions;
     };
+
+    std::ostream &operator<<(std::ostream &os, const TransitionTable &table);
 }
 
 #endif //_TRANSITION_TABLE_H

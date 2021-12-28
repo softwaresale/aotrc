@@ -5,10 +5,10 @@
 #include "match_function_state.h"
 
 aotrc::compiler::MatchFunctionState::MatchFunctionState(bool submatch)
-: computeBlock(nullptr)
-, initialBlock(nullptr)
+: isAccept(false)
 , isLeaf(false)
-, isAccept(false)
+, initialBlock(nullptr)
+, computeBlock(nullptr)
 , counterVal(nullptr)
 , cursorVal(nullptr)
 , isSubMatch(submatch) {
@@ -19,12 +19,12 @@ aotrc::compiler::MatchFunctionState::MatchFunctionState(unsigned int state,
                                                         llvm::Function *parentFunc,
                                                         const std::shared_ptr<CompilerContext> &ctx,
                                                         bool isSubMatch)
-                                                        : ctx(ctx)
-                                                        , stateLabel("STATE" + std::to_string(state))
+                                                        : stateLabel("STATE" + std::to_string(state))
                                                         , isAccept(isAccept)
                                                         , isLeaf(isLeaf)
-                                                        , computeBlock(nullptr)
+                                                        , ctx(ctx)
                                                         , initialBlock(nullptr)
+                                                        , computeBlock(nullptr)
                                                         , counterVal(nullptr)
                                                         , cursorVal(nullptr)
                                                         , isSubMatch(isSubMatch) {

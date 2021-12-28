@@ -6,6 +6,9 @@ find_package(antlr4-generator REQUIRED)
 
 set(ANTLR4_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.9.3-complete.jar)
 
+# Add compile options to pick up more errors
+add_compile_options(-Wall -Werror)
+
 # Add in finite automata library
 add_subdirectory(fa)
 
@@ -17,7 +20,6 @@ add_subdirectory(compiler)
 
 # Add in the directory that defines the input file definition
 add_subdirectory(input)
-
 add_executable(aotrc
         main.cpp
         args_parser.cc args_parser.h)

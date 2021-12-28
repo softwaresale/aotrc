@@ -56,11 +56,11 @@ static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&righ
 
     // if either left or right are empty, then just return through
     if (left.stateCount() == 0 && right.stateCount() > 0) {
-        return right;
+        return std::move(right);
     } else if (right.stateCount() == 0 && left.stateCount() > 0) {
-        return left;
+        return std::move(left);
     } else if (left.stateCount() == 0 && right.startState() == 0) {
-        return left;
+        return std::move(left);
     }
 
     // For each state in right, add one to left, except for the first state
@@ -75,12 +75,12 @@ static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&righ
     }
 
     // Translate the remaining states
-    for (int i = 1; i < right.stateCount(); i++) {
+    for (unsigned int i = 1; i < right.stateCount(); i++) {
         rightStateTranslations[i] = left.addState();
     }
 
     // For each transition in right, move it to left
-    for (int rightState = 0; rightState < right.stateCount(); rightState++) {
+    for (unsigned int rightState = 0; rightState < right.stateCount(); rightState++) {
         auto transitions = right[rightState];
         for (auto &transition : transitions) {
             // Translate the two states involved
@@ -93,7 +93,7 @@ static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&righ
     }
 
     // return left
-    return left;
+    return std::move(left);
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::concat(NFA &&left, NFA &&right) {
