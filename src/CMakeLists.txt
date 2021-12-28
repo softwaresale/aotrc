@@ -24,3 +24,6 @@ add_executable(aotrc
         main.cpp
         args_parser.cc args_parser.h)
 target_link_libraries(aotrc PUBLIC aotrc_fa aotrc_parser aotrc_compiler aotrc_input)
+
+# Useful for testing
+set(AOTRC_ALL_LIBS aotrc_fa aotrc_parser aotrc_compiler aotrc_input)

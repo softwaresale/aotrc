@@ -1,0 +1,22 @@
+
+testing_regexes:
+  cc:
+    pattern: /[a-zm-tA-NM-Z0-9_]+/
+    options:
+      fullmatch: true
+      submatch: true
+  plus:
+    pattern: /a+/
+    options:
+      fullmatch: true
+      submatch: true
+  star:
+    pattern: /a*/
+    options:
+      fullmatch: true
+      submatch: true
+  literal:
+    pattern: /abcd/
+    options:
+      fullmatch: true
+      submatch: true
