@@ -10,9 +10,9 @@ TEST(CorrectMatchRegexes, cc_is_correct) {
     const char *pass1 = "abcfweionf";
     const char *pass2 = "ASDIFJOWEOIFJ";
     const char *pass3 = "093729083_akjdfjklsdjf_ADJFIO";
-    const char *pass4 = "*&#^abcef09#*&^$";
+    const char *pass4 = "*&#abcef09#*&asdf";
     const char *fail1 = "";
-    const char *fail2 = "#&^$";
+    const char *fail2 = "#&";
 
     EXPECT_TRUE(match_cc(pass1, strlen(pass1)));
     EXPECT_TRUE(match_cc(pass2, strlen(pass2)));
@@ -41,21 +41,23 @@ TEST(CorrectMatchRegexes, star_is_correct) {
     const char *pass2 = "a";
     const char *pass3 = "";
     const char *pass4 = "aaaab";
-    const char *fail1 = "bb";
+    const char *pass5 = "bb"; // There is technically the empty string in this one, if we're unanchored
 
     EXPECT_TRUE(match_star(pass1, strlen(pass1)));
     EXPECT_TRUE(match_star(pass2, strlen(pass2)));
     EXPECT_TRUE(match_star(pass3, strlen(pass3)));
     EXPECT_TRUE(match_star(pass4, strlen(pass4)));
-    EXPECT_FALSE(match_star(fail1, strlen(fail1)));
+    EXPECT_TRUE(match_star(pass5, strlen(pass5)));
 }
 
 TEST(CorrectMatchRegexes, literal_is_correct) {
     const char *pass1 = "abcd";
     const char *pass2 = "abcdabcd";
     const char *fail1 = "aaaab";
+    const char *fail2 = "abc";
 
     EXPECT_TRUE(match_literal(pass1, strlen(pass1)));
     EXPECT_TRUE(match_literal(pass2, strlen(pass2)));
     EXPECT_FALSE(match_literal(fail1, strlen(fail1)));
+    EXPECT_FALSE(match_literal(fail2, strlen(fail2)));
 }

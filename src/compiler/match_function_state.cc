@@ -38,14 +38,20 @@ void aotrc::compiler::MatchFunctionState::buildInitialState(llvm::Value *counter
     // Set the position
     ctx->builder().SetInsertPoint(this->initialBlock);
 
-    // Build the checks
-    this->counterVal = ctx->builder().CreateLoad(llvm::Type::getInt32Ty(ctx->context()), counterVar, "counterVal");
+    if (this->isSubMatch && this->isAccept && this->isLeaf) {
+        // In the rare case that this a leaf state, an accept state, and we're doing submatching, just branch to accept
+        // because we made it to an end
+        ctx->builder().CreateBr(accept);
+    } else {
+        // Build the checks
+        this->counterVal = ctx->builder().CreateLoad(llvm::Type::getInt32Ty(ctx->context()), counterVar, "counterVal");
 
-    auto atEnd = ctx->builder().CreateICmpEQ(counterVal, lengthArg);
-    llvm::BasicBlock *thenBlock = this->isAccept ? accept : reject;
-    llvm::BasicBlock *elseBlock = this->isLeaf ? reject : this->computeBlock;
+        auto atEnd = ctx->builder().CreateICmpEQ(counterVal, lengthArg);
+        llvm::BasicBlock *thenBlock = this->isAccept ? accept : reject;
+        llvm::BasicBlock *elseBlock = this->isLeaf ? reject : this->computeBlock;
 
-    ctx->builder().CreateCondBr(atEnd, thenBlock, elseBlock);
+        ctx->builder().CreateCondBr(atEnd, thenBlock, elseBlock);
+    }
 }
 
 void aotrc::compiler::MatchFunctionState::buildComputeBlock(llvm::Value *counterVar, llvm::Value *inputTextPtr) {

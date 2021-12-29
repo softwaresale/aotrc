@@ -40,6 +40,7 @@ bool aotrc::compiler::CodeGen::compileModule(const std::shared_ptr<llvm::Module>
 
     // Add a pass to generate machine code
     llvm::legacy::PassManager passManager;
+    this->machine->setOptLevel(llvm::CodeGenOpt::Level::Aggressive); // Aggressive code optimization?
     if (this->machine->addPassesToEmitFile(passManager, outputStream, nullptr, outputType)) {
         llvm::errs() << "Error while emitting to file";
         return false;

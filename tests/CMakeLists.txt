@@ -33,7 +33,5 @@ add_executable(correct_match_regexes_test integration/correct_match_regexes_test
 target_link_libraries(correct_match_regexes_test PRIVATE ${AOTRC_ALL_LIBS} libtesting_regexes gtest_main)
 
 include(GoogleTest)
-gtest_discover_tests(
-        correct_fullmatch_regexes_test
-        correct_match_regexes_test
-)
+gtest_discover_tests(correct_fullmatch_regexes_test)
+gtest_discover_tests(correct_match_regexes_test)

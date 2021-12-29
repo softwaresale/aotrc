@@ -47,7 +47,7 @@ aotrc::compiler::MatchFunction::MatchFunction(aotrc::fa::DFA &&dfa,
     // Create state blocks for everything
     for (unsigned int state = 0; state < this->dfa.stateCount(); state++) {
         // Create a new state
-        MatchFunctionState matchState(state, dfa.isAcceptState(state), dfa.isLeaf(state), this->matchFunction, ctx);
+        MatchFunctionState matchState(state, dfa.isAcceptState(state), dfa.isLeaf(state), this->matchFunction, ctx, this->isSubMatch);
         // Add it to states
         this->states[state] = matchState;
     }
@@ -80,9 +80,13 @@ void aotrc::compiler::MatchFunction::build() {
             // Build outgoing edges everywhere
             llvm::BasicBlock *fallbackBlock = this->rejectBlock;
             if (this->isSubMatch) {
-                // If we are submatching, then we don't want to go to the reject block. Instead, we want to go back to
-                // the start state
-                fallbackBlock = this->states[dfa.getStartState()].getInitialBlock();
+                // If this state is an accept state, then we can accept because we "stopped on an accept state"
+                // Otherwise, go back to the beginning
+                if (this->dfa.isAcceptState(state)) {
+                    fallbackBlock = this->acceptBlock;
+                } else {
+                    fallbackBlock = this->states[dfa.getStartState()].getInitialBlock();
+                }
             }
             this->states[state].buildEdgeTo(this->matchFunction, this->states[destState], edge, fallbackBlock);
         }
