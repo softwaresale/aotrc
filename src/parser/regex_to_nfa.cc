@@ -17,6 +17,8 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitElement(aotrc::parser::PCREParser:
             atomNfa = aotrc::fa::nfa_builders::star(std::move(atomNfa));
         } else if (ctx->quantifier()->Plus()) {
             atomNfa = aotrc::fa::nfa_builders::plus(std::move(atomNfa));
+        } else if (ctx->quantifier()->QuestionMark()) {
+            atomNfa = aotrc::fa::nfa_builders::questionMark(std::move(atomNfa));
         } else {
             // unsupported, so fail
             throw std::runtime_error("Unsupported quantifier type: " + ctx->quantifier()->getText());
@@ -36,6 +38,8 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitAtom(aotrc::parser::PCREParser::At
         builtNFA = this->visitAlternation(ctx->capture()->alternation()).as<fa::NFA>();
     } else if (ctx->character_class()) {
         builtNFA = this->visitCharacter_class(ctx->character_class());
+    } else if (ctx->non_capture()) {
+        builtNFA = this->visitNon_capture(ctx->non_capture());
     } else {
         // Otherwise, this feature is not supported, so do nothing
         throw std::runtime_error("Unsupported atom type: " + ctx->getText());
@@ -84,9 +88,8 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitParse(aotrc::parser::PCREParser::P
 }
 
 antlrcpp::Any aotrc::parser::RegexToNFA::visitCharacter_class(aotrc::parser::PCREParser::Character_classContext *ctx) {
-    if (ctx->Caret()) {
-        throw std::runtime_error("Negated character classes are not supported");
-    }
+    // Figure out if we are working with a negated character class
+    bool isNegated = ctx->Caret() != nullptr;
 
     // Get the ranges of the character class
     std::vector<fa::Range> ranges;
@@ -97,7 +100,7 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitCharacter_class(aotrc::parser::PCR
     }
 
     // Build a cc
-    return fa::nfa_builders::characterClass(ranges);
+    return fa::nfa_builders::characterClass(ranges, isNegated);
 }
 
 antlrcpp::Any aotrc::parser::RegexToNFA::visitCc_atom(aotrc::parser::PCREParser::Cc_atomContext *ctx) {
@@ -152,4 +155,8 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitLiteral(aotrc::parser::PCREParser:
     }
 
     return std::string(&literal, 1);
+}
+
+antlrcpp::Any aotrc::parser::RegexToNFA::visitNon_capture(aotrc::parser::PCREParser::Non_captureContext *ctx) {
+    return this->visitAlternation(ctx->alternation());
 }

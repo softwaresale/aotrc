@@ -5,6 +5,8 @@
 #include "transition_table.h"
 
 #include <algorithm>
+#include <atomic>
+#include <limits>
 
 unsigned int aotrc::fa::TransitionTable::addState() {
     // Add a new state
@@ -115,6 +117,9 @@ aotrc::fa::TransitionTable::move(const std::unordered_set<unsigned int> &states,
 }
 
 void aotrc::fa::Edge::optimizeRanges() {
+    if (rangesOptimized)
+        return;
+
     // Iterate over the ranges twice. If any two have any overlap, collapse the second one into the first one
     for (auto first = this->ranges.begin(); first != this->ranges.end(); ++first) {
         for (auto second = first + 1; second != this->ranges.end();) {
@@ -137,4 +142,52 @@ void aotrc::fa::Edge::optimizeRanges() {
             } else ++second; // Otherwise, do nothing and check the next one
         }
     }
+
+    this->rangesOptimized = true;
+}
+
+aotrc::fa::Edge aotrc::fa::Edge::complement() {
+    this->optimizeRanges();
+
+    // Make a vector of all values from [char_min, char_max]
+    std::vector<unsigned char> allCharacters;
+    // unsigned int range = std::numeric_limits<char>::max() - std::numeric_limits<char>::min();
+    for (unsigned char i = std::numeric_limits<unsigned char>::min(); i < std::numeric_limits<unsigned char>::max(); i++) {
+        allCharacters.push_back(i);
+    }
+
+    // For each range, remove that range from the allCharacters vector
+    for (const auto &range : this->ranges) {
+        auto lowerBound = allCharacters.begin() + range.lower;
+        auto upperBound = allCharacters.begin() + range.upper;
+        allCharacters.erase(lowerBound, upperBound);
+    }
+
+    // Build ranges out of all the characters by clustering them into adjacent clumps
+    unsigned int lastLowerBound = 0;
+    unsigned int lastUpperBound = 0;
+    std::vector<Range> complementedRanges;
+    for (auto it = allCharacters.begin(); it != allCharacters.end() - 1; ++it) {
+        if ((*it) + 1 == *(it + 1)) {
+            // It is adjacent to the next, so increment the upper bound
+            lastUpperBound++;
+        } else {
+            // These are not adjacent, so build a range
+            complementedRanges.emplace_back(lastLowerBound, lastUpperBound);
+            lastLowerBound = lastUpperBound + 1;
+
+        }
+    }
+
+    // Might have to do one more
+    complementedRanges.emplace_back(lastLowerBound, lastUpperBound);
+
+    // Add all the edges
+    Edge complementedEdge;
+    for (auto &range : complementedRanges) {
+        complementedEdge.addRange(range);
+    }
+    complementedEdge.optimizeRanges();
+
+    return complementedEdge;
 }

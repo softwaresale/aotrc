@@ -20,6 +20,22 @@ TEST(CorrectFullRegexes, cc_is_correct) {
     EXPECT_FALSE(fullmatch_cc(fail2, strlen(fail2)));
 }
 
+TEST(CorrectFullRegexes, neg_cc_is_correct) {
+    const char *pass1 = "ABCE";
+    const char *pass2 = "1534";
+    const char *pass3 = "&*$";
+    const char *fail1 = "abc";
+    const char *fail2 = "ffflsdfj";
+    const char *fail3 = "abcdefghijklmnopqrstuvwxyz";
+
+    EXPECT_TRUE(fullmatch_neg_cc(pass1, strlen(pass1)));
+    EXPECT_TRUE(fullmatch_neg_cc(pass2, strlen(pass2)));
+    EXPECT_TRUE(fullmatch_neg_cc(pass3, strlen(pass3)));
+    EXPECT_FALSE(fullmatch_neg_cc(fail1, strlen(fail1)));
+    EXPECT_FALSE(fullmatch_neg_cc(fail2, strlen(fail2)));
+    EXPECT_FALSE(fullmatch_neg_cc(fail3, strlen(fail3)));
+}
+
 TEST(CorrectFullRegexes, plus_is_correct) {
     const char *pass1 = "aaaaaa";
     const char *pass2 = "a";

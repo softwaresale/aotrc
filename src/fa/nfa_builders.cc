@@ -34,7 +34,7 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::literal(const std::string &literal) {
     return nfa;
 }
 
-aotrc::fa::NFA aotrc::fa::nfa_builders::characterClass(const std::vector<Range> &ranges) {
+aotrc::fa::NFA aotrc::fa::nfa_builders::characterClass(const std::vector<Range> &ranges, bool negated) {
     NFA cc;
     auto start = cc.addState();
     auto end = cc.addState();
@@ -46,6 +46,11 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::characterClass(const std::vector<Range> 
 
     // Optimize the edge's ranges (remove anything that's redundant)
     edge.optimizeRanges();
+
+    // If negated range, then complement edge
+    if (negated) {
+        edge = edge.complement();
+    }
 
     cc.addEdge(start, end, std::move(edge));
 
@@ -148,4 +153,10 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::plus(aotrc::fa::NFA &&nfa) {
     auto starNFA = star(std::move(nfa));
     // Concat the copy with star
     return concat(std::move(copy), std::move(starNFA));
+}
+
+aotrc::fa::NFA aotrc::fa::nfa_builders::questionMark(aotrc::fa::NFA &&nfa) {
+    // Question mark is a (r|e)
+    auto left = epsilon();
+    return alternation(std::move(left), std::move(nfa));
 }

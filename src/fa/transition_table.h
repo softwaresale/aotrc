@@ -48,14 +48,16 @@ namespace aotrc::fa {
             return leftRange.lower == rightRange.lower && leftRange.upper == rightRange.upper;
         }
     };
-
     using RangeSet = std::unordered_set<Range, RangeHash, RangeEquals>;
 
     class Edge {
     public:
-        Edge() = default;
+        Edge()
+        : rangesOptimized(false) {  };
+
         Edge(std::initializer_list<Range> ranges)
-        : ranges(ranges) {
+        : ranges(ranges)
+        , rangesOptimized(false) {
         }
 
         /**
@@ -65,6 +67,7 @@ namespace aotrc::fa {
 
         void addRange(Range range) {
             this->ranges.push_back(range);
+            this->rangesOptimized = false;
         }
 
         const std::vector<Range> &getRanges() const {
@@ -93,16 +96,21 @@ namespace aotrc::fa {
             for (auto &range : other.ranges) {
                 this->ranges.push_back(range);
             }
+            this->rangesOptimized = false;
         }
 
         void merge(const Edge &other) {
             for (auto &range : other.ranges) {
                 this->ranges.push_back(range);
             }
+            this->rangesOptimized = false;
         }
+
+        Edge complement();
 
     private:
         std::vector<Range> ranges;
+        bool rangesOptimized;
     };
 
 

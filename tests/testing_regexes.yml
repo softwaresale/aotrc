@@ -5,6 +5,11 @@ testing_regexes:
     options:
       fullmatch: true
       submatch: true
+  neg_cc:
+    pattern: /[^a-z]+/
+    options:
+      fullmatch: true
+      submatch: true
   plus:
     pattern: /a+/
     options:
