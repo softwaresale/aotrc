@@ -18,8 +18,7 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitElement(aotrc::parser::PCREParser:
         } else if (ctx->quantifier()->Plus()) {
             atomNfa = aotrc::fa::nfa_builders::plus(std::move(atomNfa));
         } else {
-            // unsupported, so just don't quantify
-            // std::cerr << "WARNING: supported quantifier type: " << ctx->quantifier()->getText() << std::endl;
+            // unsupported, so fail
             throw std::runtime_error("Unsupported quantifier type: " + ctx->quantifier()->getText());
         }
     }
@@ -30,11 +29,9 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitElement(aotrc::parser::PCREParser:
 antlrcpp::Any aotrc::parser::RegexToNFA::visitAtom(aotrc::parser::PCREParser::AtomContext *ctx) {
     antlrcpp::Any builtNFA;
     if (ctx->literal()) {
-        auto literalText = ctx->literal()->getText();
+        auto literalText = this->visitLiteral(ctx->literal()).as<std::string>();
         // Build an NFA out of the literal
-        auto literalNFA = aotrc::fa::nfa_builders::literal(literalText);
-
-        builtNFA = literalNFA;
+        builtNFA = aotrc::fa::nfa_builders::literal(literalText);
     } else if (ctx->capture()) {
         builtNFA = this->visitAlternation(ctx->capture()->alternation()).as<fa::NFA>();
     } else if (ctx->character_class()) {
@@ -129,10 +126,30 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitCc_atom(aotrc::parser::PCREParser:
         } else {
             throw std::runtime_error("Unsupported shared atom: " + shared->getText());
         }
-    } else {
-        char only = ctx->cc_literal(0)->getText()[0];
+    } else if (!ctx->cc_literal().empty()) {
+        char only;
+        if (ctx->cc_literal(0)->shared_literal() && ctx->cc_literal(0)->shared_literal()->Quoted()) {
+            // In the case of something quoted, remove the backslash
+            only = ctx->cc_literal(0)->shared_literal()->getText()[1];
+        } else {
+            // Otherwise, get the content of the shared_literal
+            only = ctx->cc_literal(0)->getText()[0];
+        }
         ranges.emplace_back(only);
+    } else {
+        throw std::runtime_error("Error while handling character class atom '" + ctx->getText() + "'");
     }
 
     return ranges;
+}
+
+antlrcpp::Any aotrc::parser::RegexToNFA::visitLiteral(aotrc::parser::PCREParser::LiteralContext *ctx) {
+    char literal;
+    if (ctx->shared_literal() && ctx->shared_literal()->Quoted()) {
+        literal = ctx->shared_literal()->Quoted()->getText()[1];
+    } else {
+        literal = ctx->getText()[0];
+    }
+
+    return std::string(&literal, 1);
 }

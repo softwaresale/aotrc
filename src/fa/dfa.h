@@ -14,9 +14,10 @@ namespace aotrc::fa {
     public:
         explicit DFA(const NFA &nfa);
 
-        bool isAcceptState(unsigned int state) const {
+        inline bool isAcceptState(unsigned int state) const override {
             return std::count(this->acceptStates.cbegin(), this->acceptStates.cend(), state) > 0;
         }
+
         const std::unordered_set<unsigned int>& getAcceptStates() const noexcept {
             return this->acceptStates;
         }

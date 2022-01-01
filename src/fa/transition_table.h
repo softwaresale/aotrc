@@ -109,6 +109,7 @@ namespace aotrc::fa {
     class TransitionTable {
     public:
         TransitionTable() = default;
+        virtual ~TransitionTable() = default;
 
         /**
          * Adds a new state to the table
@@ -168,11 +169,11 @@ namespace aotrc::fa {
             return state < this->transitions.size();
         }
 
-        const std::vector<std::unordered_map<unsigned int, Edge>> &getTransitions() const {
+        inline const std::vector<std::unordered_map<unsigned int, Edge>> &getTransitions() const {
             return this->transitions;
         }
 
-        const std::unordered_map<unsigned int, Edge> &edgesForState(unsigned int state) const {
+        inline const std::unordered_map<unsigned int, Edge> &edgesForState(unsigned int state) const {
             return this->transitions[state];
         }
 
@@ -183,6 +184,8 @@ namespace aotrc::fa {
         inline bool isLeaf(unsigned int state) const {
             return this->transitions[state].empty();
         }
+
+        virtual inline bool isAcceptState(unsigned int state) const = 0;
 
     protected:
         // Sparse matrix of transitions

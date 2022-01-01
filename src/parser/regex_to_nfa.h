@@ -17,6 +17,7 @@ namespace aotrc::parser {
         antlrcpp::Any visitElement(PCREParser::ElementContext *ctx) override;
         antlrcpp::Any visitCharacter_class(PCREParser::Character_classContext *ctx) override;
         antlrcpp::Any visitCc_atom(PCREParser::Cc_atomContext *ctx) override;
+        antlrcpp::Any visitLiteral(PCREParser::LiteralContext *ctx) override;
     };
 }
 

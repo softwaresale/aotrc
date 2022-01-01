@@ -22,6 +22,10 @@ namespace aotrc::fa {
             return this->transitions.size() - 1;
         }
 
+        inline bool isAcceptState(unsigned int state) const override {
+            return state == this->stopState();
+        }
+
         /**
          * Set of all states accessible from starting state via epsilon transitions
          * @param state starting states
