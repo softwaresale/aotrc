@@ -25,3 +25,13 @@ testing_regexes:
     options:
       fullmatch: true
       submatch: true
+  bounded_single:
+    pattern: /(?:abc){3}/
+    options:
+      fullmatch: true
+      submatch: true
+  bounded_range:
+    pattern: /a{3,5}/
+    options:
+      fullmatch: true
+      submatch: true

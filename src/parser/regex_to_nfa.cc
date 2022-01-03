@@ -19,6 +19,23 @@ antlrcpp::Any aotrc::parser::RegexToNFA::visitElement(aotrc::parser::PCREParser:
             atomNfa = aotrc::fa::nfa_builders::plus(std::move(atomNfa));
         } else if (ctx->quantifier()->QuestionMark()) {
             atomNfa = aotrc::fa::nfa_builders::questionMark(std::move(atomNfa));
+        } else if (ctx->quantifier()->OpenBrace()) {
+            // Numbered quantifier
+            if (ctx->quantifier()->Comma()) {
+                // If there is one number, then it's unbounded. Otherwise, it's a range
+                if (ctx->quantifier()->number().size() > 1) {
+                    auto first = std::stoi(ctx->quantifier()->number(0)->getText());
+                    auto second = std::stoi(ctx->quantifier()->number(1)->getText());
+                    atomNfa = aotrc::fa::nfa_builders::numberBounded(std::move(atomNfa), first, second);
+                } else {
+                    auto first = std::stoi(ctx->quantifier()->number(0)->getText());
+                    atomNfa = aotrc::fa::nfa_builders::numberUnbounded(std::move(atomNfa), first);
+                }
+            } else {
+                // It's just a single repetition
+                auto first = std::stoi(ctx->quantifier()->number(0)->getText());
+                atomNfa = aotrc::fa::nfa_builders::numberBounded(std::move(atomNfa), first, first);
+            }
         } else {
             // unsupported, so fail
             throw std::runtime_error("Unsupported quantifier type: " + ctx->quantifier()->getText());

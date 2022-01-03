@@ -160,3 +160,37 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::questionMark(aotrc::fa::NFA &&nfa) {
     auto left = epsilon();
     return alternation(std::move(left), std::move(nfa));
 }
+
+aotrc::fa::NFA aotrc::fa::nfa_builders::numberBounded(NFA &&nfa, unsigned int lower, unsigned int higher) {
+    NFA parent = std::move(nfa);
+    std::vector<NFA> repetitionBranches;
+    for (unsigned int repetitions = lower; repetitions <= higher; repetitions++) {
+        NFA repetitionBranch;
+        for (unsigned int instance = 0; instance < repetitions; instance++) {
+            // Make a copy and concat it with the other one
+            NFA copy = parent;
+            repetitionBranch = concat(std::move(repetitionBranch), std::move(copy));
+        }
+        repetitionBranches.push_back(std::move(repetitionBranch));
+    }
+    NFA quantified = std::move(repetitionBranches[0]);
+    repetitionBranches.erase(repetitionBranches.begin());
+    for (auto &branch : repetitionBranches) {
+        quantified = alternation(std::move(quantified), std::move(branch));
+    }
+
+    return quantified;
+}
+
+aotrc::fa::NFA aotrc::fa::nfa_builders::numberUnbounded(aotrc::fa::NFA &&nfa, unsigned int lower) {
+    NFA parent = std::move(nfa);
+    NFA result = parent;
+    for (unsigned int i = 0; i < lower - 2; i++) {
+        NFA copy = parent;
+        result = concat(std::move(result), std::move(copy));
+    }
+
+    NFA nfaStar = star(std::move(parent));
+    result = concat(std::move(result), std::move(nfaStar));
+    return result;
+}

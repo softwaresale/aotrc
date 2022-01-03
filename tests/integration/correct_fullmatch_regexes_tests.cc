@@ -73,3 +73,36 @@ TEST(CorrectFullRegexes, literal_is_correct) {
     EXPECT_FALSE(fullmatch_literal(fail1, strlen(fail1)));
     EXPECT_FALSE(fullmatch_literal(fail2, strlen(fail2)));
 }
+
+TEST(CorrectFullRegexes, number_bounded_single_is_correct) {
+    const char *pass1 = "abcabcabc";
+    const char *fail1 = "abc";
+    const char *fail2 = "abcabc";
+    const char *fail3 = "ab";
+    const char *fail4 = "abcabcabcabc";
+    const char *fail5 = "aaaaaa";
+
+    EXPECT_TRUE(fullmatch_bounded_single(pass1, strlen(pass1)));
+    EXPECT_FALSE(fullmatch_bounded_single(fail1, strlen(fail1)));
+    EXPECT_FALSE(fullmatch_bounded_single(fail2, strlen(fail2)));
+    EXPECT_FALSE(fullmatch_bounded_single(fail3, strlen(fail3)));
+    EXPECT_FALSE(fullmatch_bounded_single(fail4, strlen(fail4)));
+    EXPECT_FALSE(fullmatch_bounded_single(fail5, strlen(fail5)));
+}
+
+
+TEST(CorrectFullRegexes, number_bounded_range_is_correct) {
+    const char *pass1 = "aaa";
+    const char *pass2 = "aaaa";
+    const char *pass3 = "aaaaa";
+    const char *fail1 = "a";
+    const char *fail2 = "aa";
+    const char *fail3 = "aaaaaa";
+
+    EXPECT_TRUE(fullmatch_bounded_range(pass1, strlen(pass1)));
+    EXPECT_TRUE(fullmatch_bounded_range(pass2, strlen(pass2)));
+    EXPECT_TRUE(fullmatch_bounded_range(pass3, strlen(pass3)));
+    EXPECT_FALSE(fullmatch_bounded_range(fail1, strlen(fail1)));
+    EXPECT_FALSE(fullmatch_bounded_range(fail2, strlen(fail2)));
+    EXPECT_FALSE(fullmatch_bounded_range(fail3, strlen(fail3)));
+}
