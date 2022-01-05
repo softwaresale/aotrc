@@ -9,7 +9,7 @@
 static void renderAcceptNodes(const aotrc::fa::TransitionTable *table, std::ostream &output) {
     for (unsigned int state = 0; state < table->stateCount(); state++) {
         if (table->isAcceptState(state)) {
-            output << "node [shape=doublecircle] " << state << std::endl;
+            output << state << " [shape=doublecircle] " << std::endl;
         }
     }
 }

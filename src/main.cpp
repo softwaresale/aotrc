@@ -10,6 +10,7 @@
 #include "input/aotrc_input_parser.h"
 #include "compiler/lib_linker.h"
 #include "compiler/build_pattern_func.h"
+#include "fa/graphviz_renderer.h"
 
 static std::string getOutputFileName(const std::string &moduleName, aotrc::OutputType outputType) {
     std::string filename = moduleName + '.';
@@ -52,11 +53,19 @@ int main(int argc, char **argv) {
         for (const auto &regexDef : moduleDef.second) {
             // Turn pattern into fa
             aotrc::fa::NFA nfa = aotrc::parser::parse_regex(regexDef.pattern);
+            if (argsParser.getGraphvizTypes().count(aotrc::GraphVizOutputTypes::NFA) > 0) {
+                std::string filename = "nfa_" + regexDef.label + ".dot";
+                aotrc::fa::graphvizRenderOutputFile(&nfa, regexDef.label, filename);
+            }
 
             // Make a match function out of the dfa
             if (regexDef.genFullMatch) {
                 // NOTE: this is probably not a very good practice... it will likely use a lot of memory
                 aotrc::fa::DFA dfa(nfa);
+                if (argsParser.getGraphvizTypes().count(aotrc::GraphVizOutputTypes::DFA_FULL) > 0) {
+                    std::string filename = "dfa_full_" + regexDef.label + ".dot";
+                    aotrc::fa::graphvizRenderOutputFile(&dfa, regexDef.label, filename);
+                }
                 aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, false, module, ctx);
 
                 // Compile the match function
@@ -66,6 +75,10 @@ int main(int argc, char **argv) {
             if (regexDef.genSubMatch) {
                 // NOTE: this is probably not a very good practice... it will likely use a lot of memory
                 aotrc::fa::DFA dfa(nfa);
+                if (argsParser.getGraphvizTypes().count(aotrc::GraphVizOutputTypes::DFA_SUB) > 0) {
+                    std::string filename = "dfa_sub_" + regexDef.label + ".dot";
+                    aotrc::fa::graphvizRenderOutputFile(&dfa, regexDef.label, filename);
+                }
                 aotrc::compiler::MatchFunction matchFunction(std::move(dfa), regexDef.label, true, module, ctx);
 
                 // Compile the match function

@@ -23,6 +23,7 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
             { "build-shared", no_argument, nullptr, 's' },
             { "archiver-path", required_argument, nullptr, '1' },
             { "build-archive", no_argument, nullptr, 'a' },
+            { "render-graphviz", required_argument, nullptr, '2' },
             {nullptr, 0, nullptr, 0 }
     };
 
@@ -103,6 +104,33 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
                 this->arPath = std::string(optarg);
                 break;
 
+            case '2': {
+                // optarg is a comma separated list
+                std::string optstr(optarg);
+                std::vector<std::string> listItems;
+                while (true) {
+                    auto nextComma = optstr.find(',');
+                    if (nextComma == std::string::npos)
+                        break;
+
+                    listItems.push_back(optstr.substr(0, nextComma));
+                    optstr.erase(optstr.begin(), optstr.begin() + nextComma + 1);
+                }
+                listItems.push_back(optstr);
+
+                // Now that we have all the render types, we can convert them to enums and such
+                for (const auto &item : listItems) {
+                    if (item == "nfa") {
+                        this->graphvizTypes.insert(GraphVizOutputTypes::NFA);
+                    } else if (item == "dfa_full") {
+                        this->graphvizTypes.insert(GraphVizOutputTypes::DFA_FULL);
+                    } else if (item == "dfa_sub") {
+                        this->graphvizTypes.insert(GraphVizOutputTypes::DFA_SUB);
+                    }
+                }
+            }
+                break;
+
             default:
                 break;
         }
@@ -124,6 +152,7 @@ void aotrc::ArgsParser::displayHelp() const {
     std::cout << "  --archiver-path    : specify a path to the archiver to use for creating a static library" << std::endl;
     std::cout << "  --build-shared, -s : build a shared library, default is false" << std::endl;
     std::cout << "  --build-static, -a : build a static library, default is false" << std::endl;
+    std::cout << "  --render-graphviz  : output graphviz for the automata intermediate representation. Options are: nfa, dfa_full, dfa_sub" << std::endl;
     std::cout << "  --help,         -h : display this help screen" << std::endl;
     std::cout << "  --version,      -v : display information about this program" << std::endl;
     std::cout << std::endl;

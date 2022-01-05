@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include <unordered_set>
 #include <llvm/Support/CodeGen.h>
 
 namespace aotrc {
@@ -16,6 +17,12 @@ namespace aotrc {
         ASM,
         OBJ,
         IR,
+    };
+
+    enum GraphVizOutputTypes {
+        NFA,
+        DFA_FULL,
+        DFA_SUB
     };
 
     class ArgsParser {
@@ -70,6 +77,10 @@ namespace aotrc {
             return this->skipArchive;
         }
 
+        const std::unordered_set<GraphVizOutputTypes> &getGraphvizTypes() const {
+            return graphvizTypes;
+        }
+
     private:
         int help;
         int version;
@@ -79,6 +90,7 @@ namespace aotrc {
         int skipShared;
         std::string arPath;
         int skipArchive;
+        std::unordered_set<GraphVizOutputTypes> graphvizTypes;
     };
 }
 
