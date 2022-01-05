@@ -4,6 +4,7 @@
 
 #include "graphviz_renderer.h"
 #include "dfa.h"
+#include <fstream>
 
 static void renderAcceptNodes(const aotrc::fa::TransitionTable *table, std::ostream &output) {
     for (unsigned int state = 0; state < table->stateCount(); state++) {
@@ -53,4 +54,14 @@ void aotrc::fa::graphvizRenderOutput(const aotrc::fa::TransitionTable *table, co
 
     // Finish writing graph
     output << '}' << std::endl;
+}
+
+void aotrc::fa::graphvizRenderOutputFile(const aotrc::fa::TransitionTable *table, const std::string &label, const std::string &path) {
+    std::ofstream output_file(path);
+    if (output_file.is_open()) {
+        graphvizRenderOutput(table, label, output_file);
+        output_file.close();
+    } else {
+        throw std::runtime_error("Could not open output file");
+    }
 }

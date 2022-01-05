@@ -10,6 +10,7 @@
 
 namespace aotrc::fa {
     void graphvizRenderOutput(const aotrc::fa::TransitionTable *table, const std::string &label, std::ostream &output);
+    void graphvizRenderOutputFile(const aotrc::fa::TransitionTable *table, const std::string &label, const std::string &path);
 }
 
 #endif //_GRAPHVIZ_RENDERER_H
