@@ -8,6 +8,11 @@
 #include "../fa/nfa.h"
 
 namespace aotrc::parser {
+    /**
+     * Parse a regex into an NFA
+     * @param pattern pattern to parse
+     * @return an NFA of the regex
+     */
     fa::NFA parse_regex(const std::string &pattern);
 }
 

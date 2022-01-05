@@ -14,6 +14,10 @@
 #include "transition_edge.h"
 
 namespace aotrc::fa {
+    /**
+     * A transition table represents an abstract graph. It holds a sparse transition matrix. States
+     * within the graph are unsigned integers, which correspond to rows in the matrix.
+     */
     class TransitionTable {
     public:
         TransitionTable() = default;

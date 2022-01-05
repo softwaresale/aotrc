@@ -10,14 +10,26 @@
 #include "nfa.h"
 
 namespace aotrc::fa {
+    /**
+     * Represents a deterministic finite automaton
+     */
     class DFA : public TransitionTable {
     public:
         explicit DFA(const NFA &nfa);
 
+        /**
+         * Determines if a given state is an accept state
+         * @param state a dfa state
+         * @return true if the state is an accept state
+         */
         inline bool isAcceptState(unsigned int state) const override {
             return std::count(this->acceptStates.cbegin(), this->acceptStates.cend(), state) > 0;
         }
 
+        /**
+         * Gets the set of accept states
+         * @return
+         */
         const std::unordered_set<unsigned int>& getAcceptStates() const noexcept {
             return this->acceptStates;
         }

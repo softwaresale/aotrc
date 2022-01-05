@@ -11,16 +11,19 @@
 #include <unordered_set>
 
 namespace aotrc::fa {
+    /**
+     * Represents a basic character range
+     */
     struct Range {
     public:
         Range(unsigned char lower, unsigned char upper)
-                : lower(lower)
-                , upper(upper) {
+        : lower(lower)
+        , upper(upper) {
         }
 
         explicit Range(unsigned char single)
-                : lower(single)
-                , upper(single) {
+        : lower(single)
+        , upper(single) {
         }
 
         bool operator==(const Range &otherRange) const noexcept {
@@ -47,6 +50,10 @@ namespace aotrc::fa {
     };
     using RangeSet = std::unordered_set<Range, RangeHash, RangeEquals>;
 
+    /**
+     * An edge that lives within a transition table. An edge holds a collection of ranges. Each range specifies what
+     * characters can be used to traverse this edge.
+     */
     class Edge {
     public:
         Edge()

@@ -8,6 +8,9 @@
 #include <PCREBaseVisitor.h>
 
 namespace aotrc::parser {
+    /**
+     * Visitor that recursively transforms a regex into NFAs
+     */
     class RegexToNFA : public aotrc::parser::PCREBaseVisitor {
     public:
         antlrcpp::Any visitParse(PCREParser::ParseContext *ctx) override;

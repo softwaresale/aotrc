@@ -10,6 +10,10 @@
 #include "compiler_context.h"
 
 namespace aotrc::compiler {
+    /**
+     * Class that handles code generation. This class actually converts llvm IR into target assembly or object code.
+     * This class also handles header generation.
+     */
     class CodeGen {
     public:
         explicit CodeGen(std::shared_ptr<CompilerContext> ctx);

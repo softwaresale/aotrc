@@ -8,6 +8,9 @@
 #include "transition_table.h"
 
 namespace aotrc::fa {
+    /**
+     * Represents a non-deterministic finite automaton
+     */
     class NFA : public TransitionTable {
     public:
         NFA()

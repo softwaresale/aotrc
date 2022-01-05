@@ -9,6 +9,9 @@
 
 namespace aotrc::input {
 
+    /**
+     * Represents a regex def. Contains the regex label, regex pattern, and any options associated with it
+     */
     struct RegexDef {
     public:
         RegexDef(const std::string &label, const std::string &pattern, bool fullmatch = true, bool submatch = false)
@@ -25,8 +28,15 @@ namespace aotrc::input {
         bool genSubMatch;
     };
 
+    /**
+     * Parses aotrc input files for module definitions
+     */
     class AotrcInputParser {
     public:
+        /**
+         * Parse a regex file
+         * @param path Path to the input file
+         */
         explicit AotrcInputParser(const std::string &path);
 
         const std::unordered_map<std::string, std::vector<RegexDef>> &getModules() const {

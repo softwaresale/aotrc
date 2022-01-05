@@ -29,6 +29,10 @@ namespace aotrc::compiler {
 
         llvm::Value *getPatternLengthArg();
         llvm::Value *getPatternArg();
+
+        /**
+         * Builds the match function into LLVM IR
+         */
         void build();
 
     private:

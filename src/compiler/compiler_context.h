@@ -9,6 +9,10 @@
 #include <llvm/IR/IRBuilder.h>
 
 namespace aotrc::compiler {
+    /**
+     * This class carrys context used by the compiler. It holds the LLVM context, the LLVM IR Builder, and all of the
+     * modules to be compiled.
+     */
     class CompilerContext {
     public:
         static std::shared_ptr<CompilerContext> instance();
