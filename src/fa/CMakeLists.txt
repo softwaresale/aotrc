@@ -4,4 +4,5 @@ add_library(aotrc_fa
         nfa.cc nfa.h
         nfa_builders.cc nfa_builders.h
         dfa.cc dfa.h
-        graphviz_renderer.cc graphviz_renderer.h)
+        graphviz_renderer.cc graphviz_renderer.h
+        transition_edge.cc transition_edge.h)

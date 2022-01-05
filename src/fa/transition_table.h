@@ -11,109 +11,9 @@
 #include <ostream>
 #include <sstream>
 #include <optional>
+#include "transition_edge.h"
 
 namespace aotrc::fa {
-
-    struct Range {
-    public:
-        Range(char lower, char upper)
-        : lower(lower)
-        , upper(upper) {
-        }
-
-        explicit Range(char single)
-        : lower(single)
-        , upper(single) {
-        }
-
-        bool operator==(const Range &otherRange) const noexcept {
-            return otherRange.upper == this->upper && otherRange.lower == this->lower;
-        }
-
-        char lower;
-        char upper;
-    };
-
-    struct RangeHash {
-        std::size_t operator()(const aotrc::fa::Range &range) const noexcept {
-            std::stringstream ss;
-            ss << range.lower << range.upper;
-            std::hash<std::string> string_hash;
-            return string_hash(ss.str());
-        }
-    };
-
-    struct RangeEquals {
-        constexpr bool operator()(const aotrc::fa::Range &leftRange, const aotrc::fa::Range &rightRange) const noexcept {
-            return leftRange.lower == rightRange.lower && leftRange.upper == rightRange.upper;
-        }
-    };
-    using RangeSet = std::unordered_set<Range, RangeHash, RangeEquals>;
-
-    class Edge {
-    public:
-        Edge()
-        : rangesOptimized(false) {  };
-
-        Edge(std::initializer_list<Range> ranges)
-        : ranges(ranges)
-        , rangesOptimized(false) {
-        }
-
-        /**
-         * Collapse any ranges with overlap in order to minimize the number of ranges involved
-         */
-        void optimizeRanges();
-
-        void addRange(Range range) {
-            this->ranges.push_back(range);
-            this->rangesOptimized = false;
-        }
-
-        const std::vector<Range> &getRanges() const {
-            return ranges;
-        }
-
-        inline bool epsilon() const {
-            return this->ranges.empty();
-        }
-
-        friend std::ostream &operator<<(std::ostream &os, const Edge &edge) {
-            if (edge.epsilon()) {
-                os << "$";
-            } else {
-                os << "{";
-                for (const auto &range : edge.ranges) {
-                    os << "[" << range.lower << "," << range.upper << "]";
-                }
-                os << "}";
-            }
-
-            return os;
-        }
-
-        void merge(Edge &&other) {
-            for (auto &range : other.ranges) {
-                this->ranges.push_back(range);
-            }
-            this->rangesOptimized = false;
-        }
-
-        void merge(const Edge &other) {
-            for (auto &range : other.ranges) {
-                this->ranges.push_back(range);
-            }
-            this->rangesOptimized = false;
-        }
-
-        Edge complement();
-
-    private:
-        std::vector<Range> ranges;
-        bool rangesOptimized;
-    };
-
-
     class TransitionTable {
     public:
         TransitionTable() = default;
@@ -157,13 +57,28 @@ namespace aotrc::fa {
         RangeSet language() const;
 
         /**
+         * Rather than getting all of the ranges from a transition table, this function actually gets everything
+         * single character in the language
+         * @return A set of characters that are in the language of this transition table
+         */
+        std::unordered_set<unsigned char> languageChars() const;
+
+        /**
+         * Gets all of the states reachable from the starting state by moving with the given character
+         * @param state state to start at
+         * @param c single character to transition by
+         * @return set of nfa states that can be reached from the start state moving by the given char
+         */
+        std::unordered_set<unsigned int> move(unsigned int state, unsigned char c) const;
+        std::unordered_set<unsigned int> move(const std::unordered_set<unsigned int> &state, unsigned char c) const;
+
+        /**
          * Get's all of the states that can be transitions away from state given the range
          * @param state MatchFunctionState to start from
          * @param range range to move by
          * @return set of accessible states
          */
         std::unordered_set<unsigned int> move(unsigned int state, const Range &range) const;
-
         std::unordered_set<unsigned int> move(const std::unordered_set<unsigned int>& state, const Range &range) const;
 
         /**

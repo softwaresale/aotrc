@@ -34,7 +34,8 @@ public:
  * @param nfa nfa to determinize
  */
 aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
-    // Map that holds the nfa states to dfa states
+    // Map that holds the nfa states to dfa states (the key is a set of nfa states that corresponds to a single state
+    // in the dfa's transition table)
     std::unordered_map<std::unordered_set<unsigned int>, unsigned int, StateSetHash> dfaStateTranslations;
     // Nfa state queue that holds states to be processed, starting with 0
     std::queue<std::unordered_set<unsigned int>> dfaStateQueue;
@@ -50,8 +51,8 @@ aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
 
     // push the first dfa state onto the stack
     dfaStateQueue.push(firstDfaState);
-    // Grab all the ranges in nfa's language
-    auto nfaLang = nfa.language();
+    // Grab the language for the NFA
+    auto nfaLangChars = nfa.languageChars();
 
     while (!dfaStateQueue.empty()) {
         // Get the first state
@@ -59,9 +60,9 @@ aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
         dfaStateQueue.pop();
 
         // For each range in the language, create a new dfa state
-        for (const auto &range : nfaLang) {
+        for (const auto &langChar : nfaLangChars) {
             // Create a new state
-            auto newDfaState = nfa.epsilonClosure(nfa.move(state, range));
+            auto newDfaState = nfa.epsilonClosure(nfa.move(state, langChar));
             // Filter out empty transitions
             if (newDfaState.empty()) {
                 continue;
@@ -87,7 +88,7 @@ aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
             }
 
             // make an edge in this transition table
-            this->addEdge(dfaStateTranslations[state], existingDFAState, Edge {range});
+            this->addEdge(dfaStateTranslations[state], existingDFAState, Edge { Range(langChar) });
         }
     }
 }
