@@ -5,13 +5,18 @@
 #include <limits>
 #include "transition_edge.h"
 
+std::ostream &aotrc::fa::operator<<(std::ostream &os, const aotrc::fa::Range &range) {
+    os << "[" << range.lower << "," << range.upper << "]";
+    return os;
+}
+
 std::ostream &aotrc::fa::operator<<(std::ostream &os, const aotrc::fa::Edge &edge) {
     if (edge.epsilon()) {
         os << "$";
     } else {
         os << "{";
         for (const auto &range : edge.getRanges()) {
-            os << "[" << range.lower << "," << range.upper << "]";
+            os << range;
         }
         os << "}";
     }

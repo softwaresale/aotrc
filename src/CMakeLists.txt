@@ -9,17 +9,18 @@ set(ANTLR4_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.9.3-compl
 # Add compile options to pick up more errors
 add_compile_options(-Wall -Werror)
 
-# Add in finite automata library
-add_subdirectory(fa)
+# Add in the directory that defines the input file definition
+add_subdirectory(input)
 
 # Add in the regex parser library
 add_subdirectory(parser)
 
+# Add in finite automata library
+add_subdirectory(fa)
+
 # Add in the compiler
 add_subdirectory(compiler)
 
-# Add in the directory that defines the input file definition
-add_subdirectory(input)
 add_executable(aotrc
         main.cpp
         args_parser.cc args_parser.h)

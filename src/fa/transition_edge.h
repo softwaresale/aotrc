@@ -110,6 +110,7 @@ namespace aotrc::fa {
         bool rangesOptimized;
     };
 
+    std::ostream &operator<<(std::ostream &os, const Range &range);
     std::ostream &operator<<(std::ostream &os, const Edge &edge);
 }
 
