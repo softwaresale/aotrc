@@ -25,8 +25,11 @@ namespace aotrc::compiler {
         void emitAssembly(const std::string &module, const std::string &outputPath);
         void emitObjectFile(const std::string &module);
         void emitObjectFile(const std::string &module, const std::string &outputPath);
+        void emitHeaderFile(const std::string &module);
+        void emitHeaderFile(const std::string &module, const std::string &outputPath);
 
     private:
+        std::string llvmTypeToCType(llvm::Type *type);
         void emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type);
 
         llvm::LLVMContext llvmContext;

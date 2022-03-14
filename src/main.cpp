@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
     compiler.compileRegex(moduleName, firstRegexDef.label, firstRegexDef.pattern);
 
     compiler.emitObjectFile(moduleName);
+    compiler.emitHeaderFile(moduleName);
 
     return 0;
 }
