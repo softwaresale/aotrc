@@ -23,7 +23,7 @@ jobs:
     
     - name: Install LLVM and ANTLR
       # Installing llvm-12 might lead to some problems. We will see ig...
-      run: sudo apt-get install -y llvm llvm-12-dev antlr4 libantlr4-runtime-dev
+      run: sudo apt-get install -y llvm llvm-12-dev antlr4 libantlr4-runtime-dev libantlr4-runtime4.8
     
     - name: Checkout Repository w/ Submodules
       uses: actions/checkout@v2
