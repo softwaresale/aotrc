@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install LLVM and ANTLR
+      run: sudo apt-get install -y llvm-13-dev antlr4 libantlr4-runtime-dev
+    
     - name: Checkout Repository w/ Submodules
       uses: actions/checkout@v2
       with:
