@@ -31,10 +31,10 @@ public:
 
 /**
  * Determinize an NFA
- * @param nfa nfa to determinize
+ * @param nfa fa to determinize
  */
 aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
-    // Map that holds the nfa states to dfa states (the key is a set of nfa states that corresponds to a single state
+    // Map that holds the fa states to dfa states (the key is a set of fa states that corresponds to a single state
     // in the dfa's transition table)
     std::unordered_map<std::unordered_set<unsigned int>, unsigned int, StateSetHash> dfaStateTranslations;
     // Nfa state queue that holds states to be processed, starting with 0
@@ -91,4 +91,30 @@ aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
             this->addEdge(dfaStateTranslations[state], existingDFAState, Edge { Range(langChar) });
         }
     }
+}
+
+bool aotrc::fa::DFA::simulate(const std::string &subject) const {
+    auto startState = this->getStartState();
+    std::deque<std::pair<unsigned int, std::string::const_iterator>> traversal_stack;
+    traversal_stack.emplace_back(startState, subject.begin());
+
+    while (!traversal_stack.empty()) {
+        // Get the top
+        auto [state, subjectPos] = traversal_stack.back();
+        traversal_stack.pop_back();
+
+        // If we're at the end in an accept state, accept
+        if (subjectPos == subject.end() && this->isAcceptState(state)) {
+            return true;
+        }
+
+        // Get the outgoing transitions
+        for (const auto &[dest, edge] : this->transitions[state]) {
+            if (edge.accept(*subjectPos)) {
+                traversal_stack.emplace_back(dest, subjectPos + 1);
+            }
+        }
+    }
+
+    return false;
 }

@@ -71,7 +71,7 @@ namespace aotrc::fa {
          * Gets all of the states reachable from the starting state by moving with the given character
          * @param state state to start at
          * @param c single character to transition by
-         * @return set of nfa states that can be reached from the start state moving by the given char
+         * @return set of fa states that can be reached from the start state moving by the given char
          */
         std::unordered_set<unsigned int> move(unsigned int state, unsigned char c) const;
         std::unordered_set<unsigned int> move(const std::unordered_set<unsigned int> &state, unsigned char c) const;

@@ -43,3 +43,35 @@ std::unordered_set<unsigned int> aotrc::fa::NFA::epsilonClosure(const std::unord
 
     return closureStates;
 }
+
+bool aotrc::fa::NFA::simulate(const std::string &subject) {
+    // Get the start state
+    unsigned int start = this->startState();
+    std::deque<std::pair<unsigned int, std::string::const_iterator>> traversal_stack;
+    // Start the traversal_stack with transitions for the current state
+    traversal_stack.emplace_back(start, subject.begin());
+    while (!traversal_stack.empty()) {
+        // Get the top of the stack
+        auto [state, subjectPos] = traversal_stack.back();
+        traversal_stack.pop_back();
+
+        // If we're at the end and on an accept state, accept
+        if (subjectPos == subject.end() && this->isAcceptState(state))
+            return true;
+
+        // Get all the edges for this state
+        auto stateEdges = this->transitions[state];
+        for (const auto &[dest, edge] : stateEdges) {
+            if (edge.epsilon()) {
+                // If we have an epsilon, then don't bump the position
+                traversal_stack.emplace_back(dest, subjectPos);
+            } else if (edge.accept(*subjectPos)) {
+                // If this edge accepts this character, then bump the position
+                traversal_stack.emplace_back(dest, subjectPos + 1);
+            }
+        }
+    }
+
+    // We had nowhere to go, so reject
+    return false;
+}

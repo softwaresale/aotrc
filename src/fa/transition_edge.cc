@@ -3,6 +3,7 @@
 //
 
 #include <limits>
+#include <algorithm>
 #include "transition_edge.h"
 
 std::ostream &aotrc::fa::operator<<(std::ostream &os, const aotrc::fa::Range &range) {
@@ -150,5 +151,10 @@ void aotrc::fa::Edge::addRange(aotrc::fa::Range newRange) {
 void aotrc::fa::Edge::addChar(unsigned char c) {
     Range newRange(c);
     this->addRange(newRange);
+}
+
+bool aotrc::fa::Edge::accept(char c) const {
+    return std::any_of(ranges.cbegin(), ranges.cend(),
+                       [c](const Range &range) { return range.lower <= c && c <= range.upper; });
 }
 

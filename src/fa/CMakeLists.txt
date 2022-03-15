@@ -6,3 +6,4 @@ add_library(aotrc_fa
         dfa.cc dfa.h
         graphviz_renderer.cc graphviz_renderer.h
         transition_edge.cc transition_edge.h)
+target_include_directories(aotrc_fa INTERFACE ${CMAKE_SOURCE_DIR})

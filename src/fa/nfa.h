@@ -30,12 +30,18 @@ namespace aotrc::fa {
         }
 
         /**
+         * Simulates an NFA. This is really only for testing
+         * @param subject Subject string to match
+         * @return true if the subject matches
+         */
+        bool simulate(const std::string &subject);
+
+        /**
          * Set of all states accessible from starting state via epsilon transitions
          * @param state starting states
          * @return set of states accessible by this state
          */
         std::unordered_set<unsigned int> epsilonClosure(unsigned int state) const;
-
         std::unordered_set<unsigned int> epsilonClosure(const std::unordered_set<unsigned int> &states) const;
     };
 }

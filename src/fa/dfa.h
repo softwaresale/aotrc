@@ -17,6 +17,9 @@ namespace aotrc::fa {
     public:
         explicit DFA(const NFA &nfa);
 
+        // Empty
+        DFA() : TransitionTable() {}
+
         /**
          * Determines if a given state is an accept state
          * @param state a dfa state
@@ -37,6 +40,8 @@ namespace aotrc::fa {
         unsigned int getStartState() const {
             return 0;
         }
+
+        bool simulate(const std::string &subject) const;
 
     private:
         std::unordered_set<unsigned int> acceptStates;

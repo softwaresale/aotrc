@@ -105,6 +105,13 @@ namespace aotrc::fa {
 
         Edge complement();
 
+        /**
+         * Determines if the edge accepts this character. This is really only for testing
+         * @param c Character to accept
+         * @return True if this edge accepts the given character
+         */
+        bool accept(char c) const;
+
     private:
         std::vector<Range> ranges;
         bool rangesOptimized;
