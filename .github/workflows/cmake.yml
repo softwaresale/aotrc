@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Update Package List
+      run: sudo apt-get update
+    
     - name: Install LLVM and ANTLR
       run: sudo apt-get install -y llvm-13-dev antlr4 libantlr4-runtime-dev
     
