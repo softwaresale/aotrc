@@ -34,10 +34,10 @@
 
 %locations
 // Get more detailed location information
-%verbose
-%define parse.trace
-%define parse.error detailed
-%define parse.lac full
+//%verbose
+//%define parse.trace
+//%define parse.error detailed
+//%define parse.lac full
 
 %code {
     // TODO include driver info
