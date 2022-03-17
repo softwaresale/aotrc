@@ -16,7 +16,7 @@ aotrc::fa::NFA aotrc::parser::RegexParserDriver::parse(const std::string &subjec
     this->startScan(subject);
     fa::NFA resulting_nfa;
     aotrc::parser::RegexParser parser(*this, &resulting_nfa);
-    parser.set_debug_level(1);
+    // parser.set_debug_level(1);
     auto result = parser();
     if (result == 1) {
         throw std::runtime_error("Could not parse regex");
