@@ -18,12 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Setup upterm session (for ssh debugging)
-      uses: lhotari/action-upterm@v1
-      #with: limit to just basic upterm
-        ## limits ssh access and adds the ssh public keys of the listed GitHub users
-        #limit-access-to-users: softwaresale
-    
     - name: Update Package List
       run: sudo apt-get update
     
