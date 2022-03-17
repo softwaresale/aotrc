@@ -1,6 +1,4 @@
-#include <iostream>
-
-//#include <llvm/Support/InitLLVM.h>
+#include <llvm/Support/InitLLVM.h>
 
 #include "args_parser.h"
 #include "input/aotrc_input_parser.h"
@@ -29,7 +27,7 @@ static std::string getOutputFileName(const std::string &moduleName, aotrc::Outpu
 #endif
 
 int main(int argc, char **argv) {
-    // llvm::InitLLVM initLLVM(argc, argv);
+    llvm::InitLLVM initLLVM(argc, argv);
     aotrc::ArgsParser argsParser(argc, argv);
 
     if (argsParser.hasHelp()) {

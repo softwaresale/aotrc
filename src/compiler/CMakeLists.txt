@@ -15,5 +15,8 @@ add_library(aotrc_compiler
         program_state.cc program_state.h)
 
 execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)
+execute_process(COMMAND llvm-config --includedir OUTPUT_VARIABLE llvm_include_dirs)
 string(STRIP ${llvm_libs} llvm_libs_stripped)
+# string(STRIP ${llvm_include_dirs} llvm_libs_stripped)
+target_include_directories(aotrc_compiler SYSTEM PUBLIC ${llvm_include_dirs})
 target_link_libraries(aotrc_compiler ${llvm_libs_stripped} aotrc_parser)
