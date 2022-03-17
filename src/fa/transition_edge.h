@@ -16,6 +16,11 @@ namespace aotrc::fa {
      */
     struct Range {
     public:
+        Range()
+        : lower(0)
+        , upper(0)
+        {}
+
         Range(unsigned char lower, unsigned char upper)
         : lower(lower)
         , upper(upper) {

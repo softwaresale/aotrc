@@ -106,22 +106,42 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::concat(NFA &&left, NFA &&right) {
     return concat_helper(std::move(left), std::move(right), lastState, false);
 }
 
-aotrc::fa::NFA aotrc::fa::nfa_builders::alternation(NFA &&left, NFA &&right) {
+aotrc::fa::NFA aotrc::fa::nfa_builders::concatMany(std::vector<NFA> &&nfas) {
+    auto nfaIt = nfas.begin();
+    auto total = std::move(*nfaIt);
+    ++nfaIt;
+    for (; nfaIt != nfas.end(); ++nfaIt) {
+        total = concat(std::move(total), std::move(*nfaIt));
+    }
+
+    return total;
+}
+
+aotrc::fa::NFA aotrc::fa::nfa_builders::alternation(std::vector<NFA> &&nfas) {
+
+    if (nfas.size() == 1)
+        return nfas[0];
+
     NFA alter;
     auto startState = alter.addState();
-    // Concat the left branch with alter, starting at 0
-    alter = concat_helper(std::move(alter), std::move(left), startState, true);
-    // Take note of the left end state
-    auto leftFinalState = alter.stopState();
+    std::vector<unsigned int> branch_final_states(nfas.size());
+    unsigned int current_nfa = 0;
 
-    // Append the right branch
-    alter = concat_helper(std::move(alter), std::move(right), startState, true);
-    auto rightFinalState = alter.stopState();
+    // For each NFA
+    for (auto &&nfa : nfas) {
+        // Concat this branch to alter
+        alter = concat_helper(std::move(alter), std::move(nfa), startState, true);
+        // Cache the end state for this particular branch
+        branch_final_states[current_nfa++] = alter.stopState();
+    }
 
-    // Now, add a new final state and branch from each of those stop states to this one
-    auto newFinalState = alter.addState();
-    alter.addEdge(leftFinalState, newFinalState, Edge());
-    alter.addEdge(rightFinalState, newFinalState, Edge());
+    // Make a real final state
+    auto realFinalState = alter.addState();
+
+    // Add epsilon edges from each of the branch final states to the actual final state
+    for (const auto &state : branch_final_states) {
+        alter.addEdge(state, realFinalState, Edge());
+    }
 
     return alter;
 }
@@ -158,7 +178,7 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::plus(aotrc::fa::NFA &&nfa) {
 aotrc::fa::NFA aotrc::fa::nfa_builders::questionMark(aotrc::fa::NFA &&nfa) {
     // Question mark is a (r|e)
     auto left = epsilon();
-    return alternation(std::move(left), std::move(nfa));
+    return alternation({ std::move(left), std::move(nfa) });
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::numberBounded(NFA &&nfa, unsigned int lower, unsigned int higher) {
@@ -176,7 +196,7 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::numberBounded(NFA &&nfa, unsigned int lo
     NFA quantified = std::move(repetitionBranches[0]);
     repetitionBranches.erase(repetitionBranches.begin());
     for (auto &branch : repetitionBranches) {
-        quantified = alternation(std::move(quantified), std::move(branch));
+        quantified = alternation({std::move(quantified), std::move(branch)});
     }
 
     return quantified;

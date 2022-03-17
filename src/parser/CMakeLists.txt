@@ -1,26 +1,19 @@
 
-set(ANTLR4_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.9.3-complete.jar)
+find_package(BISON)
+find_package(FLEX)
 
-antlr4_generate(
-        PCRE
-        ${CMAKE_CURRENT_SOURCE_DIR}/PCRE.g4
-        BOTH
-        FALSE
-        TRUE
-        "aotrc::parser"
-)
-
-# antlr_target(PCREGrammar PCRE.g4 LEXER PARSER VISITOR
-#         PACKAGE "aotrc::parser")
-# include_directories(${ANTLR_PCREGrammar_OUTPUT_DIR})
-
-include_directories(${PROJECT_BINARY_DIR} ${ANTLR4_INCLUDE_DIR} ${ANTLR4_INCLUDE_DIR_PCRE})
+BISON_TARGET(re_grammar re_grammar.yy ${CMAKE_CURRENT_BINARY_DIR}/re_grammar.tab.cc
+        DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/re_grammar.tab.hh)
+FLEX_TARGET(re_scanner re_lexer.ll ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc
+        DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/re_scanner.yy.hh)
+ADD_FLEX_BISON_DEPENDENCY(re_scanner re_grammar)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(aotrc_parser
         regex_parser.cc regex_parser.h
-        ${ANTLR_PCREGrammar_CXX_OUTPUTS}
-        regex_to_nfa.cc regex_to_nfa.h)
+        re_parser_driver.cc re_parser_driver.cc
+        ${BISON_re_grammar_OUTPUTS}
+        ${FLEX_re_scanner_OUTPUTS})
+target_link_libraries(aotrc_parser PUBLIC aotrc_fa)
 
-add_dependencies(aotrc_parser antlr4_static)
-target_link_libraries(aotrc_parser PUBLIC antlr4_static)
-target_link_libraries(aotrc_parser PRIVATE aotrc_fa)

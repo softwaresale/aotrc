@@ -1,11 +1,4 @@
 
-# Add antlr dependencies because it's used in parser and input
-find_program(antlr4 4.9.3)
-find_package(antlr4-runtime REQUIRED 4.9.3)
-find_package(antlr4-generator REQUIRED)
-
-set(ANTLR4_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.9.3-complete.jar)
-
 # Add compile options to pick up more errors
 add_compile_options(-Wall -Werror)
 
