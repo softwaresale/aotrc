@@ -25,6 +25,10 @@ jobs:
       # Installing llvm-12 might lead to some problems. We will see ig...
       run: sudo apt-get install -y llvm-12 llvm-12-runtime llvm-12-dev antlr4 libantlr4-runtime-dev libantlr4-runtime4.8
     
+    # llvm-config-12 is not being discovered by cmake (I don't think...)
+    - name: Link llvm-config-12 to llvm-config
+      run: ln -s /usr/bin/llvm-config-12 /usr/local/bin/llvm-config
+    
     - name: Checkout Repository w/ Submodules
       uses: actions/checkout@v2
       with:
