@@ -3,8 +3,6 @@
 %require "3.5.1"
 // Explicitly use this variety of skeleton
 %skeleton "lalr1.cc"
-// Generate a header
-%header
 
 // Use variant api
 %define api.token.constructor
