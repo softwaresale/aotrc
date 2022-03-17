@@ -143,7 +143,7 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
     }
 }
 
-void aotrc::ArgsParser::displayHelp() const {
+void aotrc::ArgsParser::displayHelp() {
     std::cout << "usage: aotrc [options] regexes..." << std::endl;
     std::cout << "aotrc - ahead of time regex compiler used for compiling regexes into machine code" << std::endl;
     std::cout << "options:" << std::endl;
