@@ -46,6 +46,7 @@
 
 // TODO start defining tokens
 
+%token YYEOF 0                    // backwards compatibility for bison v3.5.1 (builtin EOF is a new feature)
 %token OPEN_CC CLOSE_CC         // Character classes
        OPEN_BRACE CLOSE_BRACE   // Start {}
        OPEN_GROUP CLOSE_GROUP   // Capture groups
@@ -55,7 +56,6 @@
        PERIOD                   // . regex
        PIPE                     // | alternation operator
        NONCAP                   // Triggers a non-capture group
-       EOS
        ;
 %token <char> ULETTER LLETTER CHARACTER;        // Represents a single character, upper or lower case
 %token <unsigned int> NUMBER DIGIT;
