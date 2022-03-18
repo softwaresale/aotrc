@@ -47,15 +47,20 @@
 // TODO start defining tokens
 
 %token YYEOF 0                    // backwards compatibility for bison v3.5.1 (builtin EOF is a new feature)
-%token <char> OPEN_CC CLOSE_CC         // Character classes
-       OPEN_BRACE CLOSE_BRACE   // Start {}
-       OPEN_GROUP CLOSE_GROUP   // Capture groups
-       PLUS STAR QUESTION       // Quantifiers
-       CARET DOLLAR HYPH        // multi-purpose operators for negation, ranges, and anchors
-       EXCLAM COMMA             // General purpose stuff that might be used places
-       PERIOD                   // . regex
-       PIPE                     // | alternation operator
-       NONCAP                   // Triggers a non-capture group
+%token WORD_CHARS NOT_WORD_CHARS     // \w and \W
+       NUMBER_CHARS NOT_NUMBER_CHARS // \d and \D
+       WHITESPACE NOT_WHITESPACE     // \s and \S
+       ;
+%token <char> OPEN_CC CLOSE_CC    // Character classes
+       OPEN_BRACE CLOSE_BRACE     // Start {}
+       OPEN_GROUP CLOSE_GROUP     // Capture groups
+       PLUS STAR QUESTION         // Quantifiers
+       CARET DOLLAR HYPH          // multi-purpose operators for negation, ranges, and anchors
+       EXCLAM COMMA               // General purpose stuff that might be used places
+       PERIOD                     // . regex
+       PIPE                       // | alternation operator
+       NONCAP                     // Triggers a non-capture group
+       DOT                        // Command character that represents anything
        ;
 %token <char> ULETTER LLETTER CHARACTER;        // Represents a single character, upper or lower case
 %token <unsigned int> DIGIT;
@@ -331,6 +336,40 @@ atom
 {
     // non-capture is already compiled into an NFA
     $$ = std::move($1);
+}
+| DOT
+{
+    $$ = std::move(aotrc::fa::nfa_builders::dot());
+}
+| WORD_CHARS
+{
+    auto nfa = aotrc::fa::nfa_builders::characterClass({ {'a', 'z'}, {'A', 'Z'}, {'0', '9'}, {'_'} }, false);
+    $$ = nfa;
+}
+| NOT_WORD_CHARS
+{
+    auto nfa = aotrc::fa::nfa_builders::characterClass({ {'a', 'z'}, {'A', 'Z'}, {'0', '9'}, {'_'} }, true);
+    $$ = nfa;
+}
+| NUMBER_CHARS
+{
+    auto nfa = aotrc::fa::nfa_builders::characterClass({ {'0', '9'} }, false);
+    $$ = nfa;
+}
+| NOT_NUMBER_CHARS
+{
+    auto nfa = aotrc::fa::nfa_builders::characterClass({ {'0', '9'} }, true);
+    $$ = nfa;
+}
+| WHITESPACE
+{
+    auto nfa = aotrc::fa::nfa_builders::characterClass({ {' '}, {'\n'}, {'\t'}, {'\r'} }, false);
+    $$ = nfa;
+}
+| NOT_WHITESPACE
+{
+    auto nfa = aotrc::fa::nfa_builders::characterClass({ {' '}, {'\n'}, {'\t'}, {'\r'} }, true);
+    $$ = nfa;
 }
 ;
 

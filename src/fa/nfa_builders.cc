@@ -3,6 +3,7 @@
 //
 
 #include "nfa_builders.h"
+#include <limits>
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::epsilon() {
     aotrc::fa::NFA nfa;
@@ -32,6 +33,12 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::literal(const std::string &literal) {
     }
 
     return nfa;
+}
+
+aotrc::fa::NFA aotrc::fa::nfa_builders::dot() {
+    char lower = 0;
+    char upper = std::numeric_limits<char>::max();
+    return aotrc::fa::nfa_builders::characterClass({ {lower, upper} }, false);
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::characterClass(const std::vector<Range> &ranges, bool negated) {

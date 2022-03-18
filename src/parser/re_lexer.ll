@@ -22,8 +22,6 @@ void cleanup_buffer();
 
 %option noyywrap nounput noinput batch
 
-SPECIAL_CHAR "[" | "]" | "(" | ")" | "{" | "}" | "+" | "*" | "?" | "^" | "$" | "-" | "!" | "?: | "." | "|" \ "\\"
-
 %%
 
 %{
@@ -49,6 +47,12 @@ SPECIAL_CHAR "[" | "]" | "(" | ")" | "{" | "}" | "+" | "*" | "?" | "^" | "$" | "
 "|"     return aotrc::parser::RegexParser::make_PIPE(*yytext, loc);
 "\\n"   return aotrc::parser::RegexParser::make_CHARACTER('\n', loc);
 "\\t"   return aotrc::parser::RegexParser::make_CHARACTER('\t', loc);
+"\\w"   return aotrc::parser::RegexParser::make_WORD_CHARS(loc);
+"\\W"   return aotrc::parser::RegexParser::make_NOT_WORD_CHARS(loc);
+"\\d"   return aotrc::parser::RegexParser::make_NUMBER_CHARS(loc);
+"\\D"   return aotrc::parser::RegexParser::make_NOT_NUMBER_CHARS(loc);
+"\\s"   return aotrc::parser::RegexParser::make_WHITESPACE(loc);
+"\\S"   return aotrc::parser::RegexParser::make_NOT_WHITESPACE(loc);
 
 [a-z]   return aotrc::parser::RegexParser::make_LLETTER(*yytext, loc);
 [A-Z]   return aotrc::parser::RegexParser::make_ULETTER(*yytext, loc);

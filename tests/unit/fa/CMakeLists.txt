@@ -27,6 +27,7 @@ define_fa_test(fa_character_class)
 define_fa_test(fa_neg_cc)
 define_fa_test(fa_combo_one)
 define_fa_test(fa_combo_two)
+define_fa_test(fa_meta_chars)
 
 add_executable(edge_test edge_test.cc)
 target_link_libraries(edge_test PUBLIC gtest_main aotrc_fa)

@@ -20,6 +20,7 @@ namespace aotrc::fa::nfa_builders {
      */
     NFA epsilon();
     NFA singleChar(char c);
+    NFA dot();
     NFA characterClass(const std::vector<Range> &ranges, bool negated);
     NFA literal(const std::string &literal);
     NFA concat(NFA &&left, NFA &&right);
