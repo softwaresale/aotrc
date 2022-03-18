@@ -16,12 +16,29 @@ namespace aotrc::fa {
      */
     struct Range {
     public:
-        Range(unsigned char lower, unsigned char upper)
+        Range()
+        : lower(0)
+        , upper(0)
+        {}
+
+        Range(char lower, char upper)
         : lower(lower)
         , upper(upper) {
         }
 
-        explicit Range(unsigned char single)
+        Range(std::initializer_list<char> list) {
+            if (list.size() == 1) {
+                this->lower = *list.begin();
+                this->upper = this->lower;
+            } else if (list.size() == 2) {
+                this->lower = *list.begin();
+                this->upper = *(list.begin() + 1);
+            } else {
+                throw std::invalid_argument("Invalid number of arguments. Must be either one or two");
+            }
+        }
+
+        explicit Range(char single)
         : lower(single)
         , upper(single) {
         }
@@ -30,8 +47,8 @@ namespace aotrc::fa {
             return otherRange.upper == this->upper && otherRange.lower == this->lower;
         }
 
-        unsigned char lower;
-        unsigned char upper;
+        char lower;
+        char upper;
     };
 
     struct RangeHash {
@@ -79,7 +96,7 @@ namespace aotrc::fa {
          * is a range of a single character
          * @param c character to add
          */
-        void addChar(unsigned char c);
+        void addChar(char c);
 
         const std::vector<Range> &getRanges() const {
             return ranges;

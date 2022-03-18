@@ -39,7 +39,7 @@ bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const st
     }
 
     // Transform regex from NFA -> DFA -> Program
-    auto nfa = aotrc::parser::parse_regex(regex);
+    auto nfa = aotrc::parser::parseRegex(regex);
     fa::DFA dfa(nfa);
     Program program(label, this->llvmContext, this->modules[module]);
 

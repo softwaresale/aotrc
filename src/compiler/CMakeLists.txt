@@ -15,5 +15,9 @@ add_library(aotrc_compiler
         program_state.cc program_state.h)
 
 execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)
+execute_process(COMMAND llvm-config --includedir OUTPUT_VARIABLE llvm_include_dirs)
 string(STRIP ${llvm_libs} llvm_libs_stripped)
+string(STRIP ${llvm_include_dirs} llvm_include_stripped)
+# TODO this following line is breaking on my system
+target_include_directories(aotrc_compiler PUBLIC ${llvm_include_stripped})
 target_link_libraries(aotrc_compiler ${llvm_libs_stripped} aotrc_parser)

@@ -41,7 +41,7 @@ namespace aotrc {
         /**
          * Prints help text
          */
-        void displayHelp() const;
+        static void displayHelp();
 
         /**
          * Returns if help flag is set

@@ -7,7 +7,21 @@
 #include "transition_edge.h"
 
 std::ostream &aotrc::fa::operator<<(std::ostream &os, const aotrc::fa::Range &range) {
-    os << "[" << range.lower << "," << range.upper << "]";
+    os << '[';
+    if (!std::isalnum(range.lower)) {
+        auto numVal = static_cast<unsigned int>(range.lower);
+        os << '\\' << numVal;
+    } else {
+        os << range.lower;
+    }
+    os << ',';
+    if (!std::isalnum(range.upper)) {
+        auto numVal = static_cast<unsigned int>(range.upper);
+        os << '\\' << numVal;
+    } else {
+        os << range.upper;
+    }
+    os << ']';
     return os;
 }
 
@@ -48,6 +62,14 @@ void aotrc::fa::Edge::optimizeRanges() {
                 // second's upper bound and first's lower bound overlap, so merge them
                 first->lower = second->lower;
                 second = this->ranges.erase(second);
+            } else if (first->upper + 1 == second->lower) {
+                // These two are adjacent on the left
+                first->upper = second->upper;
+                second = this->ranges.erase(second);
+            } else if (second->upper + 1 == first->lower) {
+                // These two are adjacent on the other side
+                first->lower = second->lower;
+                second = this->ranges.erase(second);
             } else ++second; // Otherwise, do nothing and check the next one
         }
     }
@@ -55,21 +77,28 @@ void aotrc::fa::Edge::optimizeRanges() {
     this->rangesOptimized = true;
 }
 
+static std::vector<char> generateAllCharacters() {
+    std::vector<char> allChars(std::numeric_limits<char>::max());
+    for (char c = 0; c < std::numeric_limits<char>::max(); c++) {
+        allChars[c] = c;
+    }
+
+    return allChars;
+}
+
 aotrc::fa::Edge aotrc::fa::Edge::complement() {
     this->optimizeRanges();
 
     // Make a vector of all values from [char_min, char_max]
-    std::vector<unsigned char> allCharacters;
-    // unsigned int range = std::numeric_limits<char>::max() - std::numeric_limits<char>::min();
-    for (unsigned char i = std::numeric_limits<unsigned char>::min(); i < std::numeric_limits<unsigned char>::max(); i++) {
-        allCharacters.push_back(i);
-    }
+    auto allCharacters = generateAllCharacters();
 
     // For each range, remove that range from the allCharacters vector
     for (const auto &range : this->ranges) {
-        auto lowerBound = allCharacters.begin() + range.lower;
-        auto upperBound = allCharacters.begin() + range.upper;
-        allCharacters.erase(lowerBound, upperBound);
+        auto inRange = [&range](const char c) {
+            return range.lower <= c && c <= range.upper;
+        };
+        auto start = std::remove_if(allCharacters.begin(), allCharacters.end(), inRange);
+        allCharacters.erase(start, allCharacters.end());
     }
 
     // Build ranges out of all the characters by clustering them into adjacent clumps
@@ -83,7 +112,8 @@ aotrc::fa::Edge aotrc::fa::Edge::complement() {
         } else {
             // These are not adjacent, so build a range
             complementedRanges.emplace_back(lastLowerBound, lastUpperBound);
-            lastLowerBound = lastUpperBound + 1;
+            lastLowerBound = static_cast<unsigned char>(*(it + 1));
+            lastUpperBound = lastLowerBound;
         }
     }
 
@@ -148,7 +178,7 @@ void aotrc::fa::Edge::addRange(aotrc::fa::Range newRange) {
     this->rangesOptimized = false;
 }
 
-void aotrc::fa::Edge::addChar(unsigned char c) {
+void aotrc::fa::Edge::addChar(char c) {
     Range newRange(c);
     this->addRange(newRange);
 }
