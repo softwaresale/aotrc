@@ -18,7 +18,7 @@ namespace aotrc::compiler {
     public:
         Compiler();
 
-        bool compileRegex(const std::string &module, const std::string &label, const std::string &regex);
+        bool compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
 
         void emitIr(const std::string &module);
         void emitAssembly(const std::string &module);
@@ -29,6 +29,7 @@ namespace aotrc::compiler {
         void emitHeaderFile(const std::string &module, const std::string &outputPath);
 
     private:
+        bool generatePatternFunc(const std::string &module, const std::string &label, const std::string &regex);
         std::string llvmTypeToCType(llvm::Type *type);
         void emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type);
 

@@ -32,7 +32,7 @@ aotrc::compiler::Compiler::Compiler()
             );
 }
 
-bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const std::string &label, const std::string &regex) {
+bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
     // Create a new module if necessary
     if (this->modules.find(module) == this->modules.end()) {
         this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
@@ -49,9 +49,72 @@ bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const st
     // Compile the program
     program.compile();
 
+    if (genPatternFunc) {
+        return this->generatePatternFunc(module, label, regex);
+    }
+
     // Done
     return true;
 }
+
+static llvm::GlobalVariable *
+build_global(const std::string &label, const std::string &pattern,
+             std::unique_ptr<llvm::Module> &parent, llvm::LLVMContext &ctx) {
+
+    // Create a global character array that holds the pattern
+    std::string uppercaseLabel = label;
+    std::transform(uppercaseLabel.begin(),  uppercaseLabel.end(), uppercaseLabel.begin(), ::toupper);
+    std::string globalVarName = uppercaseLabel + "_PATTERN";
+    auto charArrayType = llvm::ArrayType::get(llvm::Type::getInt8Ty(ctx), pattern.length() + 1);
+    parent->getOrInsertGlobal(globalVarName, charArrayType);
+    auto patternGlobal = parent->getGlobalVariable(globalVarName);
+
+    // Create a constant array out of the pattern
+    std::vector<llvm::Constant *> patternCharacterConstants;
+    auto charType = llvm::Type::getInt8Ty(ctx);
+    for (const auto &c : pattern) {
+        auto literalChar = llvm::ConstantInt::get(charType, (long) c);
+        patternCharacterConstants.push_back(literalChar);
+    }
+    // Add a null terminator
+    patternCharacterConstants.push_back(llvm::ConstantInt::get(charType, (long) 0));
+
+    // Set a constant initializer
+    patternGlobal->setInitializer(llvm::ConstantArray::get(charArrayType, patternCharacterConstants));
+
+    return patternGlobal;
+}
+
+bool aotrc::compiler::Compiler::generatePatternFunc(const std::string &module, const std::string &label,
+                                                    const std::string &regex) {
+
+    // Create an IR builder
+    llvm::IRBuilder builder(this->llvmContext);
+
+    // Get the module
+    auto &mod = this->modules.at(module);
+
+    // Build a global that holds the array
+    auto patternGlobal = build_global(label, regex, mod, this->llvmContext);
+
+    // Build a function that returns said array
+    auto charPtrType = llvm::Type::getInt8Ty(this->llvmContext)->getPointerTo();
+    auto getPatternFunctionType = llvm::FunctionType::get(charPtrType, false);
+    std::string functionName = label + "_get_pattern";
+    mod->getOrInsertFunction(functionName, getPatternFunctionType);
+    auto getFunc = mod->getFunction(functionName);
+
+    // Return a pointer to the global?
+    auto mainBB = llvm::BasicBlock::Create(this->llvmContext, "main", getFunc);
+    builder.SetInsertPoint(mainBB);
+
+    // Get pointer to the global
+    auto ptr = builder.CreateGEP(charPtrType, patternGlobal, llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->llvmContext), 0), "pointerToFirst");
+    builder.CreateRet(ptr);
+
+    return true;
+};
+
 
 void aotrc::compiler::Compiler::emitIr(const std::string &module) {
     auto &mod = this->modules.at(module);
@@ -168,18 +231,20 @@ void aotrc::compiler::Compiler::emitHeaderFile(const std::string &module, const 
     for (const auto &func : mod->functions()) {
         headerOutput << this->llvmTypeToCType(func.getReturnType()) << ' ' << func.getName().str() << '(';
         // comma separated list of all the parameters
-        auto argIt = func.arg_begin();
-        for (; argIt != func.arg_end() - 1; ++argIt) {
+        if (!func.arg_empty()) {
+            auto argIt = func.arg_begin();
+            for (; argIt != func.arg_end() - 1; ++argIt) {
+                headerOutput << this->llvmTypeToCType(argIt->getType());
+                if (argIt->hasName()) {
+                    headerOutput << argIt->getName().str();
+                }
+                headerOutput << ", ";
+            }
+            // Do the last arg
             headerOutput << this->llvmTypeToCType(argIt->getType());
             if (argIt->hasName()) {
                 headerOutput << argIt->getName().str();
             }
-            headerOutput << ", ";
-        }
-        // Do the last arg
-        headerOutput << this->llvmTypeToCType(argIt->getType());
-        if (argIt->hasName()) {
-            headerOutput << argIt->getName().str();
         }
 
         // Close the function def
@@ -200,4 +265,4 @@ void aotrc::compiler::Compiler::emitHeaderFile(const std::string &module, const 
 void aotrc::compiler::Compiler::emitHeaderFile(const std::string &module) {
     std::string defaultName = module + ".h";
     this->emitHeaderFile(module, defaultName);
-};
+}
