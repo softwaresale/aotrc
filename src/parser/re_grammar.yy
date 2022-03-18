@@ -171,7 +171,7 @@ number
     int exp = 0;
     int sum = 0;
     for (auto it = $1.rbegin(); it != $1.rend(); ++it) {
-        sum += std::pow(10, exp) * *it;
+        sum += std::pow(10, exp++) * *it;
     }
 
     $$ = sum;
