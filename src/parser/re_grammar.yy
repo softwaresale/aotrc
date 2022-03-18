@@ -40,7 +40,7 @@
 //%define parse.lac full
 
 %code {
-    // TODO include driver info
+    #include <cmath>
     #include "re_parser_driver.h"
 }
 
@@ -58,8 +58,10 @@
        NONCAP                   // Triggers a non-capture group
        ;
 %token <char> ULETTER LLETTER CHARACTER;        // Represents a single character, upper or lower case
-%token <unsigned int> NUMBER DIGIT;
+%token <unsigned int> DIGIT;
 
+%type <std::vector<int>> digit_list;
+%type <int> number;
 %type <char> literal cc_literal;
 %type <aotrc::fa::NFA> parse element atom character_class capture non_capture;
 %type <std::vector<aotrc::fa::NFA>> alternation expr;
@@ -139,27 +141,52 @@ quantifier
 {
     $$ = aotrc::fa::nfa_builders::questionMark;
 }
-| OPEN_BRACE NUMBER CLOSE_BRACE
+| OPEN_BRACE number CLOSE_BRACE
 {
     unsigned int quantifier = $2;
     std::function<aotrc::fa::NFA(aotrc::fa::NFA&&)> quant_operator
         = [quantifier](aotrc::fa::NFA &&nfa) { return aotrc::fa::nfa_builders::numberBounded(std::move(nfa), quantifier, quantifier); };
     $$ = std::move(quant_operator);
 }
-| OPEN_BRACE NUMBER COMMA CLOSE_BRACE
+| OPEN_BRACE number COMMA CLOSE_BRACE
 {
     unsigned int quant = $2;
     std::function<aotrc::fa::NFA(aotrc::fa::NFA&&)> quant_operator
         = [quant](aotrc::fa::NFA &&nfa) { return aotrc::fa::nfa_builders::numberUnbounded(std::move(nfa), quant); };
     $$ = std::move(quant_operator);
 }
-| OPEN_BRACE NUMBER COMMA NUMBER CLOSE_BRACE
+| OPEN_BRACE number COMMA number CLOSE_BRACE
 {
     unsigned int lower = $2;
     unsigned int upper = $4;
     std::function<aotrc::fa::NFA(aotrc::fa::NFA&&)> quant_operator
         = [lower, upper](aotrc::fa::NFA &&nfa) { return aotrc::fa::nfa_builders::numberBounded(std::move(nfa), lower, upper); };
     $$ = std::move(quant_operator);
+}
+;
+
+number
+: digit_list
+{
+    int exp = 0;
+    int sum = 0;
+    for (auto it = $1.rbegin(); it != $1.rend(); ++it) {
+        sum += std::pow(10, exp) * *it;
+    }
+
+    $$ = sum;
+}
+;
+
+digit_list
+: DIGIT
+{
+    $$.push_back($1);
+}
+| digit_list DIGIT
+{
+    $$ = $1;
+    $$.push_back($2);
 }
 ;
 
@@ -207,12 +234,6 @@ cc_literal
 {
     $$ = $1;
 }
-| NUMBER
-{
-    // NOTE this should only ever be one character long
-    auto number_str = std::to_string($1);
-    $$ = number_str[0];
-}
 | DIGIT
 {
     // NOTE this should only ever be one character long
@@ -257,12 +278,6 @@ literal
 | LLETTER
 {
     $$ = $1;
-}
-| NUMBER
-{
-    // NOTE this should only ever be one character long
-    auto number_str = std::to_string($1);
-    $$ = number_str[0];
 }
 | CHARACTER
 {

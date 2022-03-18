@@ -53,7 +53,6 @@ SPECIAL_CHAR "[" | "]" | "(" | ")" | "{" | "}" | "+" | "*" | "?" | "^" | "$" | "
 [a-z]   return aotrc::parser::RegexParser::make_LLETTER(*yytext, loc);
 [A-Z]   return aotrc::parser::RegexParser::make_ULETTER(*yytext, loc);
 [0-9]   return aotrc::parser::RegexParser::make_DIGIT(atoi(yytext), loc);
-[0-9]+  return aotrc::parser::RegexParser::make_NUMBER(atoi(yytext), loc);
 [_ ]    return aotrc::parser::RegexParser::make_CHARACTER(*yytext, loc);
 [\n\t]+  throw aotrc::parser::RegexParser::syntax_error(loc, "Newlines and tabs cannot be in regex def");
 
