@@ -6,7 +6,7 @@
 #include "src/parser/regex_parser.h"
 
 TEST(RegexParser, parse_basic_literal) {
-    auto result = aotrc::parser::parse_regex("a");
+    auto result = aotrc::parser::parseRegex("a");
     // There should be two states
     ASSERT_EQ(result.stateCount(), 2);
     // There should be one edge

@@ -17,7 +17,7 @@ protected:
     { }
 
     void SetUp() override {
-        this->nfa = aotrc::parser::parse_regex(this->pattern);
+        this->nfa = aotrc::parser::parseRegex(this->pattern);
     }
 
     virtual inline bool accepts(const std::string &subject) {

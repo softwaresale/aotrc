@@ -6,7 +6,7 @@
 
 #include "re_parser_driver.h"
 
-aotrc::fa::NFA aotrc::parser::parse_regex(const std::string &pattern) {
+aotrc::fa::NFA aotrc::parser::parseRegex(const std::string &pattern) {
     RegexParserDriver driver;
     return driver.parse(pattern);
 }

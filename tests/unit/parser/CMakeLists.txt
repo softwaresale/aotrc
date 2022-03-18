@@ -2,6 +2,12 @@
 enable_testing()
 include(GoogleTest)
 
-add_executable(parse_literal parse_literal.cc)
-target_link_libraries(parse_literal PUBLIC gtest_main aotrc_parser aotrc_fa)
-gtest_discover_tests(parse_literal)
+function(define_parser_test NAME FILES)
+    add_executable(${NAME} ${FILES})
+    target_link_libraries(${NAME} PUBLIC gtest_main aotrc_parser aotrc_fa)
+    gtest_discover_tests(${NAME})
+endfunction()
+
+define_parser_test(parse_literal parse_literal.cc)
+define_parser_test(parse_quants parse_quants.cc)
+define_parser_test(parse_specials parse_specials.cc)

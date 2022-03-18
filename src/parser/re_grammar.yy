@@ -47,7 +47,7 @@
 // TODO start defining tokens
 
 %token YYEOF 0                    // backwards compatibility for bison v3.5.1 (builtin EOF is a new feature)
-%token OPEN_CC CLOSE_CC         // Character classes
+%token <char> OPEN_CC CLOSE_CC         // Character classes
        OPEN_BRACE CLOSE_BRACE   // Start {}
        OPEN_GROUP CLOSE_GROUP   // Capture groups
        PLUS STAR QUESTION       // Quantifiers
@@ -60,7 +60,7 @@
 %token <char> ULETTER LLETTER CHARACTER;        // Represents a single character, upper or lower case
 %token <unsigned int> NUMBER DIGIT;
 
-%type <char> literal;
+%type <char> literal cc_literal;
 %type <aotrc::fa::NFA> parse element atom character_class capture non_capture;
 %type <std::vector<aotrc::fa::NFA>> alternation expr;
 %type <std::function<aotrc::fa::NFA(aotrc::fa::NFA&&)>> quantifier;
@@ -187,14 +187,65 @@ cc_atoms
 ;
 
 cc_atom
-: literal
+: cc_literal
 {
     $$ = aotrc::fa::Range($1);
 }
-| literal HYPH literal
+| cc_literal HYPH cc_literal
 {
     // TODO check for validity here
     $$ = aotrc::fa::Range($1, $3);
+}
+;
+
+cc_literal
+: ULETTER
+{
+    $$ = $1;
+}
+| LLETTER
+{
+    $$ = $1;
+}
+| NUMBER
+{
+    // NOTE this should only ever be one character long
+    auto number_str = std::to_string($1);
+    $$ = number_str[0];
+}
+| DIGIT
+{
+    // NOTE this should only ever be one character long
+    auto number_str = std::to_string($1);
+    $$ = number_str[0];
+}
+| QUESTION
+{
+    $$ = $1;
+}
+| PLUS
+{
+    $$ = $1;
+}
+| STAR
+{
+    $$ = $1;
+}
+| PIPE
+{
+    $$ = $1;
+}
+| OPEN_GROUP
+{
+    $$ = $1;
+}
+| CLOSE_GROUP
+{
+    $$ = $1;
+}
+| CHARACTER
+{
+    $$ = $1;
 }
 ;
 
@@ -221,6 +272,14 @@ literal
 {
     auto number_str = std::to_string($1);
     $$ = number_str[0];
+}
+| HYPH
+{
+    $$ = $1;
+}
+| EXCLAM
+{
+    $$ = $1;
 }
 ;
 

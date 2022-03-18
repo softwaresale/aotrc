@@ -13,7 +13,7 @@ namespace aotrc::parser {
      * @param pattern pattern to parse
      * @return an NFA of the regex
      */
-    fa::NFA parse_regex(const std::string &pattern);
+    fa::NFA parseRegex(const std::string &pattern);
 }
 
 #endif //_REGEX_PARSER_H

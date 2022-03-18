@@ -20,7 +20,7 @@ void cleanup_buffer();
 #define YY_USER_ACTION  loc.columns (yyleng);
 %}
 
-%option noyywrap nounput noinput batch debug
+%option noyywrap nounput noinput batch
 
 SPECIAL_CHAR "[" | "]" | "(" | ")" | "{" | "}" | "+" | "*" | "?" | "^" | "$" | "-" | "!" | "?: | "." | "|" \ "\\"
 
@@ -31,22 +31,24 @@ SPECIAL_CHAR "[" | "]" | "(" | ")" | "{" | "}" | "+" | "*" | "?" | "^" | "$" | "
   loc.step();
 %}
 
-"["     return aotrc::parser::RegexParser::make_OPEN_CC(loc);
-"]"     return aotrc::parser::RegexParser::make_CLOSE_CC(loc);
-"("     return aotrc::parser::RegexParser::make_OPEN_GROUP(loc);
-")"     return aotrc::parser::RegexParser::make_CLOSE_GROUP(loc);
-"{"     return aotrc::parser::RegexParser::make_OPEN_BRACE(loc);
-"}"     return aotrc::parser::RegexParser::make_CLOSE_BRACE(loc);
-"+"     return aotrc::parser::RegexParser::make_PLUS(loc);
-"*"     return aotrc::parser::RegexParser::make_STAR(loc);
-"?"     return aotrc::parser::RegexParser::make_QUESTION(loc);
-"^"     return aotrc::parser::RegexParser::make_CARET(loc);
-"$"     return aotrc::parser::RegexParser::make_DOLLAR(loc);
-"-"     return aotrc::parser::RegexParser::make_HYPH(loc);
-"!"     return aotrc::parser::RegexParser::make_EXCLAM(loc);
-"?:"    return aotrc::parser::RegexParser::make_NONCAP(loc);
-"."     return aotrc::parser::RegexParser::make_PERIOD(loc);
-"|"     return aotrc::parser::RegexParser::make_PIPE(loc);
+"["     return aotrc::parser::RegexParser::make_OPEN_CC(*yytext, loc);
+"]"     return aotrc::parser::RegexParser::make_CLOSE_CC(*yytext, loc);
+"("     return aotrc::parser::RegexParser::make_OPEN_GROUP(*yytext, loc);
+")"     return aotrc::parser::RegexParser::make_CLOSE_GROUP(*yytext, loc);
+"{"     return aotrc::parser::RegexParser::make_OPEN_BRACE(*yytext, loc);
+"}"     return aotrc::parser::RegexParser::make_CLOSE_BRACE(*yytext, loc);
+"+"     return aotrc::parser::RegexParser::make_PLUS(*yytext, loc);
+"*"     return aotrc::parser::RegexParser::make_STAR(*yytext, loc);
+"?"     return aotrc::parser::RegexParser::make_QUESTION(*yytext, loc);
+"^"     return aotrc::parser::RegexParser::make_CARET(*yytext, loc);
+"$"     return aotrc::parser::RegexParser::make_DOLLAR(*yytext, loc);
+"-"     return aotrc::parser::RegexParser::make_HYPH(*yytext, loc);
+"!"     return aotrc::parser::RegexParser::make_EXCLAM(*yytext, loc);
+"?:"    return aotrc::parser::RegexParser::make_NONCAP(*yytext, loc);
+"."     return aotrc::parser::RegexParser::make_PERIOD(*yytext, loc);
+"|"     return aotrc::parser::RegexParser::make_PIPE(*yytext, loc);
+"\\n"   return aotrc::parser::RegexParser::make_CHARACTER('\n', loc);
+"\\t"   return aotrc::parser::RegexParser::make_CHARACTER('\t', loc);
 
 [a-z]   return aotrc::parser::RegexParser::make_LLETTER(*yytext, loc);
 [A-Z]   return aotrc::parser::RegexParser::make_ULETTER(*yytext, loc);
@@ -62,15 +64,11 @@ SPECIAL_CHAR "[" | "]" | "(" | ")" | "{" | "}" | "+" | "*" | "?" | "^" | "$" | "
 %%
 
 void load_buffer(const char *str) {
-    fprintf(stderr, "Flex: loading buffer\n");
-    fprintf(stderr, "Flex: current buffer prior to loading: %p\n", YY_CURRENT_BUFFER);
     current_buffer = yy_scan_string(str);
     yy_switch_to_buffer(current_buffer);
-    fprintf(stderr, "Flex: current buffer after loading: %p\n", YY_CURRENT_BUFFER);
 }
 
 void cleanup_buffer() {
-    fprintf(stderr, "Flex: cleaning up buffer\n");
     yy_delete_buffer(current_buffer);
     current_buffer = NULL;
 }
