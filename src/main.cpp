@@ -31,20 +31,40 @@ int main(int argc, char **argv) {
     aotrc::ArgsParser argsParser(argc, argv);
 
     if (argsParser.hasHelp()) {
-        argsParser.displayHelp();
+        aotrc::ArgsParser::displayHelp();
         return 0;
     }
 
-    aotrc::input::AotrcInputParser inputFileParser(argsParser.getInputFilePaths()[0]);
+    if (argsParser.hasVersion()) {
+        aotrc::ArgsParser::displayVersion();
+        return 0;
+    }
+
     aotrc::compiler::Compiler compiler;
+    for (const auto &inputFilePath : argsParser.getInputFilePaths()) {
+        aotrc::input::AotrcInputParser inputFileParser(inputFilePath);
 
-    // just take the first regex def
-    auto moduleName = inputFileParser.getModules().begin()->first;
-    auto firstRegexDef = inputFileParser.getModules().begin()->second[0];
-    compiler.compileSubmatchRegex(moduleName, firstRegexDef.label, firstRegexDef.pattern);
+        for (const auto &[moduleName, regexDefs] : inputFileParser.getModules()) {
+            for (const auto &regexDef : regexDefs) {
+                if (regexDef.genFullMatch) {
+                    compiler.compileRegex(moduleName, regexDef.label, regexDef.pattern);
+                }
 
-    compiler.emitObjectFile(moduleName);
-    compiler.emitHeaderFile(moduleName);
+                if (regexDef.genSubMatch) {
+                    compiler.compileSubmatchRegex(moduleName, regexDef.label, regexDef.pattern);
+                }
+            }
+
+            compiler.emitHeaderFile(moduleName);
+            if (argsParser.getOutputType() == aotrc::OutputType::OBJ) {
+                compiler.emitObjectFile(moduleName);
+            } else if (argsParser.getOutputType() == aotrc::OutputType::ASM) {
+                compiler.emitAssembly(moduleName);
+            } else {
+                compiler.emitIr(moduleName);
+            }
+        }
+    }
 
     return 0;
 }

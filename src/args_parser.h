@@ -44,6 +44,11 @@ namespace aotrc {
         static void displayHelp();
 
         /**
+         * Prints the version text
+         */
+        static void displayVersion();
+
+        /**
          * Returns if help flag is set
          * @return t/f if set
          */

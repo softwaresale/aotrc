@@ -23,10 +23,14 @@ aotrc::compiler::ProgramState::ProgramState(llvm::Function *programFunc)
     }
     llvm::BasicBlock &entryBlock = programFunc->getEntryBlock();
 
-    // Make a irBuilder and insert two allocas into the entry block
+    // Make a irBuilder and insert two allocas into the entry block, set to 0
     irBuilder.SetInsertPoint(&entryBlock);
+    auto zeroLength = llvm::ConstantInt::get(llvm::Type::getInt64Ty(ctx()), 0);
+    auto zeroChar = llvm::ConstantInt::get(llvm::Type::getInt8Ty(ctx()), 0);
     this->counter = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(context));
+    irBuilder.CreateStore(zeroLength, this->counter);
     this->cursor = irBuilder.CreateAlloca(llvm::Type::getInt8Ty(context));
+    irBuilder.CreateStore(zeroChar, this->cursor);
 
     // Build a state block for the start state
     auto startState = llvm::BasicBlock::Create(context, "STATE_0_START", parentFunction);
