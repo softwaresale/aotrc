@@ -41,7 +41,14 @@ bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const st
     }
 
     // Transform regex from NFA -> DFA -> Program
-    auto nfa = aotrc::parser::parseRegex(regex);
+    aotrc::fa::NFA nfa;
+    try {
+        nfa = aotrc::parser::parseRegex(regex);
+    } catch (std::runtime_error &exe) {
+        std::stringstream msg;
+        msg << "Error while parsing regex /" << regex << "/: " << exe.what();
+        throw std::runtime_error(msg.str());
+    }
     fa::DFA dfa(nfa);
     Program program(label, ProgramMode::FULL_MATCH, this->llvmContext, this->modules[module]);
 
@@ -72,8 +79,6 @@ bool aotrc::compiler::Compiler::compileSubmatchRegex(const std::string &module, 
 
     // build the program
     searchProgram.build(dfa);
-
-    std::cout << "Program:\n" << searchProgram << std::endl;
 
     // Compile the program
     searchProgram.compile();
@@ -145,35 +150,36 @@ bool aotrc::compiler::Compiler::generatePatternFunc(const std::string &module, c
 };
 
 
-void aotrc::compiler::Compiler::emitIr(const std::string &module) {
+std::string aotrc::compiler::Compiler::emitIr(const std::string &module) {
     auto &mod = this->modules.at(module);
     std::string output;
     llvm::raw_string_ostream os(output);
     os << *mod;
     std::cout << output << std::endl;
+    return "";
 }
 
-void aotrc::compiler::Compiler::emitAssembly(const std::string &module, const std::string &outputPath) {
-    this->emitCode(module, outputPath, llvm::CGFT_AssemblyFile);
+std::string aotrc::compiler::Compiler::emitAssembly(const std::string &module, const std::string &outputPath) {
+    return this->emitCode(module, outputPath, llvm::CGFT_AssemblyFile);
 }
 
-void aotrc::compiler::Compiler::emitAssembly(const std::string &module) {
+std::string aotrc::compiler::Compiler::emitAssembly(const std::string &module) {
     std::string defaultName = module + ".s";
-    this->emitAssembly(module, defaultName);
+    return this->emitAssembly(module, defaultName);
 }
 
-void aotrc::compiler::Compiler::emitObjectFile(const std::string &module, const std::string &outputPath) {
-    this->emitCode(module, outputPath, llvm::CGFT_ObjectFile);
+std::string aotrc::compiler::Compiler::emitObjectFile(const std::string &module, const std::string &outputPath) {
+    return this->emitCode(module, outputPath, llvm::CGFT_ObjectFile);
 }
 
 
-void aotrc::compiler::Compiler::emitObjectFile(const std::string &module) {
+std::string aotrc::compiler::Compiler::emitObjectFile(const std::string &module) {
     std::string defaultName = module + ".o";
-    this->emitObjectFile(module, defaultName);
+    return this->emitObjectFile(module, defaultName);
 }
 
 
-void aotrc::compiler::Compiler::emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type) {
+std::string aotrc::compiler::Compiler::emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type) {
     auto &mod = this->modules.at(module);
     mod->setDataLayout(this->targetMachine->createDataLayout());
     mod->setCodeModel(this->targetMachine->getCodeModel());
@@ -195,6 +201,8 @@ void aotrc::compiler::Compiler::emitCode(const std::string &module, const std::s
     // Run all the passes
     passManager.run(*mod);
     output.flush();
+
+    return outputPath;
 }
 
 std::string aotrc::compiler::Compiler::llvmTypeToCType(llvm::Type *type) {
@@ -241,7 +249,7 @@ std::string aotrc::compiler::Compiler::llvmTypeToCType(llvm::Type *type) {
     return typeStr.str();
 }
 
-void aotrc::compiler::Compiler::emitHeaderFile(const std::string &module, const std::string &outputPath) {
+std::string aotrc::compiler::Compiler::emitHeaderFile(const std::string &module, const std::string &outputPath) {
     auto &mod = this->modules[module];
 
     std::ofstream headerOutput(outputPath);
@@ -289,9 +297,11 @@ void aotrc::compiler::Compiler::emitHeaderFile(const std::string &module, const 
 
     // Flush
     headerOutput.flush();
+
+    return outputPath;
 }
 
-void aotrc::compiler::Compiler::emitHeaderFile(const std::string &module) {
+std::string aotrc::compiler::Compiler::emitHeaderFile(const std::string &module) {
     std::string defaultName = module + ".h";
-    this->emitHeaderFile(module, defaultName);
+    return this->emitHeaderFile(module, defaultName);
 }

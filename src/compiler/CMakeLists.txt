@@ -15,6 +15,7 @@ add_library(aotrc_compiler
         program_state.cc program_state.h
         search_program.cc search_program.h
         program_mode.cc program_mode.h
+        linker.cc linker.h
         passes/pass.cc passes/pass.h
         passes/restart_pass.cc passes/restart_pass.h
         passes/flag_start_state_pass.cc passes/flag_start_state_pass.h

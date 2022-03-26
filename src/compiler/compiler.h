@@ -21,18 +21,18 @@ namespace aotrc::compiler {
         bool compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
         bool compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
 
-        void emitIr(const std::string &module);
-        void emitAssembly(const std::string &module);
-        void emitAssembly(const std::string &module, const std::string &outputPath);
-        void emitObjectFile(const std::string &module);
-        void emitObjectFile(const std::string &module, const std::string &outputPath);
-        void emitHeaderFile(const std::string &module);
-        void emitHeaderFile(const std::string &module, const std::string &outputPath);
+        std::string emitIr(const std::string &module);
+        std::string emitAssembly(const std::string &module);
+        std::string emitAssembly(const std::string &module, const std::string &outputPath);
+        std::string emitObjectFile(const std::string &module);
+        std::string emitObjectFile(const std::string &module, const std::string &outputPath);
+        std::string emitHeaderFile(const std::string &module);
+        std::string emitHeaderFile(const std::string &module, const std::string &outputPath);
 
     private:
         bool generatePatternFunc(const std::string &module, const std::string &label, const std::string &regex);
         std::string llvmTypeToCType(llvm::Type *type);
-        void emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type);
+        std::string emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type);
 
         llvm::LLVMContext llvmContext;
         std::unordered_map<std::string, std::unique_ptr<llvm::Module>> modules;

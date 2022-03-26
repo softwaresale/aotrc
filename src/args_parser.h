@@ -17,6 +17,8 @@ namespace aotrc {
         ASM,
         OBJ,
         IR,
+        STATIC,
+        SHARED
     };
 
     enum GraphVizOutputTypes {
@@ -88,7 +90,7 @@ namespace aotrc {
         }
 
         /**
-         * Get's the aotrc output type
+         * Gets the aotrc output type
          * @return
          */
         OutputType getOutputType() const {
