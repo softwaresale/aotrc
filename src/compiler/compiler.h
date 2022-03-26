@@ -19,6 +19,7 @@ namespace aotrc::compiler {
         Compiler();
 
         bool compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
+        bool compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
 
         void emitIr(const std::string &module);
         void emitAssembly(const std::string &module);

@@ -9,6 +9,8 @@
 #include "../parser/regex_parser.h"
 #include "../fa/dfa.h"
 #include "program.h"
+#include "src/compiler/passes/restart_pass.h"
+#include "search_program.h"
 
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Target/TargetOptions.h>
@@ -41,13 +43,40 @@ bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const st
     // Transform regex from NFA -> DFA -> Program
     auto nfa = aotrc::parser::parseRegex(regex);
     fa::DFA dfa(nfa);
-    Program program(label, this->llvmContext, this->modules[module]);
+    Program program(label, ProgramMode::FULL_MATCH, this->llvmContext, this->modules[module]);
 
     // build the program
     program.build(dfa);
 
     // Compile the program
     program.compile();
+
+    if (genPatternFunc) {
+        return this->generatePatternFunc(module, label, regex);
+    }
+
+    // Done
+    return true;
+}
+
+bool aotrc::compiler::Compiler::compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
+    // Create a new module if necessary
+    if (this->modules.find(module) == this->modules.end()) {
+        this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
+    }
+
+    // Transform regex from NFA -> DFA -> Program
+    auto nfa = aotrc::parser::parseRegex(regex);
+    fa::DFA dfa(nfa);
+    SearchProgram searchProgram(label, this->llvmContext, this->modules[module]);
+
+    // build the program
+    searchProgram.build(dfa);
+
+    std::cout << "Program:\n" << searchProgram << std::endl;
+
+    // Compile the program
+    searchProgram.compile();
 
     if (genPatternFunc) {
         return this->generatePatternFunc(module, label, regex);

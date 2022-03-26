@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     // just take the first regex def
     auto moduleName = inputFileParser.getModules().begin()->first;
     auto firstRegexDef = inputFileParser.getModules().begin()->second[0];
-    compiler.compileRegex(moduleName, firstRegexDef.label, firstRegexDef.pattern);
+    compiler.compileSubmatchRegex(moduleName, firstRegexDef.label, firstRegexDef.pattern);
 
     compiler.emitObjectFile(moduleName);
     compiler.emitHeaderFile(moduleName);
