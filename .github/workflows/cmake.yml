@@ -28,6 +28,9 @@ jobs:
     # llvm-config-12 is not being discovered by cmake (I don't think...)
     - name: Link llvm-config-12 to llvm-config
       run: ln -s /usr/bin/llvm-config-12 /usr/local/bin/llvm-config
+
+    - name: Set llvm symbolizer
+      run: export LLVM_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-12
     
     - name: Checkout Repository w/ Submodules
       uses: actions/checkout@v2
