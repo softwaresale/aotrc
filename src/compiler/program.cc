@@ -6,18 +6,17 @@
 
 #include <utility>
 
-aotrc::compiler::Program::Program(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module)
+aotrc::compiler::Program::Program(std::string name, ProgramMode progType, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module)
 : name(std::move(name)) {
     // Create a new function for this program to use
-    std::string functionName = this->name + "_match";
+    std::string functionName = aotrc::compiler::getProgramType(progType)->getFunctionName(this->name);
     // Two arguments
-    std::vector<llvm::Type *> paramTypes = {llvm::Type::getInt8PtrTy(ctx), llvm::Type::getInt64Ty(ctx)};
-    auto matchFuncType = llvm::FunctionType::get(llvm::Type::getInt1Ty(ctx), paramTypes, false);
+    auto matchFuncType = getProgramType(progType)->getFunctionType(ctx);
     // Create the function
     module->getOrInsertFunction(functionName, matchFuncType);
     this->function = module->getFunction(functionName);
     // Create a new program state
-    this->programState = std::make_unique<ProgramState>(this->function);
+    this->programState = getProgramType(progType)->getProgramState(this->function);
 }
 
 std::ostream &aotrc::compiler::operator<<(std::ostream &os, const aotrc::compiler::Program &program) {
@@ -68,5 +67,12 @@ void aotrc::compiler::Program::compile() {
     for (const auto &instruction : this->instructions) {
         // compile the instruction
         instruction->build(this->programState);
+    }
+}
+
+void aotrc::compiler::Program::runPass(std::unique_ptr<Pass> &pass) {
+    for (auto it = this->instructions.begin(); it != this->instructions.end();) {
+        it = std::invoke(*pass, *it, it, this->instructions);
+        ++it;
     }
 }
