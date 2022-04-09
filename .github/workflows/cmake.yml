@@ -30,7 +30,7 @@ jobs:
       run: ln -s /usr/bin/llvm-config-12 /usr/local/bin/llvm-config
 
     - name: Set llvm symbolizer
-      run: export LLVM_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-12
+      run: export LLVM_SYMBOLIZER_PATH=`which llvm-symbolizer-12`
     
     - name: Checkout Repository w/ Submodules
       uses: actions/checkout@v2
