@@ -14,3 +14,9 @@ DECLARE_INT_REJECT_TEST(PlusTest, RejectEmpty, "")
 
 DECLARE_INT_REJECT_TEST(PlusTest, RejectAsThenB, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab")
 DECLARE_INT_REJECT_TEST(PlusTest, RejectBs, "bbbbbb")
+
+DECLARE_INT_TEST(PlusSubmatchTest, plus_sub_match)
+
+DECLARE_INT_ACCEPT_TEST(PlusSubmatchTest, AcceptAsThenB, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab")
+
+DECLARE_INT_REJECT_TEST(PlusSubmatchTest, RejectNoAs, "bbscsdfewf")
