@@ -92,6 +92,21 @@ namespace aotrc::compiler {
         llvm::BasicBlock *rejectBlock;
     };
 
+    /**
+     * This is a program state extension for a program that is doing sub-matching. This
+     * state provides an extra variable that tracks is an accept state has been entered.
+     */
+    class SubMatchProgramState : public ProgramState {
+    public:
+        explicit SubMatchProgramState(llvm::Function *programFunc);
+
+        llvm::AllocaInst *getMatchEncountered() const {
+            return matchEncountered;
+        }
+
+    private:
+        llvm::AllocaInst *matchEncountered;
+    };
 }
 
 #endif //ATORC_PROGRAM_STATE_H

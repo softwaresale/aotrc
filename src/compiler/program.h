@@ -7,6 +7,8 @@
 
 #include "instruction.h"
 #include "../fa/dfa.h"
+#include "src/compiler/passes/pass.h"
+#include "program_mode.h"
 
 #include <llvm/IR/Value.h>
 #include <llvm/IR/IRBuilder.h>
@@ -17,31 +19,43 @@ namespace aotrc::compiler {
      * A high level regular expression program. These program is designed to transform a
      * finite automaton into a "program," which is a sequence of instructions. This program
      * can be modified and optimized, and then converted into real machine code.
+     *
+     * TODO: 1) add a mode parameter that gives the mode of the program (should inform the name and parameters)
      */
     class Program {
     public:
+        // Used for the position
+        using InstructionPos = std::vector<std::unique_ptr<aotrc::compiler::Instruction>>::iterator;
+
         /**
          * Compile a new regular expression program from a dfa
          * @param dfa regex to compile
          */
-        explicit Program(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module);
+        Program(std::string name, ProgramMode progType, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module);
 
         /**
          * Builds the program for a given dfa
          * @param dfa dfa to build
          */
-        void build(const fa::DFA &dfa);
+        virtual void build(const fa::DFA &dfa);
+
+        /**
+         * Run a pass on this program. This pass may modify the instructions of this
+         * program.
+         * @param pass Pass to run
+         */
+        void runPass(std::unique_ptr<Pass> &pass);
 
         /**
          * Compiles the current program
          */
-        void compile();
+        virtual void compile();
 
         const std::vector<std::unique_ptr<Instruction>> &getInstructions() const {
             return this->instructions;
         }
 
-    private:
+    protected:
         std::string name;
         llvm::Function *function;
         /// Vector of instructions to be read simultaneously

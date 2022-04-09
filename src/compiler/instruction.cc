@@ -17,6 +17,10 @@ std::string aotrc::compiler::CheckEndInstruction::str() const noexcept {
     return ss.str();
 }
 
+std::string aotrc::compiler::EnterAcceptInstruction::str() const noexcept {
+    return "ENTER_ACCEPT";
+}
+
 std::string aotrc::compiler::TestInstruction::str() const noexcept {
     std::stringstream ss;
     ss << "TEST {";
@@ -25,6 +29,12 @@ std::string aotrc::compiler::TestInstruction::str() const noexcept {
         ss << *it << ',';
     }
     ss << *it << '}';
+    return ss.str();
+}
+
+std::string aotrc::compiler::TestVarInstruction::str() const noexcept {
+    std::stringstream ss;
+    ss << this->variable->getName().str() << " ? " << this->trueCommand->str() << " : " << this->falseCommand->str();
     return ss.str();
 }
 
@@ -178,5 +188,43 @@ llvm::Value *aotrc::compiler::AcceptInstruction::build(std::unique_ptr<ProgramSt
 
 llvm::Value *aotrc::compiler::RejectInstruction::build(std::unique_ptr<ProgramState> &state) {
     state->builder().CreateBr(state->getRejectBlock());
+    return nullptr;
+}
+
+llvm::Value *aotrc::compiler::EnterAcceptInstruction::build(std::unique_ptr<ProgramState> &state) {
+    // TODO gotta make sure that ProgramState is actually a SubMatchProgramState
+
+    ProgramState *rawPtr = state.get();
+    // TODO this is bad code apparently...
+    auto matchEncounteredVar = static_cast<SubMatchProgramState*>(rawPtr)->getMatchEncountered();
+
+    // Set to true.
+    auto trueConst = state->builder().getTrue();
+    state->builder().CreateStore(trueConst, matchEncounteredVar);
+
+    return nullptr;
+}
+
+llvm::Value *aotrc::compiler::TestVarInstruction::build(std::unique_ptr<ProgramState> &state) {
+
+    auto storedInsertBlock = state->builder().GetInsertBlock();
+    auto storedInsertPoint = state->builder().GetInsertPoint();
+
+    // Create two basic blocks: one for the true, one for the false
+    llvm::BasicBlock *trueBlock = llvm::BasicBlock::Create(state->ctx(), "ON_CONDITION_TRUE", state->getParentFunction());
+    llvm::BasicBlock *falseBlock = llvm::BasicBlock::Create(state->ctx(), "ON_CONDITION_FALSE", state->getParentFunction());
+
+    // Build each instruction into each block
+    state->builder().SetInsertPoint(trueBlock);
+    this->trueCommand->build(state);
+    state->builder().SetInsertPoint(falseBlock);
+    this->falseCommand->build(state);
+
+    // Return to the old insert point
+    state->builder().SetInsertPoint(storedInsertBlock, storedInsertPoint);
+
+    // Build an if statement that checks the variable
+    state->builder().CreateCondBr(this->variable, trueBlock, falseBlock);
+    // Done
     return nullptr;
 }

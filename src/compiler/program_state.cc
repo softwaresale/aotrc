@@ -23,16 +23,20 @@ aotrc::compiler::ProgramState::ProgramState(llvm::Function *programFunc)
     }
     llvm::BasicBlock &entryBlock = programFunc->getEntryBlock();
 
-    // Make a irBuilder and insert two allocas into the entry block
+    // Make a irBuilder and insert two allocas into the entry block, set to 0
     irBuilder.SetInsertPoint(&entryBlock);
+    auto zeroLength = llvm::ConstantInt::get(llvm::Type::getInt64Ty(ctx()), 0);
+    auto zeroChar = llvm::ConstantInt::get(llvm::Type::getInt8Ty(ctx()), 0);
     this->counter = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(context));
+    irBuilder.CreateStore(zeroLength, this->counter);
     this->cursor = irBuilder.CreateAlloca(llvm::Type::getInt8Ty(context));
+    irBuilder.CreateStore(zeroChar, this->cursor);
 
     // Build a state block for the start state
     auto startState = llvm::BasicBlock::Create(context, "STATE_0_START", parentFunction);
     this->stateBlocks[0] = startState;
     // build a link to the start state
-    irBuilder.CreateBr(startState);
+    auto finalBranchInst = irBuilder.CreateBr(startState);
 
     // Add accept and reject blocks with returns
     this->acceptBlock = llvm::BasicBlock::Create(context, "ACCEPT_BLOCK", parentFunction);
@@ -42,8 +46,8 @@ aotrc::compiler::ProgramState::ProgramState(llvm::Function *programFunc)
     irBuilder.SetInsertPoint(rejectBlock);
     irBuilder.CreateRet(llvm::ConstantInt::getFalse(context));
 
-    // Leave builder at the entry block
-    irBuilder.SetInsertPoint(&entryBlock);
+    // Leave builder at the entry block before the branch
+    irBuilder.SetInsertPoint(finalBranchInst);
 }
 
 std::optional<llvm::BasicBlock *> aotrc::compiler::ProgramState::stateBlockAt(unsigned int state) const {
@@ -63,4 +67,12 @@ llvm::BasicBlock *aotrc::compiler::ProgramState::stateBlock(unsigned int state) 
     }
 
     return this->stateBlocks[state];
+}
+
+aotrc::compiler::SubMatchProgramState::SubMatchProgramState(llvm::Function *programFunc)
+: ProgramState(programFunc) {
+    // builder is still set to before the branch
+    // create the variable for match encountered and store false
+    this->matchEncountered = this->builder().CreateAlloca(llvm::Type::getInt1Ty(ctx()));
+    this->builder().CreateStore(llvm::ConstantInt::getFalse(ctx()), this->matchEncountered);
 }

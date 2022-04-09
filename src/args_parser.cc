@@ -90,6 +90,10 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
                         this->outputType = OutputType::OBJ;
                     } else if (optArg == "hir") {
                         this->outputType = OutputType::IR;
+                    } else if (optArg == "static") {
+                        this->outputType = OutputType::STATIC;
+                    } else if (optArg == "shared") {
+                        this->outputType = OutputType::SHARED;
                     }
                 } else {
                     this->outputType = OutputType::OBJ;
@@ -144,17 +148,22 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
 }
 
 void aotrc::ArgsParser::displayHelp() {
-    std::cout << "usage: aotrc [options] regexes..." << std::endl;
+    std::cout << "usage: aotrc [options] <regex files ...>" << std::endl;
     std::cout << "aotrc - ahead of time regex compiler used for compiling regexes into machine code" << std::endl;
     std::cout << "options:" << std::endl;
-    std::cout << "  --output-type,  -t : output data type: asm, obj, hir. Default is obj" << std::endl;
-    std::cout << "  --linker-path      : specify a path to the linker to use for linking shared libraries" << std::endl;
-    std::cout << "  --archiver-path    : specify a path to the archiver to use for creating a static library" << std::endl;
-    std::cout << "  --build-shared, -s : build a shared library, default is false" << std::endl;
-    std::cout << "  --build-static, -a : build a static library, default is false" << std::endl;
-    std::cout << "  --render-graphviz  : output graphviz for the automata intermediate representation. Options are: nfa, dfa_full, dfa_sub" << std::endl;
-    std::cout << "  --help,         -h : display this help screen" << std::endl;
-    std::cout << "  --version,      -v : display information about this program" << std::endl;
+    std::cout << "  --output-type,    -t : output data type: asm, obj, ir, static, shared. Default is obj" << std::endl;
+    std::cout << "  --linker-path        : specify a path to the linker to use for linking shared libraries" << std::endl;
+    std::cout << "  --archiver-path      : specify a path to the archiver to use for creating a static library" << std::endl;
+    std::cout << "  --build-shared,   -s : build a shared library, default is false" << std::endl;
+    std::cout << "  --build-static,   -a : build a static library, default is false" << std::endl;
+    std::cout << "  --render-graphviz    : output graphviz for the automata intermediate representation. Options are: nfa, dfa_full, dfa_sub" << std::endl;
+    std::cout << "  --help,           -h : display this help screen" << std::endl;
+    std::cout << "  --version,        -v : display information about this program" << std::endl;
     std::cout << std::endl;
     std::cout << "aotrc is maintained by Charlie Sale <softwaresale01@gmail.com>" << std::endl;
+}
+
+void aotrc::ArgsParser::displayVersion() {
+    std::cout << "aotrc - Ahead of Time Regex Compiler - v0.0.0\n";
+    std::cout << "Maintained by Charlie Sale <softwaresale01@gmail.com>" << std::endl;
 }

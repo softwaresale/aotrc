@@ -16,9 +16,11 @@ namespace aotrc::compiler {
 
     enum InstructionType {
         START_STATE,
+        ENTER_ACCEPT,
         CONSUME,
         CHECK_END,
         TEST,
+        TEST_VAR,
         GOTO,
         ACCEPT,
         REJECT,
@@ -74,8 +76,32 @@ namespace aotrc::compiler {
          */
         llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
 
+        /**
+         * Get the id of the state being created
+         * @return State to start
+         */
+        unsigned int getId() const { return id; }
+
     private:
         unsigned int id;
+    };
+
+    /**
+     * This runs when an accept state is entered. This is useful for when we are sub-matching
+     */
+    class EnterAcceptInstruction : public Instruction {
+    public:
+        inline InstructionType type() const noexcept override { return ENTER_ACCEPT; }
+
+        std::string str() const noexcept override;
+
+        /**
+         * Stores true into accept state encountered variable. This means that an accept state
+         * has been entered, so if we hit a wall, we can accept instead of restart.
+         * @param state Program state
+         * @return nullptr always
+         */
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
     };
 
     /**
@@ -144,6 +170,27 @@ namespace aotrc::compiler {
 
     private:
         std::vector<fa::Range> ranges;
+    };
+
+    /**
+     * Test's a command and executes the if/else instructions
+     */
+    class TestVarInstruction : public Instruction {
+    public:
+        TestVarInstruction(llvm::Value *variable, std::unique_ptr<Instruction> trueCommand, std::unique_ptr<Instruction> falseCommand)
+        : variable(variable)
+        , trueCommand(std::move(trueCommand))
+        , falseCommand(std::move(falseCommand))
+        {}
+
+        InstructionType type() const noexcept override { return InstructionType::TEST_VAR; }
+        std::string str() const noexcept override;
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
+
+    private:
+        llvm::Value *variable;
+        std::unique_ptr<Instruction> trueCommand;
+        std::unique_ptr<Instruction> falseCommand;
     };
 
     /**
