@@ -13,12 +13,12 @@ add_library(aotrc_compiler
         program.cc program.h
         instruction.cc instruction.h
         program_state.cc program_state.h
-        search_program.cc search_program.h
+        submatch_program.cc submatch_program.h
         program_mode.cc program_mode.h
         linker.cc linker.h
         passes/pass.cc passes/pass.h
         passes/flag_start_state_pass.cc passes/flag_start_state_pass.h
-        passes/reject_to_conditional.cc passes/reject_to_conditional.h)
+        passes/reject_to_conditional.cc passes/reject_to_conditional.h search_program.cc search_program.h passes/accept_to_store_loc_pass.cc passes/accept_to_store_loc_pass.h)
 
 execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)
 execute_process(COMMAND llvm-config --includedir OUTPUT_VARIABLE llvm_include_dirs)

@@ -15,6 +15,7 @@ namespace aotrc::compiler {
     enum ProgramMode {
         FULL_MATCH,
         SUB_MATCH,
+        SEARCH,
     };
 
     /**
@@ -62,6 +63,25 @@ namespace aotrc::compiler {
 
         std::unique_ptr<ProgramState> getProgramState(llvm::Function *parentFunc) override {
             return std::make_unique<SubMatchProgramState>(parentFunc);
+        }
+    };
+
+    struct SearchProgramMode : public BaseProgramMode {
+        std::string getFunctionName(const std::string &label) const override {
+            return label + "_search";
+        }
+
+        llvm::FunctionType *getFunctionType(llvm::LLVMContext &ctx) const override {
+            auto boolType = llvm::Type::getInt1Ty(ctx);
+            auto charPtrType = llvm::Type::getInt8PtrTy(ctx);
+            auto sizeType = llvm::Type::getInt64Ty(ctx);
+            auto locationPointerType = llvm::Type::getInt64PtrTy(ctx);
+            // The two extra parameters represent start and end
+            return llvm::FunctionType::get(boolType, { charPtrType, sizeType, locationPointerType, locationPointerType }, false);
+        }
+
+        std::unique_ptr<ProgramState> getProgramState(llvm::Function *parentFunc) override {
+            return std::make_unique<SearchProgramState>(parentFunc);
         }
     };
 

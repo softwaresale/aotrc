@@ -1,12 +1,12 @@
 
 # Roadmap - Larger Milestones
 In no particular order:
-- [ ] **Pattern fetch function** - The pattern is known at compile time, so create
+- [x] **Pattern fetch function** - The pattern is known at compile time, so create
 a function type for fetching the pattern of a regex.
-- [ ] **Test Suite** - A lot of things need correctness verification. Some things
+- [x] **Test Suite** - A lot of things need correctness verification. Some things
 that need to be tested include:
-  - [ ] *(D|N)FA correctness* - Do the generated fas behave as they are expected to?
-  - [ ] *Integration tests* - Do the compiled regexes behave correctly when compiled
+  - [x] *(D|N)FA correctness* - Do the generated fas behave as they are expected to?
+  - [x] *Integration tests* - Do the compiled regexes behave correctly when compiled
   against a "real" program.
 ### Here - Release 0.1.0
 - [ ] **Program transformation/Multiple Program Types** - Once we know that

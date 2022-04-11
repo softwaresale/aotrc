@@ -56,6 +56,10 @@ int main(int argc, char **argv) {
                 if (regexDef.genSubMatch) {
                     compiler.compileSubmatchRegex(moduleName, regexDef.label, regexDef.pattern);
                 }
+
+                if (regexDef.genSearch) {
+                    compiler.compileSearchRegex(moduleName, regexDef.label, regexDef.pattern);
+                }
             }
 
             compiler.emitHeaderFile(moduleName);

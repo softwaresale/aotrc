@@ -32,7 +32,7 @@ aotrc::compiler::RejectToConditionalPass::modify(std::unique_ptr<Instruction> &i
     // If dest state is an accept state, then reject. Otherwise, goto 0
     std::unique_ptr<Instruction> replacement;
     if (this->dfa.isAcceptState(destState)) {
-        replacement = std::make_unique<AcceptInstruction>();
+        replacement = std::invoke(this->acceptProducer);
     } else {
         replacement = std::make_unique<GotoInstruction>(dfa.getStartState());
     }

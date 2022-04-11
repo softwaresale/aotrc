@@ -53,6 +53,10 @@ std::string aotrc::compiler::AcceptInstruction::str() const noexcept {
     return "ACCEPT";
 }
 
+std::string aotrc::compiler::StoreLocationAcceptInstruction::str() const noexcept {
+    return "STORE_LOC_ACCEPT";
+}
+
 std::string aotrc::compiler::RejectInstruction::str() const noexcept {
     return "REJECT";
 }
@@ -183,6 +187,12 @@ llvm::Value *aotrc::compiler::GotoInstruction::build(std::unique_ptr<ProgramStat
 
 llvm::Value *aotrc::compiler::AcceptInstruction::build(std::unique_ptr<ProgramState> &state) {
     state->builder().CreateBr(state->getAcceptBlock());
+    return nullptr;
+}
+
+llvm::Value *aotrc::compiler::StoreLocationAcceptInstruction::build(std::unique_ptr<ProgramState> &state) {
+    auto searchProgramState = static_cast<SearchProgramState*>(state.get());
+    state->builder().CreateBr(searchProgramState->getStorePosBlock());
     return nullptr;
 }
 

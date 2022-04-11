@@ -88,7 +88,7 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
                         this->outputType = OutputType::ASM;
                     } else if (optArg == "obj") {
                         this->outputType = OutputType::OBJ;
-                    } else if (optArg == "hir") {
+                    } else if (optArg == "ir") {
                         this->outputType = OutputType::IR;
                     } else if (optArg == "static") {
                         this->outputType = OutputType::STATIC;

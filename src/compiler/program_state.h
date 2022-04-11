@@ -107,6 +107,37 @@ namespace aotrc::compiler {
     private:
         llvm::AllocaInst *matchEncountered;
     };
+
+    /**
+     * A search program does what a sub-match program does, except it also finds where the
+     * match occurs
+     */
+    class SearchProgramState : public SubMatchProgramState {
+    public:
+        explicit SearchProgramState(llvm::Function *programFunc);
+
+        llvm::AllocaInst *getStartPos() const {
+            return startPos;
+        }
+
+        llvm::Value *getStartPosParam() const {
+            return startPosParam;
+        }
+
+        llvm::Value *getEndPosParam() const {
+            return endPosParam;
+        }
+
+        llvm::BasicBlock *getStorePosBlock() const {
+            return storePosBlock;
+        }
+
+    private:
+        llvm::AllocaInst *startPos;
+        llvm::Value *startPosParam;
+        llvm::Value *endPosParam;
+        llvm::BasicBlock *storePosBlock;
+    };
 }
 
 #endif //ATORC_PROGRAM_STATE_H

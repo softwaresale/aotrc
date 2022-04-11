@@ -9,6 +9,7 @@ initProgramModeMap() {
     std::unordered_map<aotrc::compiler::ProgramMode, std::unique_ptr<aotrc::compiler::BaseProgramMode>> typesMap;
     typesMap[aotrc::compiler::ProgramMode::FULL_MATCH] = std::make_unique<aotrc::compiler::FullMatchProgramMode>();
     typesMap[aotrc::compiler::ProgramMode::SUB_MATCH] = std::make_unique<aotrc::compiler::SubMatchProgramMode>();
+    typesMap[aotrc::compiler::ProgramMode::SEARCH] = std::make_unique<aotrc::compiler::SearchProgramMode>();
 
     return typesMap;
 }

@@ -41,6 +41,7 @@ namespace aotrc::compiler {
         * @return True if successful.
         */
         bool compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
+        bool compileSearchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
 
         std::string emitIr(const std::string &module);
         std::string emitAssembly(const std::string &module);

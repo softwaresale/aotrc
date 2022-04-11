@@ -16,8 +16,9 @@ namespace aotrc::compiler {
      */
     class RejectToConditionalPass : public Pass {
     public:
-        explicit RejectToConditionalPass(const aotrc::fa::DFA &dfa)
+        explicit RejectToConditionalPass(const aotrc::fa::DFA &dfa, std::function<std::unique_ptr<Instruction>()> acceptProducer)
         : dfa(dfa)
+        , acceptProducer(std::move(acceptProducer))
         { }
 
         bool accepts(std::unique_ptr<Instruction> &inst) override;
@@ -27,6 +28,7 @@ namespace aotrc::compiler {
 
     private:
         const aotrc::fa::DFA &dfa;
+        std::function<std::unique_ptr<Instruction>()> acceptProducer;
     };
 }
 

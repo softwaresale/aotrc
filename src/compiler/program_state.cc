@@ -27,9 +27,9 @@ aotrc::compiler::ProgramState::ProgramState(llvm::Function *programFunc)
     irBuilder.SetInsertPoint(&entryBlock);
     auto zeroLength = llvm::ConstantInt::get(llvm::Type::getInt64Ty(ctx()), 0);
     auto zeroChar = llvm::ConstantInt::get(llvm::Type::getInt8Ty(ctx()), 0);
-    this->counter = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(context));
+    this->counter = irBuilder.CreateAlloca(llvm::Type::getInt64Ty(context), nullptr, "counter_var");
     irBuilder.CreateStore(zeroLength, this->counter);
-    this->cursor = irBuilder.CreateAlloca(llvm::Type::getInt8Ty(context));
+    this->cursor = irBuilder.CreateAlloca(llvm::Type::getInt8Ty(context), nullptr, "cursor_var");
     irBuilder.CreateStore(zeroChar, this->cursor);
 
     // Build a state block for the start state
@@ -75,4 +75,54 @@ aotrc::compiler::SubMatchProgramState::SubMatchProgramState(llvm::Function *prog
     // create the variable for match encountered and store false
     this->matchEncountered = this->builder().CreateAlloca(llvm::Type::getInt1Ty(ctx()));
     this->builder().CreateStore(llvm::ConstantInt::getFalse(ctx()), this->matchEncountered);
+}
+
+aotrc::compiler::SearchProgramState::SearchProgramState(llvm::Function *programFunc)
+: SubMatchProgramState(programFunc)
+, startPosParam(programFunc->getArg(2))
+, endPosParam(programFunc->getArg(3)) {
+
+    // Build location capturers
+    this->startPos = this->builder().CreateAlloca(llvm::Type::getInt64Ty(ctx()), nullptr, "start_pos_var");
+    auto zero = llvm::ConstantInt::get(llvm::Type::getInt64Ty(ctx()), 0);
+    this->builder().CreateStore(zero, this->startPos);
+
+    // save the insertion position
+    auto savedInsertBlock = this->builder().GetInsertBlock();
+    auto savedInsertPoint = this->builder().GetInsertPoint();
+
+    // Make a special block that stores the values
+    auto nullVal = llvm::ConstantPointerNull::get(llvm::Type::getInt64PtrTy(this->ctx()));
+    this->storePosBlock = llvm::BasicBlock::Create(this->ctx(), "STORE_POSITION", programFunc, this->getAcceptBlock());
+    auto joinStoreEndBlock = llvm::BasicBlock::Create(this->ctx(), "COLLECT_JOIN_END", this->getParentFunction());
+    this->builder().SetInsertPoint(storePosBlock);
+    // conditionally store the start position
+    llvm::Value *startPosIsNotNull = this->builder().CreateICmpNE(this->startPosParam, nullVal, "check_start_nonnull");
+    auto storeStartBlock = llvm::BasicBlock::Create(this->ctx(), "STORE_START", programFunc);
+    this->builder().SetInsertPoint(storeStartBlock);
+    auto startVal = this->builder().CreateLoad(llvm::Type::getInt64Ty(this->ctx()), this->startPos, "start_position");
+    this->builder().CreateStore(startVal, this->startPosParam);
+    this->builder().CreateBr(joinStoreEndBlock);
+    auto nopBlock = llvm::BasicBlock::Create(this->ctx(), "STORE_START_NOP_BLOCK", programFunc);
+    this->builder().SetInsertPoint(nopBlock);
+    this->builder().CreateBr(joinStoreEndBlock);
+    this->builder().SetInsertPoint(this->storePosBlock);
+    this->builder().CreateCondBr(startPosIsNotNull, storeStartBlock, nopBlock);
+
+    // Conditionally store the end position
+    this->builder().SetInsertPoint(joinStoreEndBlock);
+    llvm::Value *endPosIsNotNull = this->builder().CreateICmpNE(this->endPosParam, nullVal, "check_end_nonnull");
+    auto storeEndBlock = llvm::BasicBlock::Create(this->ctx(), "STORE_END", programFunc);
+    this->builder().SetInsertPoint(storeEndBlock);
+    auto counterValue = this->builder().CreateLoad(llvm::Type::getInt64Ty(this->ctx()), this->getCounter(), "end_position");
+    this->builder().CreateStore(counterValue, this->endPosParam);
+    this->builder().CreateBr(this->getAcceptBlock());
+    auto endNopBlock = llvm::BasicBlock::Create(this->ctx(), "STORE_END_NOP_BLOCK", programFunc);
+    this->builder().SetInsertPoint(endNopBlock);
+    this->builder().CreateBr(this->getAcceptBlock());
+    this->builder().SetInsertPoint(joinStoreEndBlock);
+    this->builder().CreateCondBr(endPosIsNotNull, storeEndBlock, endNopBlock);
+
+    // reset the builder location
+    this->builder().SetInsertPoint(savedInsertBlock, savedInsertPoint);
 }

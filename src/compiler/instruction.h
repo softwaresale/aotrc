@@ -23,6 +23,7 @@ namespace aotrc::compiler {
         TEST_VAR,
         GOTO,
         ACCEPT,
+        STORE_LOC_ACCEPT,
         REJECT,
     };
 
@@ -139,6 +140,10 @@ namespace aotrc::compiler {
         InstructionType type() const noexcept override { return InstructionType::CHECK_END; }
         std::string str() const noexcept override;
 
+        const std::unique_ptr<Instruction> &getOnTrueInst() const {
+            return onTrueInst;
+        }
+
         /**
          * Checks if execution has reached the end of the subject string. This instruction has
          * a branch in it, so it inserts a basic block after the current insertion point and
@@ -239,6 +244,22 @@ namespace aotrc::compiler {
 
         /**
          * Just unconditionally branches to the accept block
+         * @param state program state
+         * @return      nullptr
+         */
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
+    };
+
+    /**
+     * Like a store state instruction, except
+     */
+    class StoreLocationAcceptInstruction : public Instruction {
+    public:
+        InstructionType type() const noexcept override { return InstructionType::STORE_LOC_ACCEPT; }
+        std::string str() const noexcept override;
+
+        /**
+         * Just unconditionally branches to the store location block, then to the accept block
          * @param state program state
          * @return      nullptr
          */
