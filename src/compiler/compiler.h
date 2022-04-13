@@ -22,7 +22,24 @@ namespace aotrc::compiler {
     public:
         Compiler();
 
+        /**
+        * Builds a full match regex.
+        * @param module Name of module to place the regex in
+        * @param label Name of the regex
+        * @param regex The pattern for the regex
+        * @param genPatternFunc If a get pattern function should be compiled for the regex
+        * @return True if successful.
+        */
         bool compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
+
+        /**
+        * Builds a sub match regex program
+        * @param module Name of module to place the regex in
+        * @param label Name of the regex
+        * @param regex The pattern for the regex
+        * @param genPatternFunc If a get pattern function should be compiled for the regex
+        * @return True if successful.
+        */
         bool compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
 
         std::string emitIr(const std::string &module);
@@ -47,6 +64,16 @@ namespace aotrc::compiler {
         std::unique_ptr<llvm::TargetMachine> targetMachine;
     };
 
+    /**
+     * Generalized compilation function. It compiles a type of program with the given regex info and places the
+     * result into the provided module.
+     * @tparam ProgramTp Type of program to compile. Must be a base class of Program
+     * @param module Name of module to place the regex in
+     * @param label Name of the regex
+     * @param regex The pattern for the regex
+     * @param genPatternFunc If a get pattern function should be compiled for the regex
+     * @return True if successful.
+     */
     template <class ProgramTp>
     bool Compiler::compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
         // Do some checks
