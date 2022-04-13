@@ -12,6 +12,7 @@
 #include "src/parser/regex_parser.h"
 #include "src/fa/dfa.h"
 #include "program_mode.h"
+#include "program.h"
 
 namespace aotrc::compiler {
     /**
@@ -34,7 +35,7 @@ namespace aotrc::compiler {
 
     private:
         template <class ProgramTp>
-        bool compileProgram(const std::string &module, const std::string &label, const std::string regex, bool genPatternFunc = true);
+        bool compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
 
         bool generatePatternFunc(const std::string &module, const std::string &label, const std::string &regex);
         std::string llvmTypeToCType(llvm::Type *type);
@@ -47,7 +48,13 @@ namespace aotrc::compiler {
     };
 
     template <class ProgramTp>
-    bool Compiler::compileProgram(const std::string &module, const std::string &label, const std::string regex, bool genPatternFunc) {
+    bool Compiler::compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
+        // Do some checks
+        static_assert(
+                std::is_base_of_v<aotrc::compiler::Program, ProgramTp> &&
+                std::is_constructible_v<ProgramTp, std::string, llvm::LLVMContext&, const std::unique_ptr<llvm::Module> &>
+        );
+
         // Create a new module if necessary
         if (this->modules.find(module) == this->modules.end()) {
             this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
