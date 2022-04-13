@@ -64,6 +64,17 @@ namespace aotrc::compiler {
     };
 
     std::ostream &operator<<(std::ostream &os, const Program &program);
+
+    /**
+     * A very simple implementation of program. This class represents the default mode of the program, which is
+     * full matching. No additional modifications must be made.
+     */
+    class FullMatchProgram : public Program {
+    public:
+        FullMatchProgram(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module)
+        : Program(std::move(name), ProgramMode::FULL_MATCH, ctx, module)
+        {}
+    };
 }
 
 #endif //ATORC_PROGRAM_H

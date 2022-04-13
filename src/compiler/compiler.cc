@@ -6,8 +6,6 @@
 
 #include <iostream>
 #include <fstream>
-#include "../parser/regex_parser.h"
-#include "../fa/dfa.h"
 #include "program.h"
 #include "src/compiler/passes/restart_pass.h"
 #include "search_program.h"
@@ -35,60 +33,11 @@ aotrc::compiler::Compiler::Compiler()
 }
 
 bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
-    // Create a new module if necessary
-    if (this->modules.find(module) == this->modules.end()) {
-        this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
-    }
-
-    // Transform regex from NFA -> DFA -> Program
-    aotrc::fa::NFA nfa;
-    try {
-        nfa = aotrc::parser::parseRegex(regex);
-    } catch (std::runtime_error &exe) {
-        std::stringstream msg;
-        msg << "Error while parsing regex /" << regex << "/: " << exe.what();
-        throw std::runtime_error(msg.str());
-    }
-    fa::DFA dfa(nfa);
-    Program program(label, ProgramMode::FULL_MATCH, this->llvmContext, this->modules[module]);
-
-    // build the program
-    program.build(dfa);
-
-    // Compile the program
-    program.compile();
-
-    if (genPatternFunc) {
-        return this->generatePatternFunc(module, label, regex);
-    }
-
-    // Done
-    return true;
+    return this->compileProgram<aotrc::compiler::FullMatchProgram>(module, label, regex, genPatternFunc);
 }
 
 bool aotrc::compiler::Compiler::compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
-    // Create a new module if necessary
-    if (this->modules.find(module) == this->modules.end()) {
-        this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
-    }
-
-    // Transform regex from NFA -> DFA -> Program
-    auto nfa = aotrc::parser::parseRegex(regex);
-    fa::DFA dfa(nfa);
-    SearchProgram searchProgram(label, this->llvmContext, this->modules[module]);
-
-    // build the program
-    searchProgram.build(dfa);
-
-    // Compile the program
-    searchProgram.compile();
-
-    if (genPatternFunc) {
-        return this->generatePatternFunc(module, label, regex);
-    }
-
-    // Done
-    return true;
+    return this->compileProgram<aotrc::compiler::SearchProgram>(module, label, regex, genPatternFunc);
 }
 
 static llvm::GlobalVariable *

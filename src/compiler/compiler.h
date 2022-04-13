@@ -9,6 +9,9 @@
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Target/TargetMachine.h>
+#include "src/parser/regex_parser.h"
+#include "src/fa/dfa.h"
+#include "program_mode.h"
 
 namespace aotrc::compiler {
     /**
@@ -30,6 +33,9 @@ namespace aotrc::compiler {
         std::string emitHeaderFile(const std::string &module, const std::string &outputPath);
 
     private:
+        template <class ProgramTp>
+        bool compileProgram(const std::string &module, const std::string &label, const std::string regex, bool genPatternFunc = true);
+
         bool generatePatternFunc(const std::string &module, const std::string &label, const std::string &regex);
         std::string llvmTypeToCType(llvm::Type *type);
         std::string emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type);
@@ -39,6 +45,39 @@ namespace aotrc::compiler {
         const llvm::Target *target;
         std::unique_ptr<llvm::TargetMachine> targetMachine;
     };
+
+    template <class ProgramTp>
+    bool Compiler::compileProgram(const std::string &module, const std::string &label, const std::string regex, bool genPatternFunc) {
+        // Create a new module if necessary
+        if (this->modules.find(module) == this->modules.end()) {
+            this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
+        }
+
+        // Transform regex from NFA -> DFA -> Program
+        aotrc::fa::NFA nfa;
+        try {
+            nfa = aotrc::parser::parseRegex(regex);
+        } catch (std::runtime_error &exe) {
+            std::stringstream msg;
+            msg << "Error while parsing regex /" << regex << "/: " << exe.what();
+            throw std::runtime_error(msg.str());
+        }
+        aotrc::fa::DFA dfa(nfa);
+        ProgramTp program(label, this->llvmContext, this->modules[module]);
+
+        // build the program
+        program.build(dfa);
+
+        // Compile the program
+        program.compile();
+
+        if (genPatternFunc) {
+            return this->generatePatternFunc(module, label, regex);
+        }
+
+        // Done
+        return true;
+    }
 }
 
 #endif //ATORC_COMPILER_H
