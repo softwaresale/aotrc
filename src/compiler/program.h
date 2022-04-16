@@ -22,13 +22,16 @@ namespace aotrc::compiler {
      *
      * TODO: 1) add a mode parameter that gives the mode of the program (should inform the name and parameters)
      */
+    template <class ProgramModeTp>
     class Program {
     public:
+        using ProgramModeType = ProgramModeTp;
+
         /**
          * Compile a new regular expression program from a dfa
          * @param dfa regex to compile
          */
-        Program(std::string name, ProgramMode progType, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module);
+        Program(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module);
 
         /**
          * Builds the program for a given dfa
@@ -54,22 +57,22 @@ namespace aotrc::compiler {
 
     protected:
         std::string name;
-        llvm::Function *function;
+        llvm::Function *function{};
         /// Vector of instructions to be read simultaneously
         std::vector<std::unique_ptr<Instruction>> instructions;
         std::unique_ptr<ProgramState> programState;
     };
 
-    std::ostream &operator<<(std::ostream &os, const Program &program);
+    // std::ostream &operator<<(std::ostream &os, const Program &program);
 
     /**
      * A very simple implementation of program. This class represents the default mode of the program, which is
      * full matching. No additional modifications must be made.
      */
-    class FullMatchProgram : public Program {
+    class FullMatchProgram : public Program<FullMatchProgramMode> {
     public:
         FullMatchProgram(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module)
-        : Program(std::move(name), ProgramMode::FULL_MATCH, ctx, module)
+        : Program(std::move(name), ctx, module)
         {}
     };
 }

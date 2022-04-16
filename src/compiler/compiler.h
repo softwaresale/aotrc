@@ -55,6 +55,7 @@ namespace aotrc::compiler {
          * Generalized function for compiling regex programs. This function compiles a program of the given program
          * type.
          * @tparam ProgramTp Type of program to compile. Must be a subclass of Program
+         * @tparam ProgramModeTp Type of the program mode that should be associated with the
          * @param module The module to compile into. If the module does not exist, create one
          * @param label Label/name of the regex
          * @param regex The actual regex pattern
@@ -88,7 +89,7 @@ namespace aotrc::compiler {
     bool Compiler::compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
         // Do some checks
         static_assert(
-                std::is_base_of_v<aotrc::compiler::Program, ProgramTp> &&
+                std::is_base_of_v<aotrc::compiler::Program<typename ProgramTp::ProgramModeType>, ProgramTp> &&
                 std::is_constructible_v<ProgramTp, std::string, llvm::LLVMContext&, const std::unique_ptr<llvm::Module> &>
         );
 
