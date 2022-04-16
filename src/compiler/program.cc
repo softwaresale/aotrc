@@ -6,27 +6,39 @@
 
 #include <utility>
 
-aotrc::compiler::Program::Program(std::string name, ProgramMode progType, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module)
-: name(std::move(name)) {
+template <typename ProgramModeTp>
+aotrc::compiler::Program<ProgramModeTp>::Program(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module)
+: name(std::move(name))
+, function(nullptr) /* this gets changed later */ {
+    // Make sure that program mode can be used
+    static_assert(
+            std::is_base_of_v<aotrc::compiler::BaseProgramMode, ProgramModeTp> &&
+            std::is_default_constructible_v<ProgramModeTp>
+            );
+
+    ProgramModeTp programMode;
     // Create a new function for this program to use
-    std::string functionName = aotrc::compiler::getProgramType(progType)->getFunctionName(this->name);
+    std::string functionName = programMode.getFunctionName(this->name);
     // Two arguments
-    auto matchFuncType = getProgramType(progType)->getFunctionType(ctx);
+    auto matchFuncType = programMode.getFunctionType(ctx);
     // Create the function
     module->getOrInsertFunction(functionName, matchFuncType);
     this->function = module->getFunction(functionName);
     // Create a new program state
-    this->programState = getProgramType(progType)->getProgramState(this->function);
+    this->programState = programMode.getProgramState(this->function);
 }
 
+#if 0
 std::ostream &aotrc::compiler::operator<<(std::ostream &os, const aotrc::compiler::Program &program) {
     for (const auto &instruction : program.getInstructions()) {
         os << instruction->str() << '\n';
     }
     return os;
 }
+#endif
 
-void aotrc::compiler::Program::build(const aotrc::fa::DFA &dfa) {
+template <class ProgramModeTp>
+void aotrc::compiler::Program<ProgramModeTp>::build(const aotrc::fa::DFA &dfa) {
     // For each state
     for (unsigned int state = 0; state < dfa.stateCount(); state++) {
         // Push a new start_state instruction
@@ -63,16 +75,24 @@ void aotrc::compiler::Program::build(const aotrc::fa::DFA &dfa) {
     }
 }
 
-void aotrc::compiler::Program::compile() {
+template <class ProgramModeTp>
+void aotrc::compiler::Program<ProgramModeTp>::compile() {
     for (const auto &instruction : this->instructions) {
         // compile the instruction
         instruction->build(this->programState);
     }
 }
 
-void aotrc::compiler::Program::runPass(std::unique_ptr<Pass> &pass) {
+template <class ProgramModeTp>
+void aotrc::compiler::Program<ProgramModeTp>::runPass(std::unique_ptr<Pass> &pass) {
     for (auto it = this->instructions.begin(); it != this->instructions.end();) {
         it = std::invoke(*pass, *it, it, this->instructions);
         ++it;
     }
 }
+
+/*
+ * Build out implementations for each program mode
+ */
+template class aotrc::compiler::Program<aotrc::compiler::FullMatchProgramMode>;
+template class aotrc::compiler::Program<aotrc::compiler::SubMatchProgramMode>;
