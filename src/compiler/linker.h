@@ -6,6 +6,7 @@
 #define AOTRC_LINKER_H
 
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace aotrc::compiler {
@@ -15,9 +16,22 @@ namespace aotrc::compiler {
      */
     class Linker {
     public:
-        Linker(const std::string &ldPath, const std::string &arPath) : ldPath(ldPath), arPath(arPath) {}
+        Linker(std::string ldPath, std::string arPath) : ldPath(std::move(ldPath)), arPath(std::move(arPath)) {}
 
+        /**
+         * Takes an object file and links a shared library.
+         * @param objectFilePaths The path to the object file to link
+         * @param outputPath The path to write the resulting library to
+         * @return Exit code
+         */
         int linkShared(const std::vector<std::string> &objectFilePaths, const std::string &outputPath);
+
+        /**
+         * Takes an object file and links a static library.
+         * @param objectFilePaths The path to the object file to link
+         * @param outputPath The path to write the resulting library to
+         * @return Exit code
+         */
         int linkStatic(const std::vector<std::string> &objectFilePaths, const std::string &outputPath);
 
     private:

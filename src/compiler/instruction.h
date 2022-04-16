@@ -128,6 +128,10 @@ namespace aotrc::compiler {
      */
     class CheckEndInstruction : public Instruction {
     public:
+        /**
+         * Creates a new check end instruction.
+         * @param on_true_inst The instruction to execute when the end of the string is found
+         */
         explicit CheckEndInstruction(std::unique_ptr<Instruction> on_true_inst)
         : onTrueInst(std::move(on_true_inst))
         {}
@@ -199,7 +203,7 @@ namespace aotrc::compiler {
      */
     class GotoInstruction : public Instruction {
     public:
-        GotoInstruction(unsigned int destId)
+        explicit GotoInstruction(unsigned int destId)
         : testInst(nullptr)
         , destId(destId)
         {  }

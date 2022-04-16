@@ -13,7 +13,8 @@
 namespace aotrc::compiler {
     /**
      * A pass is used for passing over the instructions in a program and modifying them. A combination
-     * of passes can be used to transform a program.
+     * of passes can be used to transform a program. Think of passes as something useful in peep-hole
+     * optimization.
      */
     class Pass {
     public:

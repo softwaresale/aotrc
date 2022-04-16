@@ -24,9 +24,6 @@ namespace aotrc::compiler {
      */
     class Program {
     public:
-        // Used for the position
-        using InstructionPos = std::vector<std::unique_ptr<aotrc::compiler::Instruction>>::iterator;
-
         /**
          * Compile a new regular expression program from a dfa
          * @param dfa regex to compile

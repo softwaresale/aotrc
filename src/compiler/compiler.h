@@ -51,6 +51,16 @@ namespace aotrc::compiler {
         std::string emitHeaderFile(const std::string &module, const std::string &outputPath);
 
     private:
+        /**
+         * Generalized function for compiling regex programs. This function compiles a program of the given program
+         * type.
+         * @tparam ProgramTp Type of program to compile. Must be a subclass of Program
+         * @param module The module to compile into. If the module does not exist, create one
+         * @param label Label/name of the regex
+         * @param regex The actual regex pattern
+         * @param genPatternFunc If a pattern retrieval function should be generated
+         * @return True if successful
+         */
         template <class ProgramTp>
         bool compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
 

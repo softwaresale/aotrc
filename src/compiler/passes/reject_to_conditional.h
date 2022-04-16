@@ -9,6 +9,11 @@
 #include "src/fa/dfa.h"
 
 namespace aotrc::compiler {
+    /**
+     * Pass used in sub matching. All reject instructions at the end of states are replaced with
+     * a conditional that checks if an accept state has been encountered. If it has been, then it
+     * accepts. Otherwise, it goes back to state 0.
+     */
     class RejectToConditionalPass : public Pass {
     public:
         explicit RejectToConditionalPass(const aotrc::fa::DFA &dfa)

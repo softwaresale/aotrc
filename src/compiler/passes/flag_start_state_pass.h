@@ -9,8 +9,19 @@
 #include "src/fa/dfa.h"
 
 namespace aotrc::compiler {
+
+    /**
+     * This pass replaces the start state with the enter start state instruction for all accept
+     * states. The instructions set within the state that an accept state has been encountered.
+     * This is useful for substate matching
+     */
     class FlagStartStatePass : public Pass {
     public:
+        /**
+         * Creates a new pass. The DFA is provided so to tell which states are accept states.
+         * TODO a better solution could be to pass a set of accept states instead
+         * @param dfa DFA that is being constructed
+         */
         explicit FlagStartStatePass(const aotrc::fa::DFA &dfa)
         : dfa(dfa)
         { }
