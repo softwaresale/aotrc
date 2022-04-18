@@ -7,7 +7,6 @@
 #include <iostream>
 #include <fstream>
 #include "program.h"
-#include "src/compiler/passes/restart_pass.h"
 #include "submatch_program.h"
 #include "search_program.h"
 

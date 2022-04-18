@@ -96,3 +96,4 @@ void aotrc::compiler::Program<ProgramModeTp>::runPass(std::unique_ptr<Pass> &pas
  */
 template class aotrc::compiler::Program<aotrc::compiler::FullMatchProgramMode>;
 template class aotrc::compiler::Program<aotrc::compiler::SubMatchProgramMode>;
+template class aotrc::compiler::Program<aotrc::compiler::SearchProgramMode>;

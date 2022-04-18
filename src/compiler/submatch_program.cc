@@ -8,7 +8,7 @@
 
 aotrc::compiler::SubMatchProgram::SubMatchProgram(std::string name, llvm::LLVMContext &ctx,
                                                   const std::unique_ptr<llvm::Module> &mod)
-: Program(std::move(name), SUB_MATCH, ctx, mod) {
+: Program(std::move(name), ctx, mod) {
     // All the same program stuff should be used
 }
 
