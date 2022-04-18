@@ -12,7 +12,7 @@ namespace aotrc::compiler {
     /**
      * Like a submatch program, except this one actually keeps track of where the sub match occurs
      */
-    class SearchProgram : public Program<SubMatchProgramMode> {
+    class SearchProgram : public Program<SearchProgramMode> {
     public:
         SearchProgram(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &mod);
 

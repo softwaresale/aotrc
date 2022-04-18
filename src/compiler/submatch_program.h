@@ -16,7 +16,7 @@ namespace aotrc::compiler {
      * string (e.g. a*), then the left-most longest match will likely be the empty string
      * as well.
      */
-    class SubMatchProgram : public Program {
+    class SubMatchProgram : public Program<SubMatchProgramMode> {
     public:
         SubMatchProgram(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &mod);
         void build(const fa::DFA &dfa) override;
