@@ -21,6 +21,7 @@ namespace aotrc::compiler {
         CHECK_END,
         TEST,
         TEST_VAR,
+        STORE_VAR,
         GOTO,
         ACCEPT,
         STORE_LOC_ACCEPT,
@@ -200,6 +201,23 @@ namespace aotrc::compiler {
         llvm::Value *variable;
         std::unique_ptr<Instruction> trueCommand;
         std::unique_ptr<Instruction> falseCommand;
+    };
+
+    class StoreVariableInstruction : public Instruction {
+    public:
+        StoreVariableInstruction(llvm::AllocaInst *toStore, llvm::AllocaInst *withValue)
+        : variableToStoreInto(toStore)
+        , variableWithValue(withValue)
+        { }
+
+        InstructionType type() const noexcept override { return STORE_VAR; }
+        std::string str() const noexcept override;
+
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
+
+    private:
+        llvm::AllocaInst *variableToStoreInto;
+        llvm::AllocaInst *variableWithValue;
     };
 
     /**

@@ -38,6 +38,12 @@ std::string aotrc::compiler::TestVarInstruction::str() const noexcept {
     return ss.str();
 }
 
+std::string aotrc::compiler::StoreVariableInstruction::str() const noexcept {
+    std::stringstream ss;
+    ss << "STORE " << this->variableToStoreInto->getName().str() << " <- " << this->variableWithValue->getName().str();
+    return ss.str();
+}
+
 std::string aotrc::compiler::GotoInstruction::str() const noexcept {
     std::stringstream ss;
     ss << "GOTO";
@@ -183,6 +189,13 @@ llvm::Value *aotrc::compiler::GotoInstruction::build(std::unique_ptr<ProgramStat
     }
 
     return fallthrough;
+}
+
+llvm::Value *aotrc::compiler::StoreVariableInstruction::build(std::unique_ptr<ProgramState> &state) {
+    // Get value
+    auto counterValue = state->builder().CreateLoad(this->variableWithValue->getAllocatedType(), this->variableWithValue);
+    state->builder().CreateStore(counterValue, this->variableToStoreInto, false);
+    return nullptr;
 }
 
 llvm::Value *aotrc::compiler::AcceptInstruction::build(std::unique_ptr<ProgramState> &state) {

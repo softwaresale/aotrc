@@ -25,6 +25,7 @@ testing_regexes:
     options:
       fullmatch: true
       submatch: true
+      search: true
   bounded_single:
     pattern: /(?:abc){3}/
     options:

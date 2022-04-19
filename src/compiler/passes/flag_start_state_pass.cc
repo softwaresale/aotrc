@@ -12,7 +12,7 @@ aotrc::compiler::Pass::InstructionPos aotrc::compiler::FlagStartStatePass::modif
                                                                                   aotrc::compiler::Pass::InstructionPos pos,
                                                                                   InstructionList &instList) {
     // Convert to a start state instruction
-    auto startStateInst = static_cast<StartStateInstruction *>(inst.get()); // this is checked...
+    auto startStateInst = dynamic_cast<StartStateInstruction *>(inst.get()); // this is checked...
     if (this->dfa.isAcceptState(startStateInst->getId())) {
         // If this is a start state, then create an enter accept instruction
         auto enterInst = std::make_unique<aotrc::compiler::EnterAcceptInstruction>();

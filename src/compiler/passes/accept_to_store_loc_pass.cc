@@ -8,7 +8,7 @@ bool aotrc::compiler::AcceptToStoreLocPass::accepts(std::unique_ptr<Instruction>
     if (inst->type() == ACCEPT)
         return true;
     else if (inst->type() == CHECK_END) {
-        auto checkEnd = static_cast<CheckEndInstruction*>(inst.get());
+        auto checkEnd = dynamic_cast<CheckEndInstruction*>(inst.get());
         if (checkEnd->getOnTrueInst()->type() == ACCEPT) {
             return true;
         }
