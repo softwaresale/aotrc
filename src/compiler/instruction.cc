@@ -55,6 +55,17 @@ std::string aotrc::compiler::GotoInstruction::str() const noexcept {
     return ss.str();
 }
 
+std::string aotrc::compiler::LocAwareGotoInstruction::str() const noexcept {
+    std::stringstream ss;
+    ss << "LOC_AWARE_GOTO";
+    if (this->testInst) {
+        ss << ' ' << this->testInst->str();
+    }
+    ss << ' ' << this->destId;
+
+    return ss.str();
+}
+
 std::string aotrc::compiler::AcceptInstruction::str() const noexcept {
     return "ACCEPT";
 }
@@ -82,6 +93,12 @@ llvm::Value *aotrc::compiler::StartStateInstruction::build(std::unique_ptr<Progr
 }
 
 llvm::Value *aotrc::compiler::ConsumeInstruction::build(std::unique_ptr<ProgramState> &state) {
+
+    /* TODO
+     * Consider swapping the order of these two instructions. It should likely fix the issues
+     * with the end bound for searching to be off
+     */
+
     // First, load the counter value
     auto counterValue = state->builder().CreateLoad(llvm::Type::getInt64Ty(state->ctx()), state->getCounter(), "counter_value");
     // Next, create a GEP to get a pointer to where we want to deref the subject string
@@ -165,7 +182,6 @@ llvm::Value *aotrc::compiler::TestInstruction::build(std::unique_ptr<ProgramStat
 }
 
 llvm::Value *aotrc::compiler::GotoInstruction::build(std::unique_ptr<ProgramState> &state) {
-
     llvm::BasicBlock *fallthrough = nullptr;
 
     // Start by getting the destination state
@@ -186,6 +202,55 @@ llvm::Value *aotrc::compiler::GotoInstruction::build(std::unique_ptr<ProgramStat
     } else {
         // unconditional
         state->builder().CreateBr(destStateBlock);
+    }
+
+    return fallthrough;
+}
+
+llvm::Value *aotrc::compiler::LocAwareGotoInstruction::build(std::unique_ptr<ProgramState> &state) {
+
+    auto searchProgramState = static_cast<aotrc::compiler::SearchProgramState*>(state.get());
+
+    llvm::BasicBlock *fallthrough = nullptr;
+
+    // Start by getting the destination state
+    llvm::BasicBlock *destStateBlock = state->stateBlock(this->destId);
+
+    // Back up the position
+    auto backupInsertBlock = state->builder().GetInsertBlock();
+    auto backupInsertPos = state->builder().GetInsertPoint();
+
+    // make a block where we increment the end pos and then go to the dest state
+    auto incrementPosBlock = llvm::BasicBlock::Create(state->ctx(), "GOTO_INC_POS", state->getParentFunction());
+    state->builder().SetInsertPoint(incrementPosBlock);
+    // Load the current end position
+    auto endPosVal = state->builder().CreateLoad(llvm::Type::getInt64Ty(state->ctx()), searchProgramState->getEndPos(), "end_pos_val");
+    // Add one
+    auto constOne = llvm::ConstantInt::get(llvm::Type::getInt64Ty(state->ctx()), 1);
+    auto incremented = state->builder().CreateAdd(constOne, endPosVal);
+    // Store the incremented value
+    state->builder().CreateStore(incremented, searchProgramState->getEndPos());
+    // Branch to the dest state
+    state->builder().CreateBr(destStateBlock);
+
+    // Reset the insertion location
+    state->builder().SetInsertPoint(backupInsertBlock, backupInsertPos);
+
+    if (this->testInst) {
+        // Conditional
+        // Build out the test instruction
+        auto testValue = this->testInst->build(state);
+        // Add a fallthrough block
+        // Add it after the current insertion point
+        // TODO try to add this at a better location
+        fallthrough = llvm::BasicBlock::Create(state->ctx(), "GOTO_FALLTHROUGH", state->getParentFunction());
+        // Create the branch
+        state->builder().CreateCondBr(testValue, incrementPosBlock, fallthrough);
+        // Set the insertion point at the fall through block
+        state->builder().SetInsertPoint(fallthrough);
+    } else {
+        // unconditional
+        state->builder().CreateBr(incrementPosBlock);
     }
 
     return fallthrough;

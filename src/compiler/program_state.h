@@ -120,6 +120,10 @@ namespace aotrc::compiler {
             return startPos;
         }
 
+        llvm::AllocaInst *getEndPos() const {
+            return endPos;
+        }
+
         llvm::Value *getStartPosParam() const {
             return startPosParam;
         }
@@ -134,6 +138,7 @@ namespace aotrc::compiler {
 
     private:
         llvm::AllocaInst *startPos;
+        llvm::AllocaInst *endPos;
         llvm::Value *startPosParam;
         llvm::Value *endPosParam;
         llvm::BasicBlock *storePosBlock;

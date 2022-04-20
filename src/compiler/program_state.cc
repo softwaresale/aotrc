@@ -85,7 +85,9 @@ aotrc::compiler::SearchProgramState::SearchProgramState(llvm::Function *programF
     // Build location capturers
     this->startPos = this->builder().CreateAlloca(llvm::Type::getInt64Ty(ctx()), nullptr, "start_pos_var");
     auto zero = llvm::ConstantInt::get(llvm::Type::getInt64Ty(ctx()), 0);
+    this->endPos = this->builder().CreateAlloca(llvm::Type::getInt64Ty(ctx()), nullptr, "end_pos_var");
     this->builder().CreateStore(zero, this->startPos);
+    this->builder().CreateStore(zero, this->endPos);
 
     // save the insertion position
     auto savedInsertBlock = this->builder().GetInsertBlock();
@@ -114,8 +116,8 @@ aotrc::compiler::SearchProgramState::SearchProgramState(llvm::Function *programF
     llvm::Value *endPosIsNotNull = this->builder().CreateICmpNE(this->endPosParam, nullVal, "check_end_nonnull");
     auto storeEndBlock = llvm::BasicBlock::Create(this->ctx(), "STORE_END", programFunc);
     this->builder().SetInsertPoint(storeEndBlock);
-    auto counterValue = this->builder().CreateLoad(llvm::Type::getInt64Ty(this->ctx()), this->getCounter(), "end_position");
-    this->builder().CreateStore(counterValue, this->endPosParam);
+    auto endValue = this->builder().CreateLoad(llvm::Type::getInt64Ty(this->ctx()), this->getEndPos(), "end_position");
+    this->builder().CreateStore(endValue, this->endPosParam);
     this->builder().CreateBr(this->getAcceptBlock());
     auto endNopBlock = llvm::BasicBlock::Create(this->ctx(), "STORE_END_NOP_BLOCK", programFunc);
     this->builder().SetInsertPoint(endNopBlock);

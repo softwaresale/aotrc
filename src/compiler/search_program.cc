@@ -46,9 +46,25 @@ void aotrc::compiler::SearchProgram::build(const aotrc::fa::DFA &dfa) {
     };
     std::unique_ptr<Pass> setStartPosPass = std::make_unique<Pass>(setStartPos);
 
+    // 5. Switch all GOTOs to location-aware GOTOs
+    Pass::OperatorType toLocationAwareGotosOp = [](std::unique_ptr<Instruction> &currentInst, Pass::InstructionPos pos, Pass::InstructionList &instructions) {
+        if (currentInst->type() == GOTO) {
+            // Get the GOTO inst into a new unique_ptr
+            auto gotoInst = dynamic_cast<aotrc::compiler::GotoInstruction*>(currentInst.release());
+            std::unique_ptr<GotoInstruction> gotoInstPtr(gotoInst);
+            // Turn the goto into a location aware goto
+            std::unique_ptr<Instruction> locAwareGoto = std::make_unique<aotrc::compiler::LocAwareGotoInstruction>(std::move(gotoInstPtr));
+            // Replace the instruction at the current pos with this one
+            *pos = std::move(locAwareGoto);
+        }
+        return pos;
+    };
+    auto toLocAwareGotoPass = std::make_unique<Pass>(toLocationAwareGotosOp);
+
     // Now, run the passes
     this->runPass(flagStartStatePass);
     this->runPass(acceptToStoreLocPass);
     this->runPass(conditionalRejectPass);
     this->runPass(setStartPosPass);
+    this->runPass(toLocAwareGotoPass);
 }

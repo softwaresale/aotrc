@@ -23,6 +23,7 @@ namespace aotrc::compiler {
         TEST_VAR,
         STORE_VAR,
         GOTO,
+        LOC_GOTO,
         ACCEPT,
         STORE_LOC_ACCEPT,
         REJECT,
@@ -247,9 +248,45 @@ namespace aotrc::compiler {
          */
         llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
 
-    private:
+        const std::unique_ptr<TestInstruction> &getTestInst() const {
+            return testInst;
+        }
+
+        std::unique_ptr<TestInstruction> &getTestInst() {
+            return testInst;
+        }
+
+        unsigned int getDestId() const {
+            return destId;
+        }
+
+    protected:
         std::unique_ptr<TestInstruction> testInst;
         unsigned int destId;
+    };
+
+    /**
+     * Like a goto instruction except this one keeps track of the ending
+     * position
+     */
+    class LocAwareGotoInstruction : public GotoInstruction {
+    public:
+        explicit LocAwareGotoInstruction(unsigned int destId)
+        : GotoInstruction(destId)
+        { }
+
+        LocAwareGotoInstruction(unsigned int destId, std::unique_ptr<TestInstruction> testInstruction)
+        : GotoInstruction(destId, std::move(testInstruction))
+        { }
+
+        explicit LocAwareGotoInstruction(std::unique_ptr<GotoInstruction> &&gotoInst)
+        : GotoInstruction(gotoInst->getDestId(), std::move(gotoInst->getTestInst()))
+        { }
+
+        InstructionType type() const noexcept override { return InstructionType::LOC_GOTO; }
+        std::string str() const noexcept override;
+
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
     };
 
     /**
