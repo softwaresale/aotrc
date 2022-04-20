@@ -17,6 +17,7 @@ namespace aotrc {
         ASM,
         OBJ,
         IR,
+        HIR,
         STATIC,
         SHARED
     };

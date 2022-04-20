@@ -17,7 +17,12 @@ static aotrc::input::RegexDef regexDefFromObject(const std::string &label, const
         genSubMatch = options["submatch"].as<bool>();
     }
 
-    return {label, pattern, genFullMatch, genSubMatch};
+    bool genSearch = false;
+    if (options["search"]) {
+        genSearch = options["search"].as<bool>();
+    }
+
+    return {label, pattern, genFullMatch, genSubMatch, genSearch};
 }
 
 aotrc::input::AotrcInputParser::AotrcInputParser(const std::string &path) {

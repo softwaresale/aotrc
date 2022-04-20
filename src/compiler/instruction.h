@@ -21,8 +21,11 @@ namespace aotrc::compiler {
         CHECK_END,
         TEST,
         TEST_VAR,
+        STORE_VAR,
         GOTO,
+        LOC_GOTO,
         ACCEPT,
+        STORE_LOC_ACCEPT,
         REJECT,
     };
 
@@ -139,6 +142,10 @@ namespace aotrc::compiler {
         InstructionType type() const noexcept override { return InstructionType::CHECK_END; }
         std::string str() const noexcept override;
 
+        const std::unique_ptr<Instruction> &getOnTrueInst() const {
+            return onTrueInst;
+        }
+
         /**
          * Checks if execution has reached the end of the subject string. This instruction has
          * a branch in it, so it inserts a basic block after the current insertion point and
@@ -197,6 +204,23 @@ namespace aotrc::compiler {
         std::unique_ptr<Instruction> falseCommand;
     };
 
+    class StoreVariableInstruction : public Instruction {
+    public:
+        StoreVariableInstruction(llvm::AllocaInst *toStore, llvm::AllocaInst *withValue)
+        : variableToStoreInto(toStore)
+        , variableWithValue(withValue)
+        { }
+
+        InstructionType type() const noexcept override { return STORE_VAR; }
+        std::string str() const noexcept override;
+
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
+
+    private:
+        llvm::AllocaInst *variableToStoreInto;
+        llvm::AllocaInst *variableWithValue;
+    };
+
     /**
      * Jump to a new state, either conditionally or unconditionally. An optional
      * test instruction can be added to test if the goto should be executed.
@@ -224,9 +248,45 @@ namespace aotrc::compiler {
          */
         llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
 
-    private:
+        const std::unique_ptr<TestInstruction> &getTestInst() const {
+            return testInst;
+        }
+
+        std::unique_ptr<TestInstruction> &getTestInst() {
+            return testInst;
+        }
+
+        unsigned int getDestId() const {
+            return destId;
+        }
+
+    protected:
         std::unique_ptr<TestInstruction> testInst;
         unsigned int destId;
+    };
+
+    /**
+     * Like a goto instruction except this one keeps track of the ending
+     * position
+     */
+    class LocAwareGotoInstruction : public GotoInstruction {
+    public:
+        explicit LocAwareGotoInstruction(unsigned int destId)
+        : GotoInstruction(destId)
+        { }
+
+        LocAwareGotoInstruction(unsigned int destId, std::unique_ptr<TestInstruction> testInstruction)
+        : GotoInstruction(destId, std::move(testInstruction))
+        { }
+
+        explicit LocAwareGotoInstruction(std::unique_ptr<GotoInstruction> &&gotoInst)
+        : GotoInstruction(gotoInst->getDestId(), std::move(gotoInst->getTestInst()))
+        { }
+
+        InstructionType type() const noexcept override { return InstructionType::LOC_GOTO; }
+        std::string str() const noexcept override;
+
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
     };
 
     /**
@@ -239,6 +299,22 @@ namespace aotrc::compiler {
 
         /**
          * Just unconditionally branches to the accept block
+         * @param state program state
+         * @return      nullptr
+         */
+        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
+    };
+
+    /**
+     * Like a store state instruction, except
+     */
+    class StoreLocationAcceptInstruction : public Instruction {
+    public:
+        InstructionType type() const noexcept override { return InstructionType::STORE_LOC_ACCEPT; }
+        std::string str() const noexcept override;
+
+        /**
+         * Just unconditionally branches to the store location block, then to the accept block
          * @param state program state
          * @return      nullptr
          */

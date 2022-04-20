@@ -14,10 +14,11 @@ namespace aotrc::input {
      */
     struct RegexDef {
     public:
-        RegexDef(const std::string &label, const std::string &pattern, bool fullmatch = true, bool submatch = false)
+        RegexDef(const std::string &label, const std::string &pattern, bool fullmatch = true, bool submatch = false, bool search = false)
         : label(label)
         , genFullMatch(fullmatch)
-        , genSubMatch(submatch) {
+        , genSubMatch(submatch)
+        , genSearch(search) {
             // Remove the //'s from pattern
             this->pattern = pattern.substr(1, pattern.size() - 2);
         }
@@ -26,6 +27,7 @@ namespace aotrc::input {
         std::string pattern;
         bool genFullMatch;
         bool genSubMatch;
+        bool genSearch;
     };
 
     /**

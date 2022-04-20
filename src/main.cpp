@@ -3,7 +3,6 @@
 
 #include "args_parser.h"
 #include "input/aotrc_input_parser.h"
-#include "compiler/program.h"
 #include "compiler/compiler.h"
 #include "src/compiler/linker.h"
 
@@ -48,17 +47,33 @@ int main(int argc, char **argv) {
         aotrc::input::AotrcInputParser inputFileParser(inputFilePath);
 
         for (const auto &[moduleName, regexDefs] : inputFileParser.getModules()) {
+
+            std::optional<std::string> hirPath;
+            if (argsParser.getOutputType() == aotrc::OutputType::HIR) {
+                hirPath = moduleName + ".hir";
+            }
+
             for (const auto &regexDef : regexDefs) {
                 if (regexDef.genFullMatch) {
-                    compiler.compileRegex(moduleName, regexDef.label, regexDef.pattern);
+                    compiler.compileRegex(moduleName, regexDef.label, regexDef.pattern, true, hirPath);
                 }
 
                 if (regexDef.genSubMatch) {
-                    compiler.compileSubmatchRegex(moduleName, regexDef.label, regexDef.pattern);
+                    compiler.compileSubmatchRegex(moduleName, regexDef.label, regexDef.pattern, true, hirPath);
+                }
+
+                if (regexDef.genSearch) {
+                    compiler.compileSearchRegex(moduleName, regexDef.label, regexDef.pattern, true, hirPath);
                 }
             }
 
             compiler.emitHeaderFile(moduleName);
+
+            // If type is HIR, then we don't need to output anything
+            if (argsParser.getOutputType() == aotrc::OutputType::HIR) {
+                continue;
+            }
+
             if (argsParser.getOutputType() == aotrc::OutputType::OBJ) {
                 compiler.emitObjectFile(moduleName);
             } else if (argsParser.getOutputType() == aotrc::OutputType::ASM) {

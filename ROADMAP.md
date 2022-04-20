@@ -1,19 +1,20 @@
 
 # Roadmap - Larger Milestones
 In no particular order:
-- [ ] **Pattern fetch function** - The pattern is known at compile time, so create
+- [x] **Pattern fetch function** - The pattern is known at compile time, so create
 a function type for fetching the pattern of a regex.
-- [ ] **Test Suite** - A lot of things need correctness verification. Some things
+- [x] **Test Suite** - A lot of things need correctness verification. Some things
 that need to be tested include:
-  - [ ] *(D|N)FA correctness* - Do the generated fas behave as they are expected to?
-  - [ ] *Integration tests* - Do the compiled regexes behave correctly when compiled
+  - [x] *(D|N)FA correctness* - Do the generated fas behave as they are expected to?
+  - [x] *Integration tests* - Do the compiled regexes behave correctly when compiled
   against a "real" program.
 ### Here - Release 0.1.0
 - [ ] **Program transformation/Multiple Program Types** - Once we know that
 everything is working properly, we should be able to create different kinds of
 programs for different tasks. Some kinds of programs include:
-  - [ ] *Sub-matching* - Rather than matching the entire string, just see if
+  - [x] *Sub-matching* - Rather than matching the entire string, just see if
   there's at least one substring that matches
+  - [ ] *Searching* - Find where a substring is located within a subject string
   - [ ] *Capturing* - Add support for capture groups. This will involve keeping
   track of where capture groups begin and end in the subject string. (For starters,
   just return indices of where the capture happens. Down the line tho, it would
@@ -42,3 +43,7 @@ compatible with those. Here are some languages to support:
   a rust program.
   - [ ] *NodeJS (Dynamic)* - Aotrc in Node?
 ### Here - Release 1.0.0
+  
+## Future Goals/Ideas
+- **JIT compiler** - Allow JIT for on the fly regex compilation. This will hopefully
+make regexes compilable at runtime.

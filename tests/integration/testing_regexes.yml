@@ -10,11 +10,13 @@ testing_regexes:
     options:
       fullmatch: true
       submatch: true
+      search: true
   plus:
     pattern: /a+/
     options:
       fullmatch: true
       submatch: true
+      search: true
   star:
     pattern: /a*/
     options:
@@ -25,6 +27,7 @@ testing_regexes:
     options:
       fullmatch: true
       submatch: true
+      search: true
   bounded_single:
     pattern: /(?:abc){3}/
     options:
