@@ -63,8 +63,6 @@ namespace aotrc::compiler {
         std::unique_ptr<ProgramState> programState;
     };
 
-    // std::ostream &operator<<(std::ostream &os, const Program &program);
-
     /**
      * A very simple implementation of program. This class represents the default mode of the program, which is
      * full matching. No additional modifications must be made.
@@ -75,6 +73,14 @@ namespace aotrc::compiler {
         : Program(std::move(name), ctx, module)
         {}
     };
+
+    template<class ProgramTp>
+    std::ostream &operator<<(std::ostream &os, const aotrc::compiler::Program<ProgramTp> &program) {
+        for (const auto &instruction : program.getInstructions()) {
+            os << instruction->str() << '\n';
+        }
+        return os;
+    }
 }
 
 #endif //ATORC_PROGRAM_H

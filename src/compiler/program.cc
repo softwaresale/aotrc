@@ -28,15 +28,6 @@ aotrc::compiler::Program<ProgramModeTp>::Program(std::string name, llvm::LLVMCon
     this->programState = programMode.getProgramState(this->function);
 }
 
-#if 0
-std::ostream &aotrc::compiler::operator<<(std::ostream &os, const aotrc::compiler::Program &program) {
-    for (const auto &instruction : program.getInstructions()) {
-        os << instruction->str() << '\n';
-    }
-    return os;
-}
-#endif
-
 template <class ProgramModeTp>
 void aotrc::compiler::Program<ProgramModeTp>::build(const aotrc::fa::DFA &dfa) {
     // For each state

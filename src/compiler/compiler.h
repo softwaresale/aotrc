@@ -9,6 +9,8 @@
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Target/TargetMachine.h>
+#include <any>
+#include <fstream>
 #include "src/parser/regex_parser.h"
 #include "src/fa/dfa.h"
 #include "program_mode.h"
@@ -30,7 +32,7 @@ namespace aotrc::compiler {
         * @param genPatternFunc If a get pattern function should be compiled for the regex
         * @return True if successful.
         */
-        bool compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
+        bool compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true, const std::optional<std::string>& appendHir = {});
 
         /**
         * Builds a sub match regex program
@@ -40,8 +42,8 @@ namespace aotrc::compiler {
         * @param genPatternFunc If a get pattern function should be compiled for the regex
         * @return True if successful.
         */
-        bool compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
-        bool compileSearchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
+        bool compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true, const std::optional<std::string>& appendHir = {});
+        bool compileSearchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true, const std::optional<std::string>& appendHir = {});
 
         std::string emitIr(const std::string &module);
         std::string emitAssembly(const std::string &module);
@@ -64,7 +66,7 @@ namespace aotrc::compiler {
          * @return True if successful
          */
         template <class ProgramTp>
-        bool compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true);
+        bool compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc = true, const std::optional<std::string>& appendHir = {});
 
         bool generatePatternFunc(const std::string &module, const std::string &label, const std::string &regex);
         std::string llvmTypeToCType(llvm::Type *type);
@@ -75,6 +77,19 @@ namespace aotrc::compiler {
         const llvm::Target *target;
         std::unique_ptr<llvm::TargetMachine> targetMachine;
     };
+
+    template <class ProgramTp>
+    constexpr std::string_view programType() {
+        if constexpr(std::is_same_v<typename ProgramTp::ProgramModeType, aotrc::compiler::FullMatchProgramMode>) {
+            return {"FULL_MATCH"};
+        } else if constexpr(std::is_same_v<typename ProgramTp::ProgramModeType, aotrc::compiler::SubMatchProgramMode>) {
+            return {"SUB_MATCH"};
+        } else if constexpr(std::is_same_v<typename ProgramTp::ProgramModeType, aotrc::compiler::SearchProgramMode>) {
+            return {"SEARCH"};
+        } else {
+            return {"UNKNOWN"};
+        }
+    }
 
     /**
      * Generalized compilation function. It compiles a type of program with the given regex info and places the
@@ -87,7 +102,7 @@ namespace aotrc::compiler {
      * @return True if successful.
      */
     template <class ProgramTp>
-    bool Compiler::compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
+    bool Compiler::compileProgram(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc, const std::optional<std::string>& appendHir) {
         // Do some checks
         static_assert(
                 std::is_base_of_v<aotrc::compiler::Program<typename ProgramTp::ProgramModeType>, ProgramTp> &&
@@ -118,7 +133,26 @@ namespace aotrc::compiler {
         program.compile();
 
         if (genPatternFunc) {
-            return this->generatePatternFunc(module, label, regex);
+            auto ret = this->generatePatternFunc(module, label, regex);
+            if (!ret)
+                return ret;
+        }
+
+        if (appendHir.has_value()) {
+            // Open in append mode
+            std::ofstream hirFile(*appendHir, std::ios_base::app);
+            if (!hirFile) {
+                throw std::runtime_error("Could not open HIR file");
+            }
+
+            // Get the type of program
+            std::string_view programModeStr = programType<ProgramTp>();
+
+            // Write the header:
+            hirFile << "\nProgram: " << label << " - /" << regex << "/ - MODE: " << programModeStr << "\n";
+            hirFile << program;
+            hirFile << "\n";
+            hirFile.close();
         }
 
         // Done

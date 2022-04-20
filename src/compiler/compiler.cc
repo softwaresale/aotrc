@@ -5,7 +5,6 @@
 #include "compiler.h"
 
 #include <iostream>
-#include <fstream>
 #include "program.h"
 #include "submatch_program.h"
 #include "search_program.h"
@@ -32,17 +31,17 @@ aotrc::compiler::Compiler::Compiler()
             );
 }
 
-bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
-    return this->compileProgram<aotrc::compiler::FullMatchProgram>(module, label, regex, genPatternFunc);
+bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc, const std::optional<std::string>& appendHir) {
+    return this->compileProgram<aotrc::compiler::FullMatchProgram>(module, label, regex, genPatternFunc, appendHir);
 }
 
-bool aotrc::compiler::Compiler::compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc) {
-    return this->compileProgram<aotrc::compiler::SubMatchProgram>(module, label, regex, genPatternFunc);
+bool aotrc::compiler::Compiler::compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc, const std::optional<std::string>& appendHir) {
+    return this->compileProgram<aotrc::compiler::SubMatchProgram>(module, label, regex, genPatternFunc, appendHir);
 }
 
 bool aotrc::compiler::Compiler::compileSearchRegex(const std::string &module, const std::string &label,
-                                                   const std::string &regex, bool genPatternFunc) {
-    return this->compileProgram<aotrc::compiler::SearchProgram>(module, label, regex, genPatternFunc);
+                                                   const std::string &regex, bool genPatternFunc, const std::optional<std::string>& appendHir) {
+    return this->compileProgram<aotrc::compiler::SearchProgram>(module, label, regex, genPatternFunc, appendHir);
 }
 
 static llvm::GlobalVariable *

@@ -90,6 +90,8 @@ aotrc::ArgsParser::ArgsParser(int argc, char **argv)
                         this->outputType = OutputType::OBJ;
                     } else if (optArg == "ir") {
                         this->outputType = OutputType::IR;
+                    } else if (optArg == "hir") {
+                        this->outputType = OutputType::HIR;
                     } else if (optArg == "static") {
                         this->outputType = OutputType::STATIC;
                     } else if (optArg == "shared") {
@@ -151,7 +153,7 @@ void aotrc::ArgsParser::displayHelp() {
     std::cout << "usage: aotrc [options] <regex files ...>" << std::endl;
     std::cout << "aotrc - ahead of time regex compiler used for compiling regexes into machine code" << std::endl;
     std::cout << "options:" << std::endl;
-    std::cout << "  --output-type,    -t : output data type: asm, obj, ir, static, shared. Default is obj" << std::endl;
+    std::cout << "  --output-type,    -t : output data type: asm, obj, ir, hir, static, shared. Default is obj" << std::endl;
     std::cout << "  --linker-path        : specify a path to the linker to use for linking shared libraries" << std::endl;
     std::cout << "  --archiver-path      : specify a path to the archiver to use for creating a static library" << std::endl;
     std::cout << "  --build-shared,   -s : build a shared library, default is false" << std::endl;
