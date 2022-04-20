@@ -8,13 +8,12 @@ that need to be tested include:
   - [x] *(D|N)FA correctness* - Do the generated fas behave as they are expected to?
   - [x] *Integration tests* - Do the compiled regexes behave correctly when compiled
   against a "real" program.
-### Here - Release 0.1.0
 - [ ] **Program transformation/Multiple Program Types** - Once we know that
 everything is working properly, we should be able to create different kinds of
 programs for different tasks. Some kinds of programs include:
   - [x] *Sub-matching* - Rather than matching the entire string, just see if
   there's at least one substring that matches
-  - [ ] *Searching* - Find where a substring is located within a subject string
+  - [x] *Searching* - Find where a substring is located within a subject string
   - [ ] *Capturing* - Add support for capture groups. This will involve keeping
   track of where capture groups begin and end in the subject string. (For starters,
   just return indices of where the capture happens. Down the line tho, it would
@@ -23,7 +22,7 @@ programs for different tasks. Some kinds of programs include:
   look-ahead assertions or any kind of regex features that involve memory. However,
   these regex programs *have* memory. So, any regex features that require memory can
   be added.
-### Here - Release 0.2.0
+### Here - Release 0.1.0
 - [ ] **Benchmarking** - Compare the speed of this regex engine to others.
 - [ ] **Cross Compilation** - LLVM Supports cross compilation, so that should be
 added to this project as well.
