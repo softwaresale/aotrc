@@ -1,20 +1,17 @@
 //
-// Created by charlie on 3/13/22.
+// Created by charlie on 5/11/22.
 //
 
-#include "compiler.h"
-
-#include <iostream>
-#include "program.h"
-#include "submatch_program.h"
-#include "search_program.h"
-
-#include <llvm/Support/TargetSelect.h>
-#include <llvm/Target/TargetOptions.h>
-#include <llvm/IR/Module.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include "aotrc_compiler.h"
+#include "regex_compiler.h"
 
-aotrc::compiler::Compiler::Compiler()
+aotrc::compiler::AotrcCompiler::AotrcCompiler()
 : llvmContext() {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
@@ -28,20 +25,75 @@ aotrc::compiler::Compiler::Compiler()
     llvm::TargetOptions options;
     this->targetMachine = std::unique_ptr<llvm::TargetMachine>(
             target->createTargetMachine(LLVM_DEFAULT_TARGET_TRIPLE, "generic", "", options, llvm::Optional<llvm::Reloc::Model>())
-            );
+    );
 }
 
-bool aotrc::compiler::Compiler::compileRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc, const std::optional<std::string>& appendHir) {
-    return this->compileProgram<aotrc::compiler::FullMatchProgram>(module, label, regex, genPatternFunc, appendHir);
+
+void aotrc::compiler::AotrcCompiler::compileRegex(const std::string &module, const std::string &label, const aotrc::fa::DFA &regexDFA) {
+
+    // Create a new module if necessary
+    if (this->modules.find(module) == this->modules.end()) {
+        this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
+    }
+    std::unique_ptr<llvm::Module> &mod = this->modules.at(module);
+
+    // Get the appropriate regex compiler
+    FullMatchProgramCompiler fullMatchCompiler(this->llvmContext);
+    fullMatchCompiler.compile(mod, label, regexDFA);
 }
 
-bool aotrc::compiler::Compiler::compileSubmatchRegex(const std::string &module, const std::string &label, const std::string &regex, bool genPatternFunc, const std::optional<std::string>& appendHir) {
-    return this->compileProgram<aotrc::compiler::SubMatchProgram>(module, label, regex, genPatternFunc, appendHir);
+std::string aotrc::compiler::AotrcCompiler::emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type) {
+    auto &mod = this->modules.at(module);
+    mod->setDataLayout(this->targetMachine->createDataLayout());
+    mod->setCodeModel(this->targetMachine->getCodeModel());
+
+    std::error_code err;
+    llvm::raw_fd_ostream output(outputPath, err);
+    if (err) {
+        // llvm::errs() << "Could not open file: " << err.message();
+        throw std::runtime_error(err.message());
+    }
+
+    // Add a pass to generate machine code
+    llvm::legacy::PassManager passManager;
+    this->targetMachine->setOptLevel(llvm::CodeGenOpt::Level::Default); // Aggressive code optimization?
+    if (this->targetMachine->addPassesToEmitFile(passManager, output, nullptr, type)) {
+        llvm::errs() << "Error while emitting to file";
+    }
+
+    // Run all the passes
+    passManager.run(*mod);
+    output.flush();
+
+    return outputPath;
 }
 
-bool aotrc::compiler::Compiler::compileSearchRegex(const std::string &module, const std::string &label,
-                                                   const std::string &regex, bool genPatternFunc, const std::optional<std::string>& appendHir) {
-    return this->compileProgram<aotrc::compiler::SearchProgram>(module, label, regex, genPatternFunc, appendHir);
+std::string aotrc::compiler::AotrcCompiler::emitIr(const std::string &module) {
+    auto &mod = this->modules.at(module);
+    std::string output;
+    llvm::raw_string_ostream os(output);
+    os << *mod;
+    std::cout << output << std::endl;
+    return "";
+}
+
+std::string aotrc::compiler::AotrcCompiler::emitAssembly(const std::string &module, const std::string &outputPath) {
+    return this->emitCode(module, outputPath, llvm::CGFT_AssemblyFile);
+}
+
+std::string aotrc::compiler::AotrcCompiler::emitAssembly(const std::string &module) {
+    std::string defaultName = module + ".s";
+    return this->emitAssembly(module, defaultName);
+}
+
+std::string aotrc::compiler::AotrcCompiler::emitObjectFile(const std::string &module, const std::string &outputPath) {
+    return this->emitCode(module, outputPath, llvm::CGFT_ObjectFile);
+}
+
+
+std::string aotrc::compiler::AotrcCompiler::emitObjectFile(const std::string &module) {
+    std::string defaultName = module + ".o";
+    return this->emitObjectFile(module, defaultName);
 }
 
 static llvm::GlobalVariable *
@@ -72,7 +124,7 @@ build_global(const std::string &label, const std::string &pattern,
     return patternGlobal;
 }
 
-bool aotrc::compiler::Compiler::generatePatternFunc(const std::string &module, const std::string &label,
+void aotrc::compiler::AotrcCompiler::generatePatternFunc(const std::string &module, const std::string &label,
                                                     const std::string &regex) {
 
     // Create an IR builder
@@ -98,67 +150,9 @@ bool aotrc::compiler::Compiler::generatePatternFunc(const std::string &module, c
     // Get pointer to the global
     auto ptr = builder.CreateGEP(charPtrType, patternGlobal, llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->llvmContext), 0), "pointerToFirst");
     builder.CreateRet(ptr);
-
-    return true;
 };
 
-
-std::string aotrc::compiler::Compiler::emitIr(const std::string &module) {
-    auto &mod = this->modules.at(module);
-    std::string output;
-    llvm::raw_string_ostream os(output);
-    os << *mod;
-    std::cout << output << std::endl;
-    return "";
-}
-
-std::string aotrc::compiler::Compiler::emitAssembly(const std::string &module, const std::string &outputPath) {
-    return this->emitCode(module, outputPath, llvm::CGFT_AssemblyFile);
-}
-
-std::string aotrc::compiler::Compiler::emitAssembly(const std::string &module) {
-    std::string defaultName = module + ".s";
-    return this->emitAssembly(module, defaultName);
-}
-
-std::string aotrc::compiler::Compiler::emitObjectFile(const std::string &module, const std::string &outputPath) {
-    return this->emitCode(module, outputPath, llvm::CGFT_ObjectFile);
-}
-
-
-std::string aotrc::compiler::Compiler::emitObjectFile(const std::string &module) {
-    std::string defaultName = module + ".o";
-    return this->emitObjectFile(module, defaultName);
-}
-
-
-std::string aotrc::compiler::Compiler::emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type) {
-    auto &mod = this->modules.at(module);
-    mod->setDataLayout(this->targetMachine->createDataLayout());
-    mod->setCodeModel(this->targetMachine->getCodeModel());
-
-    std::error_code err;
-    llvm::raw_fd_ostream output(outputPath, err);
-    if (err) {
-        // llvm::errs() << "Could not open file: " << err.message();
-        throw std::runtime_error(err.message());
-    }
-
-    // Add a pass to generate machine code
-    llvm::legacy::PassManager passManager;
-    this->targetMachine->setOptLevel(llvm::CodeGenOpt::Level::Default); // Aggressive code optimization?
-    if (this->targetMachine->addPassesToEmitFile(passManager, output, nullptr, type)) {
-        llvm::errs() << "Error while emitting to file";
-    }
-
-    // Run all the passes
-    passManager.run(*mod);
-    output.flush();
-
-    return outputPath;
-}
-
-std::string aotrc::compiler::Compiler::llvmTypeToCType(llvm::Type *type) {
+std::string aotrc::compiler::AotrcCompiler::llvmTypeToCType(llvm::Type *type) {
     static auto boolWidth = llvm::IntegerType::getInt1Ty(this->llvmContext)->getBitWidth();
     static auto charWidth = llvm::IntegerType::getInt8Ty(this->llvmContext)->getBitWidth();
     static auto shortWidth = llvm::IntegerType::getInt16Ty(this->llvmContext)->getBitWidth();
@@ -202,7 +196,7 @@ std::string aotrc::compiler::Compiler::llvmTypeToCType(llvm::Type *type) {
     return typeStr.str();
 }
 
-std::string aotrc::compiler::Compiler::emitHeaderFile(const std::string &module, const std::string &outputPath) {
+std::string aotrc::compiler::AotrcCompiler::emitHeaderFile(const std::string &module, const std::string &outputPath) {
     auto &mod = this->modules[module];
 
     std::ofstream headerOutput(outputPath);
@@ -254,7 +248,7 @@ std::string aotrc::compiler::Compiler::emitHeaderFile(const std::string &module,
     return outputPath;
 }
 
-std::string aotrc::compiler::Compiler::emitHeaderFile(const std::string &module) {
+std::string aotrc::compiler::AotrcCompiler::emitHeaderFile(const std::string &module) {
     std::string defaultName = module + ".h";
     return this->emitHeaderFile(module, defaultName);
 }

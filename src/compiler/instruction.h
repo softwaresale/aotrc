@@ -1,341 +1,190 @@
 //
-// Created by charlie on 3/13/22.
+// Created by charlie on 5/10/22.
 //
 
-#ifndef ATORC_INSTRUCTION_H
-#define ATORC_INSTRUCTION_H
+#ifndef AOTRC_INSTRUCTION_H
+#define AOTRC_INSTRUCTION_H
 
 #include <string>
 #include <memory>
-#include <utility>
-#include <llvm/IR/Value.h>
-#include "../fa/transition_edge.h"
-#include "program_state.h"
+#include <variant>
+#include "src/fa/transition_edge.h"
+#include "util.h"
 
 namespace aotrc::compiler {
 
     enum InstructionType {
         START_STATE,
-        ENTER_ACCEPT,
         CONSUME,
         CHECK_END,
+        DECLARE_VAR,
         TEST,
-        TEST_VAR,
-        STORE_VAR,
         GOTO,
-        LOC_GOTO,
         ACCEPT,
-        STORE_LOC_ACCEPT,
         REJECT,
     };
 
-    /**
-     * A high level regular expression instruction. These are designed to
-     * describe the general outline of a regular expression program. This
-     */
-    class Instruction {
-    public:
-        /**
-         * Gets the instruction type. This is used for instruction inspections
-         * @return instruction type
-         */
-        virtual InstructionType type() const noexcept = 0;
-
-        /**
-         * String representation of the current instruction
-         * @return
-         */
-        virtual std::string str() const noexcept = 0;
-
-        /**
-         * Emits llvm IR for the given instruction. Each thing takes in a state
-         * container which holds all of the state used in the program. This
-         * state includes llvm context, variables, and anything potentially needed.
-         *
-         * NOTE: the return value may be undefined for some instructions
-         * @param state Program state to compile
-         * @return Optionally some value emitted by IR
-         */
-        virtual llvm::Value *build(std::unique_ptr<ProgramState> &state) = 0;
+    enum VariableType {
+        SIZE,
+        CHAR,
+        BOOL,
     };
 
     /**
-     * This is likely going to be just a NOP instruction. It creates an instruction that
-     * shows that a new state is starting. This is really more for readability and debugging.
+     * A basic high-level instruction. These instructions help to describe the DFA and
+     * represent it as a linear set of instructions
      */
-    class StartStateInstruction : public Instruction {
-    public:
-        explicit StartStateInstruction(unsigned int id)
-        : id(id)
-        { }
-
-        InstructionType type() const noexcept override { return InstructionType::START_STATE; }
-        std::string str() const noexcept override;
-
-        /**
-         * Set the insertion point for the irBuilder at the state specified. Creates a new state if necessary
-         * @param state build state
-         * @return nullptr always
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-
-        /**
-         * Get the id of the state being created
-         * @return State to start
-         */
-        unsigned int getId() const { return id; }
-
-    private:
-        unsigned int id;
-    };
-
-    /**
-     * This runs when an accept state is entered. This is useful for when we are sub-matching
-     */
-    class EnterAcceptInstruction : public Instruction {
-    public:
-        inline InstructionType type() const noexcept override { return ENTER_ACCEPT; }
-
-        std::string str() const noexcept override;
-
-        /**
-         * Stores true into accept state encountered variable. This means that an accept state
-         * has been entered, so if we hit a wall, we can accept instead of restart.
-         * @param state Program state
-         * @return nullptr always
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-    };
-
-    /**
-     * Consumes a character from the subject string for testing. This instruction
-     * sets the cursor value.
-     */
-    class ConsumeInstruction : public Instruction {
-    public:
-        InstructionType type() const noexcept override { return InstructionType::CONSUME; }
-        std::string str() const noexcept override;
-
-        /**
-         * Sets the cursor variable and increments the counter variable
-         * @param state program state
-         * @return nullptr always
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-    };
-
-    /**
-     * Checks if the cursor as at the end of the subject string. If it is,
-     * then the on true instruction is executed. Otherwise, the instruction
-     * falls through to the next.
-     */
-    class CheckEndInstruction : public Instruction {
-    public:
-        /**
-         * Creates a new check end instruction.
-         * @param on_true_inst The instruction to execute when the end of the string is found
-         */
-        explicit CheckEndInstruction(std::unique_ptr<Instruction> on_true_inst)
-        : onTrueInst(std::move(on_true_inst))
+    struct Instruction {
+        explicit Instruction(InstructionType type)
+        : instType(type)
         {}
 
-        InstructionType type() const noexcept override { return InstructionType::CHECK_END; }
-        std::string str() const noexcept override;
-
-        const std::unique_ptr<Instruction> &getOnTrueInst() const {
-            return onTrueInst;
-        }
+        /**
+         * Get the type of the instruction
+         * @return Type of instruction
+         */
+        [[nodiscard]] InstructionType type() const noexcept {
+            return this->instType;
+        };
 
         /**
-         * Checks if execution has reached the end of the subject string. This instruction has
-         * a branch in it, so it inserts a basic block after the current insertion point and
-         * sets the insertion point there. This move acts as a fall through (i.e. if the condition
-         * is not taken, then there is no "else" condition)
-         * @param state compilation state
-         * @return      the fall through basic block created by the branch
+         * Get the stringified representation of the instruction
+         * @return String representation of the instruction
          */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
+        [[nodiscard]] virtual std::string str() const noexcept = 0;
 
-    private:
+    protected:
+        InstructionType instType;
+    };
+
+    /**
+     * Convenience wrapper over unique_ptr of instruction
+     */
+    using InstructionPtr = std::unique_ptr<Instruction>;
+
+    /**
+     * Declares a new variable
+     */
+    struct DeclareVarInstruction : public Instruction {
+
+        DeclareVarInstruction(std::string name, VariableType varType);
+        DeclareVarInstruction(std::string name, VariableType varType, std::variant<size_t, char, bool> initialVal);
+
+        std::string str() const noexcept override;
+
+        std::string name;
+        VariableType varType;
+        std::variant<size_t, char, bool> initialValue;
+    };
+
+    /**
+     * Used to define that we have started a new state.
+     */
+    struct StartStateInstruction : public Instruction {
+        StartStateInstruction(unsigned int state, bool isAccept)
+        : Instruction(InstructionType::START_STATE)
+        , stateId(state)
+        , isAccept(isAccept)
+        {}
+
+        std::string str() const noexcept override;
+
+        std::string getStateLabel() const noexcept {
+            return aotrc::compiler::getStateBlockLabel(this->stateId);
+        }
+
+        unsigned int stateId;
+        bool isAccept;
+    };
+
+    /**
+     * Consumes a new character from the subject string and operates on it
+     */
+    struct ConsumeInstruction : public Instruction {
+        ConsumeInstruction()
+        : Instruction(InstructionType::CONSUME)
+        {}
+
+        std::string str() const noexcept override;
+    };
+
+    /**
+     * Checks if we are at the end of the subject string
+     */
+    struct CheckEndInstruction : public Instruction {
+        explicit CheckEndInstruction(std::unique_ptr<Instruction> onTrue)
+        : Instruction(InstructionType::CHECK_END)
+        , onTrueInst(std::move(onTrue))
+        {}
+
+        std::string str() const noexcept override;
+
         std::unique_ptr<Instruction> onTrueInst;
     };
 
     /**
-     * Tests the current value in the program state against the provided ranges.
+     * Tests if an edge can be taken on the graph
      */
-    class TestInstruction : public Instruction {
-    public:
-        explicit TestInstruction(std::vector<fa::Range> ranges)
-        : ranges(std::move(ranges))
-        {  }
-
-        InstructionType type() const noexcept override { return InstructionType::TEST; }
-        std::string str() const noexcept override;
-
-        /**
-         * Tests the current cursor value to see if it falls within any of the given ranges.
-         * @param state program state
-         * @return      True value of if the cursor falls within any ranges
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-
-    private:
-        std::vector<fa::Range> ranges;
-    };
-
-    /**
-     * Test's a command and executes the if/else instructions
-     */
-    class TestVarInstruction : public Instruction {
-    public:
-        TestVarInstruction(llvm::Value *variable, std::unique_ptr<Instruction> trueCommand, std::unique_ptr<Instruction> falseCommand)
-        : variable(variable)
-        , trueCommand(std::move(trueCommand))
-        , falseCommand(std::move(falseCommand))
+    struct TestEdgeInstruction : public Instruction {
+        explicit TestEdgeInstruction(const aotrc::fa::Edge &edgeToTest)
+        : Instruction(InstructionType::TEST)
+        , edgeToTest(edgeToTest)
         {}
 
-        InstructionType type() const noexcept override { return InstructionType::TEST_VAR; }
-        std::string str() const noexcept override;
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-
-    private:
-        llvm::Value *variable;
-        std::unique_ptr<Instruction> trueCommand;
-        std::unique_ptr<Instruction> falseCommand;
-    };
-
-    class StoreVariableInstruction : public Instruction {
-    public:
-        StoreVariableInstruction(llvm::AllocaInst *toStore, llvm::AllocaInst *withValue)
-        : variableToStoreInto(toStore)
-        , variableWithValue(withValue)
-        { }
-
-        InstructionType type() const noexcept override { return STORE_VAR; }
         std::string str() const noexcept override;
 
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-
-    private:
-        llvm::AllocaInst *variableToStoreInto;
-        llvm::AllocaInst *variableWithValue;
+        aotrc::fa::Edge edgeToTest;
     };
 
     /**
-     * Jump to a new state, either conditionally or unconditionally. An optional
-     * test instruction can be added to test if the goto should be executed.
+     * Transitions to another state, either conditionally or unconditionally
      */
-    class GotoInstruction : public Instruction {
-    public:
-        explicit GotoInstruction(unsigned int destId)
-        : testInst(nullptr)
-        , destId(destId)
-        {  }
+    struct GoToInstruction : public Instruction {
 
-        explicit GotoInstruction(unsigned int destId, std::unique_ptr<TestInstruction> testInstruction)
-        : testInst(std::move(testInstruction))
+        explicit GoToInstruction(unsigned int destId)
+        : Instruction(InstructionType::GOTO)
         , destId(destId)
-        {  }
+        , testInstruction(nullptr)
+        {}
 
-        InstructionType type() const noexcept override { return InstructionType::GOTO; }
+        GoToInstruction(unsigned int destId, std::unique_ptr<Instruction> testInst)
+        : Instruction(InstructionType::GOTO)
+        , destId(destId)
+        , testInstruction(std::move(testInst))
+        {}
+
         std::string str() const noexcept override;
 
-        /**
-         * Builds a branch statement. If there is a testInst, then it will try the condition and then
-         * jump to the destination. If there is no test instruction, then the jump will be unconditional.
-         * @param state Program state
-         * @return      If conditional, then the fallthrough block; otherwise nullptr
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-
-        const std::unique_ptr<TestInstruction> &getTestInst() const {
-            return testInst;
+        bool isConditional() const noexcept {
+            // The !! needs to coalese the testInstruction into a boolean
+            return !!testInstruction;
         }
 
-        std::unique_ptr<TestInstruction> &getTestInst() {
-            return testInst;
-        }
-
-        unsigned int getDestId() const {
-            return destId;
-        }
-
-    protected:
-        std::unique_ptr<TestInstruction> testInst;
         unsigned int destId;
+        std::unique_ptr<Instruction> testInstruction;
     };
 
     /**
-     * Like a goto instruction except this one keeps track of the ending
-     * position
+     * Accepts, terminating execution
      */
-    class LocAwareGotoInstruction : public GotoInstruction {
-    public:
-        explicit LocAwareGotoInstruction(unsigned int destId)
-        : GotoInstruction(destId)
-        { }
+    struct AcceptInstruction : public Instruction {
+        AcceptInstruction()
+        : Instruction(InstructionType::ACCEPT)
+        {}
 
-        LocAwareGotoInstruction(unsigned int destId, std::unique_ptr<TestInstruction> testInstruction)
-        : GotoInstruction(destId, std::move(testInstruction))
-        { }
-
-        explicit LocAwareGotoInstruction(std::unique_ptr<GotoInstruction> &&gotoInst)
-        : GotoInstruction(gotoInst->getDestId(), std::move(gotoInst->getTestInst()))
-        { }
-
-        InstructionType type() const noexcept override { return InstructionType::LOC_GOTO; }
         std::string str() const noexcept override;
-
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
     };
 
     /**
-     * Accepts the given subject string.
+     * Rejects, terminating execution
      */
-    class AcceptInstruction : public Instruction {
-    public:
-        InstructionType type() const noexcept override { return InstructionType::ACCEPT; }
+    struct RejectInstruction : public Instruction {
+        RejectInstruction()
+        : Instruction(InstructionType::REJECT)
+        {}
+
         std::string str() const noexcept override;
-
-        /**
-         * Just unconditionally branches to the accept block
-         * @param state program state
-         * @return      nullptr
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-    };
-
-    /**
-     * Like a store state instruction, except
-     */
-    class StoreLocationAcceptInstruction : public Instruction {
-    public:
-        InstructionType type() const noexcept override { return InstructionType::STORE_LOC_ACCEPT; }
-        std::string str() const noexcept override;
-
-        /**
-         * Just unconditionally branches to the store location block, then to the accept block
-         * @param state program state
-         * @return      nullptr
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
-    };
-
-    /**
-     * Rejects the given subject string.
-     */
-    class RejectInstruction : public Instruction {
-    public:
-        InstructionType type() const noexcept override { return InstructionType::REJECT; }
-        std::string str() const noexcept override;
-
-        /**
-         * Just unconditionally branches to the reject block
-         * @param state program state
-         * @return      nullptr
-         */
-        llvm::Value *build(std::unique_ptr<ProgramState> &state) override;
     };
 }
 
-#endif //ATORC_INSTRUCTION_H
+#endif //AOTRC_INSTRUCTION_H

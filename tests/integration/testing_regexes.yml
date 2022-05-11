@@ -4,35 +4,35 @@ testing_regexes:
     pattern: /[a-zm-tA-NM-Z0-9_]+/
     options:
       fullmatch: true
-      submatch: true
+      submatch: false
   neg_cc:
     pattern: /[^a-z]+/
     options:
       fullmatch: true
-      submatch: true
-      search: true
+      submatch: false
+      search: false
   plus:
     pattern: /a+/
     options:
       fullmatch: true
-      submatch: true
-      search: true
+      submatch: false
+      search: false
   star:
     pattern: /a*/
     options:
       fullmatch: true
-      submatch: true
+      submatch: false
   literal:
     pattern: /abcd/
     options:
       fullmatch: true
-      submatch: true
-      search: true
+      submatch: false
+      search: false
   bounded_single:
     pattern: /(?:abc){3}/
     options:
       fullmatch: true
-      submatch: true
+      submatch: false
   # bounded_range:
   #   pattern: /a{3,5}/
   #   options:
