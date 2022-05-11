@@ -91,6 +91,14 @@ aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
             this->addEdge(dfaStateTranslations[state], existingDFAState, Edge { Range(langChar) });
         }
     }
+
+    // Optimize edges
+    // TODO it is slightly redundant to do this here and above
+    for (unsigned int state = 0; state < this->stateCount(); state++) {
+        for (auto &[dest, edge] : this->transitions[state]) {
+            edge.optimizeRanges();
+        }
+    }
 }
 
 bool aotrc::fa::DFA::simulate(const std::string &subject) const {

@@ -133,13 +133,13 @@ llvm::Value * aotrc::compiler::FullMatchTranslator::makeTestEdgeInst(const aotrc
     std::vector<llvm::Value *> fitsARange(ranges.size());
     int idx = 0;
     for (const auto &range : ranges) {
-        auto lowerVal = llvm::ConstantInt::get(llvm::Type::getInt8Ty(ctx), ranges[0].lower);
+        auto lowerVal = llvm::ConstantInt::get(llvm::Type::getInt8Ty(ctx), range.lower);
         llvm::Value *rangeTest;
 
         if (range.lower == range.upper) {
             rangeTest = builder.CreateICmpEQ(lowerVal, cursorVal, "is_same");
         } else {
-            auto upperVal = llvm::ConstantInt::get(llvm::Type::getInt8Ty(ctx), ranges[0].upper);
+            auto upperVal = llvm::ConstantInt::get(llvm::Type::getInt8Ty(ctx), range.upper);
 
             // See if it fits between the ranges
             auto aboveLower = builder.CreateICmpUGE(cursorVal, lowerVal, "above_lower");

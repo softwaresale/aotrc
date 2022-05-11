@@ -34,7 +34,7 @@ std::string aotrc::compiler::GoToInstruction::str() const noexcept {
     std::stringstream ss;
     ss << "GOTO ";
     if (this->testInstruction) {
-        ss << "{" << testInstruction->str() << "}";
+        ss << "{" << testInstruction->str() << "} ";
     }
     ss << this->destId;
 
