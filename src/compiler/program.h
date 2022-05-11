@@ -9,6 +9,7 @@
 #include "instruction.h"
 #include "dfa_compiler.h"
 #include "src/compiler/full_match/full_match_dfa_compiler.h"
+#include "src/compiler/sub_match/sub_match_dfa_compiler.h"
 
 namespace aotrc::compiler {
 
@@ -64,6 +65,7 @@ namespace aotrc::compiler {
     }
 
     using FullMatchProgram = Program<FullMatchDFACompiler>;
+    using SubMatchProgram = Program<SubMatchDFACompiler>;
 }
 
 #endif //AOTRC_PROGRAM_H

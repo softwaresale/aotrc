@@ -8,6 +8,9 @@
 #include "src/compiler/dfa_compiler.h"
 
 namespace aotrc::compiler {
+    /**
+     * Compiles a DFA into a full match program.
+     */
     class FullMatchDFACompiler : public DFACompiler {
     public:
         std::vector<InstructionPtr> buildSetup() override;

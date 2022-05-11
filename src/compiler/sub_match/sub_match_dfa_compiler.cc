@@ -2,20 +2,10 @@
 // Created by charlie on 5/11/22.
 //
 
-#include "full_match_dfa_compiler.h"
-
-std::vector<aotrc::compiler::InstructionPtr> aotrc::compiler::FullMatchDFACompiler::buildSetup() {
-    // Declare two variables:
-    std::vector<InstructionPtr> insts;
-    // counter - keeps track of where in the subject string we are
-    insts.push_back(std::make_unique<DeclareVarInstruction>("counter", VariableType::SIZE));
-    // cursor - the current value being examined in the subject string
-    insts.push_back(std::make_unique<DeclareVarInstruction>("cursor", VariableType::CHAR));
-    return insts;
-}
+#include "sub_match_dfa_compiler.h"
 
 std::vector<aotrc::compiler::InstructionPtr>
-aotrc::compiler::FullMatchDFACompiler::buildState(unsigned int state, const aotrc::fa::DFA &dfa) {
+aotrc::compiler::SubMatchDFACompiler::buildState(unsigned int state, const aotrc::fa::DFA &dfa) {
     std::vector<InstructionPtr> insts;
 
     bool isAccept = dfa.isAcceptState(state);
@@ -47,8 +37,13 @@ aotrc::compiler::FullMatchDFACompiler::buildState(unsigned int state, const aotr
         insts.push_back(std::move(gotoInst));
     }
 
-    // No edge can be taken, so reject
-    insts.push_back(std::make_unique<RejectInstruction>());
+    // No edge can be taken. If we are on an accept state, then accept. If we are not, then go back to
+    // the first state
+    if (isAccept) {
+        insts.push_back(std::make_unique<AcceptInstruction>());
+    } else {
+        insts.push_back(std::make_unique<GoToInstruction>(0));
+    }
 
     // done
     return insts;

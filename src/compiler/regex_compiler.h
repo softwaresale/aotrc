@@ -13,6 +13,7 @@
 #include "program_translator.h"
 #include "program_info_provider.h"
 #include "src/compiler/full_match/full_match_program_info_provider.h"
+#include "src/compiler/sub_match/sub_match_program_info_provider.h"
 
 namespace aotrc::compiler {
 
@@ -25,7 +26,7 @@ namespace aotrc::compiler {
     template <class ProgramTranslatorTp, class ProgramTp, class ProgramInfoProviderTp>
     class RegexCompiler {
     public:
-        RegexCompiler(llvm::LLVMContext &ctx)
+        explicit RegexCompiler(llvm::LLVMContext &ctx)
         : ctx(ctx)
         {
             // First, verify that translator is the correct type
@@ -98,6 +99,11 @@ namespace aotrc::compiler {
      * A full match program compiler
      */
     using FullMatchProgramCompiler = RegexCompiler<FullMatchProgramTranslator, FullMatchProgram, FullMatchProgramInfoProvider>;
+
+    /**
+     * A specialized sub-match program compiler. Compiles a regex into a sub-match program
+     */
+    using SubMatchProgramCompiler = RegexCompiler<SubMatchProgramTranslator, SubMatchProgram, SubMatchProgramInfoProvider>;
 }
 
 #endif //AOTRC_REGEX_COMPILER_H

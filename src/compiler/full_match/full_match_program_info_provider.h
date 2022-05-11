@@ -10,7 +10,6 @@
 namespace aotrc::compiler {
     struct FullMatchProgramInfoProvider : public ProgramInfoProvider {
         llvm::FunctionType *getFunctionType(llvm::LLVMContext &ctx) const override;
-
         std::string getFunctionName(const std::string &regexLabel) const noexcept override;
     };
 }

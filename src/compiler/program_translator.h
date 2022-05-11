@@ -94,6 +94,13 @@ namespace aotrc::compiler {
      * A specialized FullMatchProgramTranslator
      */
     using FullMatchProgramTranslator = ProgramTranslator<FullMatchTranslator, FullMatchProgram>;
+
+    /**
+     * A specialized submatch program translator. This specific instance still uses the full match translator
+     * as there are no differences in translation. However, the type of program (and therefore DFA compiler)
+     * is different.
+     */
+    using SubMatchProgramTranslator = ProgramTranslator<FullMatchTranslator, SubMatchProgram>;
 }
 
 #endif //AOTRC_PROGRAM_TRANSLATOR_H

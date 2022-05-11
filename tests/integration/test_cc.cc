@@ -15,9 +15,7 @@ DECLARE_INT_ACCEPT_TEST(CCTest, AcceptUnderscores, "______________")
 
 DECLARE_INT_REJECT_TEST(CCTest, RejectSpecialChar, "%")
 
-#if 0
 DECLARE_INT_TEST(CCSubmatchTest, cc_sub_match)
 
 DECLARE_INT_ACCEPT_TEST(CCSubmatchTest, AcceptLowerCaseString, "))_____abcdefa_()*")
 DECLARE_INT_ACCEPT_TEST(CCSubmatchTest, AcceptUpperAndNumberString, "))____3ASDF_()*")
-#endif

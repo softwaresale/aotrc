@@ -42,6 +42,19 @@ void aotrc::compiler::AotrcCompiler::compileRegex(const std::string &module, con
     fullMatchCompiler.compile(mod, label, regexDFA);
 }
 
+
+void aotrc::compiler::AotrcCompiler::compileSubMatchRegex(const std::string &module, const std::string &label, const aotrc::fa::DFA &regexDFA) {
+    // Create a new module if necessary
+    if (this->modules.find(module) == this->modules.end()) {
+        this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
+    }
+    std::unique_ptr<llvm::Module> &mod = this->modules.at(module);
+
+    // Get the appropriate regex compiler
+    SubMatchProgramCompiler subMatchProgramCompiler(this->llvmContext);
+    subMatchProgramCompiler.compile(mod, label, regexDFA);
+}
+
 std::string aotrc::compiler::AotrcCompiler::emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type) {
     auto &mod = this->modules.at(module);
     mod->setDataLayout(this->targetMachine->createDataLayout());

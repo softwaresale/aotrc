@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
                 }
 
                 if (regexDef.genSubMatch) {
-                    throw std::runtime_error("Unsupported regex type");
+                    compiler.compileSubMatchRegex(moduleName, regexDef.label, dfa);
                 }
 
                 if (regexDef.genSearch) {

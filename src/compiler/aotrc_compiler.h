@@ -33,6 +33,8 @@ namespace aotrc::compiler {
         */
         void compileRegex(const std::string &module, const std::string &label, const aotrc::fa::DFA &regexDFA);
 
+        void compileSubMatchRegex(const std::string &module, const std::string &label, const aotrc::fa::DFA &regexDFA);
+
         std::string emitIr(const std::string &module);
 
         std::string emitAssembly(const std::string &module);

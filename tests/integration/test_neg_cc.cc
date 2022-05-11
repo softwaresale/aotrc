@@ -12,10 +12,8 @@ DECLARE_INT_ACCEPT_TEST(NegCCTest, AcceptWhiteSpaceAndSpecialChars, "   @*&^$&@ 
 
 DECLARE_INT_REJECT_TEST(NegCCTest, RejectLowerCaseString, "asdfiowefjo")
 
-#if 0
 DECLARE_INT_TEST(NegCCSubmatchTest, neg_cc_sub_match)
 
 DECLARE_INT_ACCEPT_TEST(NegCCSubmatchTest, AcceptUpperInLower, "asdfefweABC2fsdf")
 
 DECLARE_INT_REJECT_TEST(NegCCSubmatchTest, RejectAllLowerCase, "wefsfa")
-#endif
