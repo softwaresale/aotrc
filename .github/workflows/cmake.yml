@@ -23,14 +23,14 @@ jobs:
     
     - name: Install LLVM
       # Installing llvm-14 might lead to some problems. We will see ig...
-      run: sudo apt-get install -y llvm llvm-runtime llvm-dev
+      run: sudo apt-get install -y llvm-13 llvm-13-runtime llvm-13-dev
     
     # llvm-config-12 is not being discovered by cmake (I don't think...)
-    # - name: Link llvm-config-12 to llvm-config
-    #   run: ln -s /usr/bin/llvm-config-12 /usr/local/bin/llvm-config
+    - name: Link llvm-config-13 to llvm-config
+      run: ln -s /usr/bin/llvm-config-13 /usr/local/bin/llvm-config
 
-    # - name: Link llvm-symbolizer-12 to llvm-symbolizer
-    #   run: ln -s /usr/bin/llvm-symbolizer-12 /usr/local/bin/llvm-symbolizer
+    - name: Link llvm-symbolizer-13 to llvm-symbolizer
+      run: ln -s /usr/bin/llvm-symbolizer-13 /usr/local/bin/llvm-symbolizer
     
     - name: Checkout Repository w/ Submodules
       uses: actions/checkout@v2
