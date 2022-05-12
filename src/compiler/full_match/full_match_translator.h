@@ -76,6 +76,11 @@ namespace aotrc::compiler {
          */
         llvm::Value *makeRejectInst(const InstructionPtr &inst) override;
 
+        /**
+         * This does nothing and will throw an exception if used
+         * @param inst
+         * @return
+         */
         llvm::Value *makeStoreVarInst(const InstructionPtr &inst) override;
     };
 }

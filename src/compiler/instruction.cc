@@ -8,7 +8,7 @@
 
 std::string aotrc::compiler::StartStateInstruction::str() const noexcept {
     std::stringstream ss;
-    ss << "START_STATE " << this->stateId;
+    ss << "\nSTART_STATE " << this->stateId;
     if (this->isAccept) {
         ss << " **";
     }

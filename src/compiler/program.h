@@ -14,6 +14,13 @@
 
 namespace aotrc::compiler {
 
+    /**
+     * A high-level program that describes a DFA in a sequence of HIR instructions.
+     * This is the first intermediate representation that a DFA will take.
+     *
+     * TODO make this class iterable (like LLVM)
+     * @tparam DFACompilerTp The DFA compiler to use to compile a DFA into a sequence of instructions
+     */
     template <class DFACompilerTp>
     class Program {
     public:
@@ -22,7 +29,11 @@ namespace aotrc::compiler {
          */
         using DFACompilerType = DFACompilerTp;
 
-        Program() {
+        /**
+         * Creates an empty program
+         */
+        Program()
+        : compiled(false) {
             // Make sure that the DFA compiler type can be used
             static_assert(
                     std::is_base_of_v<DFACompiler, DFACompilerTp> &&
@@ -34,7 +45,15 @@ namespace aotrc::compiler {
             this->dfaCompiler = std::make_unique<DFACompilerTp>();
         }
 
+        /**
+         * Compiles the given DFA into a sequence of instructions. This should only be called once. If it
+         * has been compiled, and is compiled again, it will throw a runtime_error
+         * @param dfa The DFA to compile
+         */
         void compile(const fa::DFA &dfa) {
+            if (compiled)
+                throw std::runtime_error("Program has already been compiled");
+
             // First, compile the setup
             std::vector<InstructionPtr> setupInstructions = this->dfaCompiler->buildSetup();
             std::move(setupInstructions.begin(), setupInstructions.end(), std::back_inserter(this->instructions));
@@ -45,8 +64,13 @@ namespace aotrc::compiler {
                 std::move(stateInsts.begin(), stateInsts.end(), std::back_inserter(this->instructions));
             }
             // Done
+            compiled = true;
         }
 
+        /**
+         * Gets the sequence of instructions for this program
+         * @return The vector of instructions used by this program
+         */
         const std::vector<InstructionPtr> &getInstructions() const {
             return this->instructions;
         }
@@ -54,6 +78,7 @@ namespace aotrc::compiler {
     private:
         std::vector<InstructionPtr> instructions;
         std::unique_ptr<DFACompiler> dfaCompiler;
+        bool compiled;
     };
 
     template <class DFACompilerTp>
@@ -65,8 +90,19 @@ namespace aotrc::compiler {
         return os;
     }
 
+    /**
+     * Specialization of program that uses the full-match DFA compiler
+     */
     using FullMatchProgram = Program<FullMatchDFACompiler>;
+
+    /**
+     * Specialization of program that uses the sub-match DFA compiler
+     */
     using SubMatchProgram = Program<SubMatchDFACompiler>;
+
+    /**
+     * Specialization of program that uses the search DFA compiler
+     */
     using SearchProgram = Program<SearchDFACompiler>;
 }
 

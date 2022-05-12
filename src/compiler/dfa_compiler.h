@@ -11,19 +11,21 @@
 
 namespace aotrc::compiler {
     /**
-     * Used to compile a DFA into a list of high-level instructions.
+     * Used to compile a DFA into a list of high-level instructions. Responsible for turning a DFA into
+     * a sequence of HIR instructions.
      */
     class DFACompiler {
     public:
         /**
          * Builds setup of the program, which in includes any instructions that should occur
-         * before evaluating the actual DFA
+         * before evaluating the actual DFA. This can be optional.
          * @return A sequence of instructions to be run before
          */
         virtual std::vector<InstructionPtr> buildSetup() = 0;
 
         /**
-         * Builds out the instructions used in a DFA state
+         * Builds out the instructions used in a DFA state. This pattern assumes that each state should be
+         * built out identically. The emits the sequence of instructions used for a given state.
          * @param state Id of state to build out
          * @param dfa The DFA that the state belongs to
          * @return A sequence of instructions that represent the given state

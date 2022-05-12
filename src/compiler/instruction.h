@@ -14,21 +14,41 @@
 
 namespace aotrc::compiler {
 
+    /**
+     * Describes the different type of instructions
+     */
     enum InstructionType {
+        /// Starts a new DFA state
         START_STATE,
+        /// Take the next input character from the subject string
         CONSUME,
+        /// Check if the end of the subject string is reached
         CHECK_END,
+        /// Create a new variable
         DECLARE_VAR,
+        /// Store a value into a variable
         STORE_VAR,
+        /// See if a character fits within an edge
         TEST,
+        /// Go to another state, potentially conditionally
         GOTO,
+        /// Accept the subject string
         ACCEPT,
+        /// Reject the subject string
         REJECT,
     };
 
+    /**
+     * Describes the types of variables that can be declared. There
+     * are only a limited number as the programs do not need lots of different
+     * kinds of variables
+     */
     enum VariableType {
+        /// An unsigned 64-bit integer
         SIZE,
+        /// An 8-bit character
         CHAR,
+        /// A boolean value
         BOOL,
     };
 
@@ -74,13 +94,16 @@ namespace aotrc::compiler {
 
         std::string str() const noexcept override;
 
+        /// The name of the variable
         std::string name;
+        /// The type of the variable
         VariableType varType;
+        /// Some sort of initial value the variable should hold
         std::variant<size_t, char, bool> initialValue;
     };
 
     /**
-     * Stores a value into a variable, either a constant or another variables value
+     * Stores a value into a variable from another variable's value
      */
     struct StoreVarInstruction : public Instruction {
         StoreVarInstruction(std::string destName, std::string sourceName)
@@ -107,6 +130,9 @@ namespace aotrc::compiler {
 
         std::string str() const noexcept override;
 
+        /**
+         * The label of this state
+         */
         std::string getStateLabel() const noexcept {
             return aotrc::compiler::getStateBlockLabel(this->stateId);
         }
@@ -137,6 +163,7 @@ namespace aotrc::compiler {
 
         std::string str() const noexcept override;
 
+        /// Instruction to be executed if we are at the end
         std::unique_ptr<Instruction> onTrueInst;
     };
 
@@ -151,6 +178,7 @@ namespace aotrc::compiler {
 
         std::string str() const noexcept override;
 
+        /// The edge to test if any of the ranges fit.
         aotrc::fa::Edge edgeToTest;
     };
 
@@ -173,12 +201,18 @@ namespace aotrc::compiler {
 
         std::string str() const noexcept override;
 
+        /**
+         * True if the instruction has a condition for if it can jump
+         * @return True if conditional
+         */
         bool isConditional() const noexcept {
             // The !! needs to coalese the testInstruction into a boolean
             return !!testInstruction;
         }
 
+        /// The state to transition to
         unsigned int destId;
+        /// Optional instruction to see if we can jump
         std::unique_ptr<Instruction> testInstruction;
     };
 

@@ -19,9 +19,13 @@
 namespace aotrc::compiler {
 
     /**
-     * Handles end-to-end compilation of a regex DFA into LLVM IR
+     * Handles end-to-end compilation of a regex DFA into LLVM IR. The regex compiler is responsible for
+     * - creating the LLVM function
+     * - Converting a DFA to the corresponding Program
+     * - Translating the Program into LLVM IR
+     *
      * @tparam ProgramTranslatorTp The program translator type to use
-     * @tparam ProgramTp The type of program being compiled
+     * @tparam ProgramTp The type of program being compiled. Must be accepted by ProgramTranslatorTp
      * @tparam ProgramInfoProviderTp The type that provides program info
      */
     template <class ProgramTranslatorTp, class ProgramTp, class ProgramInfoProviderTp>
@@ -53,9 +57,10 @@ namespace aotrc::compiler {
         }
 
         /**
-         * Compiles a regular expression represented by a DFA
+         * Compiles a regular regular expression DFA into LLVM IR
+         * @param module The LLVM module to add the created LLVM function to
          * @param label The name/label of the regex
-         * @param regexDFA The DFA ty compile
+         * @param regexDFA The DFA to compile
          */
         void compile(std::unique_ptr<llvm::Module> &module, const std::string &label, const fa::DFA &regexDFA) {
             // First, create the function

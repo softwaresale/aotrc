@@ -10,7 +10,8 @@
 
 namespace aotrc::compiler {
     /**
-     * Provides meta data for a given program
+     * Provides meta data for a given program. This is used by the regex compiler to
+     * create the function prototype (name and function type).
      */
     struct ProgramInfoProvider {
         /**

@@ -13,7 +13,8 @@
 
 namespace aotrc::compiler {
     /**
-     * Responsible for translating a high-level program into LLVM IR
+     * Responsible for translating a high-level program into LLVM IR. This class uses an InstructionTranslator
+     * under the hood to translate all of the instructions found in a program into LLVM IR.
      * @tparam TranslatorTp Type of translator to use to translate high level instructions
      * @tparam DFACompilerTp The type of program to compile
      */
@@ -30,6 +31,12 @@ namespace aotrc::compiler {
          */
         using ProgramType = ProgramTp;
 
+        /**
+         * Creates and empty program translator
+         * @param ctx The LLVM context to use
+         * @param builder The LLVM IR builder
+         * @param function The function to compile the program into
+         */
         ProgramTranslator(llvm::LLVMContext &ctx, llvm::IRBuilder<> &builder, llvm::Function *function) {
             // First, check that we can use the given translator
             static_assert(
@@ -103,6 +110,9 @@ namespace aotrc::compiler {
      */
     using SubMatchProgramTranslator = ProgramTranslator<FullMatchTranslator, SubMatchProgram>;
 
+    /**
+     * Specialization of program translator that translates a search program
+     */
     using SearchProgramTranslator = ProgramTranslator<SearchTranslator, SearchProgram>;
 }
 

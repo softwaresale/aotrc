@@ -15,10 +15,18 @@
 namespace aotrc::compiler {
 
     /**
-     * Class that translates high-level instructions into LLVM
+     * Class that translates high-level instructions into LLVM. This visitor pattern takes in HIR and
+     * translates it to corresponding LLVM IR. This class can be extended if each instruction should be
+     * translated differently depending on the type of class.
      */
     class InstructionTranslator {
     public:
+        /**
+         * Creates a new instruction translator
+         * @param ctx The LLVM context being used
+         * @param builder The LLVM IR builder to use in building the function
+         * @param func The function that we are compiling this program into
+         */
         InstructionTranslator(llvm::LLVMContext &ctx, llvm::IRBuilder<> &builder, llvm::Function *func);
 
         /**
@@ -55,7 +63,12 @@ namespace aotrc::compiler {
          */
         virtual llvm::Value *makeRejectBlock();
 
+        /**
+         * Builds the link between the entry block and the first state
+         * @return null
+         */
         virtual llvm::Value *linkFirstStateToEntry();
+
         virtual llvm::Value *makeDeclareVarInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeStartStateInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeConsumeInst(const InstructionPtr &inst) = 0;
@@ -66,14 +79,11 @@ namespace aotrc::compiler {
         virtual llvm::Value *makeRejectInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeStoreVarInst(const InstructionPtr &inst) = 0;
 
-        llvm::IRBuilder<> &getBuilder() const {
-            return builder;
-        }
-
     protected:
         llvm::LLVMContext &ctx;
         llvm::IRBuilder<> &builder;
         llvm::Function *function;
+        /// Defines specific symbols used in the program (e.g. variables, blocks, etc)
         std::unordered_map<std::string, llvm::Value *> symbolTable;
     };
 

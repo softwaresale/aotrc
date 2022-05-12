@@ -8,6 +8,9 @@
 #include "../program_info_provider.h"
 
 namespace aotrc::compiler {
+    /**
+     * Provides information on how to set up a FullMatch Program
+     */
     struct FullMatchProgramInfoProvider : public ProgramInfoProvider {
         llvm::FunctionType *getFunctionType(llvm::LLVMContext &ctx) const override;
         std::string getFunctionName(const std::string &regexLabel) const noexcept override;
