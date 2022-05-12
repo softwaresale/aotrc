@@ -23,7 +23,11 @@ add_library(aotrc_compiler
         full_match/full_match_translator.cc full_match/full_match_translator.h
         full_match/full_match_program_info_provider.cc
         full_match/full_match_program_info_provider.h
-        sub_match/sub_match_program_info_provider.cc sub_match/sub_match_program_info_provider.h sub_match/sub_match_dfa_compiler.cc sub_match/sub_match_dfa_compiler.h)
+        sub_match/sub_match_program_info_provider.cc sub_match/sub_match_program_info_provider.h
+        sub_match/sub_match_dfa_compiler.cc sub_match/sub_match_dfa_compiler.h
+        searching/search_program_info_provider.cc searching/search_program_info_provider.h
+        searching/search_dfa_compiler.cc searching/search_dfa_compiler.h
+        searching/search_translator.cc searching/search_translator.h)
 
 execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)
 execute_process(COMMAND llvm-config --includedir OUTPUT_VARIABLE llvm_include_dirs)

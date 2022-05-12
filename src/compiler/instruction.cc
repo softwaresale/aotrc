@@ -79,15 +79,33 @@ aotrc::compiler::DeclareVarInstruction::DeclareVarInstruction(std::string name, 
     }
 }
 
+static std::ostream &print_literal(std::ostream &os, const std::variant<size_t, char, bool> &val) {
+    if (val.index() == 0) {
+        os << std::get<size_t>(val);
+    } else if (val.index() == 1) {
+        os << std::get<char>(val);
+    } else {
+        os << std::boolalpha << std::get<bool>(val);
+    }
+
+    return os;
+}
+
 std::string aotrc::compiler::DeclareVarInstruction::str() const noexcept {
     std::stringstream ss;
     ss << "DECLARE " << this->name << ": " << this->varType << " = ";
-    if (this->initialValue.index() == 0) {
-        ss << std::get<size_t>(this->initialValue);
-    } else if (this->initialValue.index() == 1) {
-        ss << std::get<char>(this->initialValue);
+    print_literal(ss, this->initialValue);
+
+    return ss.str();
+}
+
+std::string aotrc::compiler::StoreVarInstruction::str() const noexcept {
+    std::stringstream ss;
+    ss << "STORE " << this->destVar << " <- ";
+    if (initialValue) {
+        print_literal(ss, *this->initialValue);
     } else {
-        ss << std::boolalpha << std::get<bool>(this->initialValue);
+        ss << this->sourceVar;
     }
 
     return ss.str();

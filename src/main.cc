@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
                 }
 
                 if (regexDef.genSearch) {
-                    throw std::runtime_error("Unsupported regex type");
+                    compiler.compileSearchRegex(moduleName, regexDef.label, dfa);
                 }
 
                 // Generate a pattern function

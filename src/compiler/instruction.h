@@ -8,6 +8,7 @@
 #include <string>
 #include <memory>
 #include <variant>
+#include <optional>
 #include "src/fa/transition_edge.h"
 #include "util.h"
 
@@ -18,6 +19,7 @@ namespace aotrc::compiler {
         CONSUME,
         CHECK_END,
         DECLARE_VAR,
+        STORE_VAR,
         TEST,
         GOTO,
         ACCEPT,
@@ -75,6 +77,30 @@ namespace aotrc::compiler {
         std::string name;
         VariableType varType;
         std::variant<size_t, char, bool> initialValue;
+    };
+
+    /**
+     * Stores a value into a variable, either a constant or another variables value
+     */
+    struct StoreVarInstruction : public Instruction {
+        StoreVarInstruction(std::string destName, std::string sourceName)
+        : Instruction(InstructionType::STORE_VAR)
+        , destVar(std::move(destName))
+        , sourceVar(std::move(sourceName))
+        {}
+
+        StoreVarInstruction(std::string destName, std::variant<size_t, char, bool> value)
+        : Instruction(InstructionType::STORE_VAR)
+        , destVar(std::move(destName))
+        , sourceVar()
+        , initialValue(value)
+        {}
+
+        std::string str() const noexcept override;
+
+        std::string destVar;
+        std::string sourceVar;
+        std::optional<std::variant<size_t, char, bool>> initialValue;
     };
 
     /**

@@ -54,7 +54,7 @@ llvm::Value * aotrc::compiler::FullMatchTranslator::makeStartStateInst(const aot
         blockValue = this->symbolTable.at(stateLabel);
     }
 
-    auto block = static_cast<llvm::BasicBlock *>(blockValue);
+    auto block = llvm::dyn_cast<llvm::BasicBlock>(blockValue);
     builder.SetInsertPoint(block);
 
     return blockValue;
@@ -158,15 +158,14 @@ llvm::Value * aotrc::compiler::FullMatchTranslator::makeGoToInst(const aotrc::co
     auto goToInst = dynamic_cast<GoToInstruction *>(inst.get());
 
     // Get the destined block
-    auto destBlock = static_cast<llvm::BasicBlock *>(this->symbolTable.at(getStateBlockLabel(goToInst->destId)));
+    auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(this->symbolTable.at(getStateBlockLabel(goToInst->destId)));
 
     if (goToInst->testInstruction) {
         // If there is a test instruction, build it out, make a branch, and return the collect block
         auto canGoTo = this->makeInstruction(goToInst->testInstruction);
 
         // backup
-        auto backupBlock = builder.GetInsertBlock();
-        auto backupPoint = builder.GetInsertPoint();
+        auto backup = this->storeInsertPoint();
 
         llvm::BasicBlock *onFalse, *collect;
         collect = llvm::BasicBlock::Create(ctx, "GO_TO_INST_COLLECT", function);
@@ -176,7 +175,7 @@ llvm::Value * aotrc::compiler::FullMatchTranslator::makeGoToInst(const aotrc::co
         builder.CreateBr(collect);
 
         // Build a cond br
-        builder.SetInsertPoint(backupBlock, backupPoint);
+        this->restoreInsertPoint(backup);
         builder.CreateCondBr(canGoTo, destBlock, onFalse);
 
         builder.SetInsertPoint(collect);
@@ -190,13 +189,17 @@ llvm::Value * aotrc::compiler::FullMatchTranslator::makeGoToInst(const aotrc::co
 }
 
 llvm::Value * aotrc::compiler::FullMatchTranslator::makeAcceptInst(const aotrc::compiler::InstructionPtr &inst) {
-    auto acceptBlock = static_cast<llvm::BasicBlock *>(this->symbolTable.at("accept_block"));
+    auto acceptBlock = llvm::dyn_cast<llvm::BasicBlock>(this->symbolTable.at("accept_block"));
     builder.CreateBr(acceptBlock);
     return nullptr;
 }
 
 llvm::Value * aotrc::compiler::FullMatchTranslator::makeRejectInst(const aotrc::compiler::InstructionPtr &inst) {
-    auto rejectBlock = static_cast<llvm::BasicBlock *>(this->symbolTable.at("reject_block"));
+    auto rejectBlock = llvm::dyn_cast<llvm::BasicBlock>(this->symbolTable.at("reject_block"));
     builder.CreateBr(rejectBlock);
     return nullptr;
+}
+
+llvm::Value *aotrc::compiler::FullMatchTranslator::makeStoreVarInst(const aotrc::compiler::InstructionPtr &inst) {
+    throw std::runtime_error("FullMatchTranslator - makeStoreVarInst is not supported in this translator");
 }

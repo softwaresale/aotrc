@@ -38,6 +38,9 @@ llvm::Value * aotrc::compiler::InstructionTranslator::makeInstruction(const aotr
         case REJECT:
             val = this->makeRejectInst(inst);
             break;
+        case STORE_VAR:
+            val = this->makeStoreVarInst(inst);
+            break;
         default:
             throw std::runtime_error("InstructionTranslator - invalid instruction");
     }

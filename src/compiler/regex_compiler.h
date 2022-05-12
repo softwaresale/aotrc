@@ -14,6 +14,7 @@
 #include "program_info_provider.h"
 #include "src/compiler/full_match/full_match_program_info_provider.h"
 #include "src/compiler/sub_match/sub_match_program_info_provider.h"
+#include "src/compiler/searching/search_program_info_provider.h"
 
 namespace aotrc::compiler {
 
@@ -104,6 +105,8 @@ namespace aotrc::compiler {
      * A specialized sub-match program compiler. Compiles a regex into a sub-match program
      */
     using SubMatchProgramCompiler = RegexCompiler<SubMatchProgramTranslator, SubMatchProgram, SubMatchProgramInfoProvider>;
+
+    using SearchProgramCompiler = RegexCompiler<SearchProgramTranslator, SearchProgram , SearchProgramInfoProvider>;
 }
 
 #endif //AOTRC_REGEX_COMPILER_H

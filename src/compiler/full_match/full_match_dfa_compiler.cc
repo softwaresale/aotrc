@@ -33,18 +33,19 @@ aotrc::compiler::FullMatchDFACompiler::buildState(unsigned int state, const aotr
     insts.push_back(std::make_unique<CheckEndInstruction>(std::move(onEndInst)));
 
     // If this is a leaf and not an accept state, then
+    if (!dfa.isLeaf(state)) {
+        // If we are not at the end, then consume a new character
+        insts.push_back(std::make_unique<ConsumeInstruction>());
 
-    // If we are not at the end, then consume a new character
-    insts.push_back(std::make_unique<ConsumeInstruction>());
-
-    // Now, build gotos for each ougoing edge
-    for (const auto &[destId, edge] : dfa.edgesForState(state)) {
-        // Inst to test if we can take the edge
-        InstructionPtr testEdgeInst = std::make_unique<TestEdgeInstruction>(edge);
-        // Conditionally take the edge
-        InstructionPtr gotoInst = std::make_unique<GoToInstruction>(destId, std::move(testEdgeInst));
-        // Add the instruction
-        insts.push_back(std::move(gotoInst));
+        // Now, build gotos for each ougoing edge
+        for (const auto &[destId, edge] : dfa.edgesForState(state)) {
+            // Inst to test if we can take the edge
+            InstructionPtr testEdgeInst = std::make_unique<TestEdgeInstruction>(edge);
+            // Conditionally take the edge
+            InstructionPtr gotoInst = std::make_unique<GoToInstruction>(destId, std::move(testEdgeInst));
+            // Add the instruction
+            insts.push_back(std::move(gotoInst));
+        }
     }
 
     // No edge can be taken, so reject

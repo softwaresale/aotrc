@@ -64,6 +64,7 @@ namespace aotrc::compiler {
         virtual llvm::Value *makeGoToInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeAcceptInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeRejectInst(const InstructionPtr &inst) = 0;
+        virtual llvm::Value *makeStoreVarInst(const InstructionPtr &inst) = 0;
 
         llvm::IRBuilder<> &getBuilder() const {
             return builder;

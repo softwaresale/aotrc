@@ -9,6 +9,7 @@
 #include "instruction_translator.h"
 #include "src/compiler/full_match/full_match_translator.h"
 #include "src/compiler/full_match/full_match_dfa_compiler.h"
+#include "src/compiler/searching/search_translator.h"
 
 namespace aotrc::compiler {
     /**
@@ -101,6 +102,8 @@ namespace aotrc::compiler {
      * is different.
      */
     using SubMatchProgramTranslator = ProgramTranslator<FullMatchTranslator, SubMatchProgram>;
+
+    using SearchProgramTranslator = ProgramTranslator<SearchTranslator, SearchProgram>;
 }
 
 #endif //AOTRC_PROGRAM_TRANSLATOR_H
