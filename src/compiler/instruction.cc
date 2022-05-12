@@ -101,12 +101,7 @@ std::string aotrc::compiler::DeclareVarInstruction::str() const noexcept {
 
 std::string aotrc::compiler::StoreVarInstruction::str() const noexcept {
     std::stringstream ss;
-    ss << "STORE " << this->destVar << " <- ";
-    if (initialValue) {
-        print_literal(ss, *this->initialValue);
-    } else {
-        ss << this->sourceVar;
-    }
+    ss << "STORE " << this->destVar << " <- " << this->sourceVar;
 
     return ss.str();
 }

@@ -89,18 +89,10 @@ namespace aotrc::compiler {
         , sourceVar(std::move(sourceName))
         {}
 
-        StoreVarInstruction(std::string destName, std::variant<size_t, char, bool> value)
-        : Instruction(InstructionType::STORE_VAR)
-        , destVar(std::move(destName))
-        , sourceVar()
-        , initialValue(value)
-        {}
-
         std::string str() const noexcept override;
 
         std::string destVar;
         std::string sourceVar;
-        std::optional<std::variant<size_t, char, bool>> initialValue;
     };
 
     /**

@@ -80,18 +80,10 @@ llvm::Value *aotrc::compiler::SearchTranslator::makeStoreVarInst(const aotrc::co
     auto storeVarInst = dynamic_cast<StoreVarInstruction *>(inst.get());
     // First, figure out which variable we are storing to
     auto destVar = llvm::dyn_cast<llvm::AllocaInst>(this->symbolTable.at(storeVarInst->destVar));
-    // Next, get the value that we need to load. It'll either be constant or the value store in another variable
-    llvm::Value *valToStore;
-    if (storeVarInst->initialValue) {
-        // TODO I'm cheating here. Do this better later
-        auto initialValue = std::get<size_t>(*storeVarInst->initialValue);
-        valToStore = llvm::ConstantInt::get(destVar->getAllocatedType(), initialValue);
-    } else {
-        // Load the value from the source variable
-        auto sourceVar = llvm::dyn_cast<llvm::AllocaInst>(this->symbolTable.at(storeVarInst->sourceVar));
-        // Load the value, which is the value we want to store
-        valToStore = this->builder.CreateLoad(sourceVar->getAllocatedType(), sourceVar);
-    }
+    // Load the value from the source variable
+    auto sourceVar = llvm::dyn_cast<llvm::AllocaInst>(this->symbolTable.at(storeVarInst->sourceVar));
+    // Load the value, which is the value we want to store
+    llvm::Value *valToStore = this->builder.CreateLoad(sourceVar->getAllocatedType(), sourceVar);
 
     // Now, actually store the value into the destination
     this->builder.CreateStore(valToStore, destVar);
