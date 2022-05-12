@@ -3,7 +3,9 @@
 
 #include "args_parser.h"
 #include "input/aotrc_input_parser.h"
-#include "compiler/compiler.h"
+#include "src/parser/regex_parser.h"
+#include "src/fa/dfa.h"
+#include "src/compiler/aotrc_compiler.h"
 #include "src/compiler/linker.h"
 
 #if 0
@@ -41,30 +43,31 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    aotrc::compiler::Compiler compiler;
-    aotrc::compiler::Linker linker(argsParser.getLinkerPath(), argsParser.getArPath());
+    aotrc::compiler::AotrcCompiler compiler;
+    aotrc::compiler::Linker linker("/usr/bin/ld", "/usr/bin/ar");
     for (const auto &inputFilePath : argsParser.getInputFilePaths()) {
         aotrc::input::AotrcInputParser inputFileParser(inputFilePath);
 
         for (const auto &[moduleName, regexDefs] : inputFileParser.getModules()) {
-
-            std::optional<std::string> hirPath;
-            if (argsParser.getOutputType() == aotrc::OutputType::HIR) {
-                hirPath = moduleName + ".hir";
-            }
-
             for (const auto &regexDef : regexDefs) {
+                // build the NFA and DFA for the given regex
+                auto nfa = aotrc::parser::parseRegex(regexDef.pattern);
+                aotrc::fa::DFA dfa(nfa);
+
                 if (regexDef.genFullMatch) {
-                    compiler.compileRegex(moduleName, regexDef.label, regexDef.pattern, true, hirPath);
+                    compiler.compileRegex(moduleName, regexDef.label, dfa);
                 }
 
                 if (regexDef.genSubMatch) {
-                    compiler.compileSubmatchRegex(moduleName, regexDef.label, regexDef.pattern, true, hirPath);
+                    compiler.compileSubMatchRegex(moduleName, regexDef.label, dfa);
                 }
 
                 if (regexDef.genSearch) {
-                    compiler.compileSearchRegex(moduleName, regexDef.label, regexDef.pattern, true, hirPath);
+                    compiler.compileSearchRegex(moduleName, regexDef.label, dfa);
                 }
+
+                // Generate a pattern function
+                compiler.generatePatternFunc(moduleName, regexDef.label, regexDef.pattern);
             }
 
             compiler.emitHeaderFile(moduleName);

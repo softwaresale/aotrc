@@ -67,6 +67,12 @@ namespace aotrc::fa {
     };
     using RangeSet = std::unordered_set<Range, RangeHash, RangeEquals>;
 
+    struct RangeCompare {
+        constexpr bool operator()(const aotrc::fa::Range &leftRange, const aotrc::fa::Range &rightRange) const noexcept {
+            return leftRange.upper < rightRange.lower;
+        }
+    };
+
     /**
      * An edge that lives within a transition table. An edge holds a collection of ranges. Each range specifies what
      * characters can be used to traverse this edge.

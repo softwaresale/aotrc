@@ -9,16 +9,28 @@ separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
 add_definitions(${LLVM_DEFINITIONS_LIST})
 
 add_library(aotrc_compiler
-        compiler.cc compiler.h
-        program.cc program.h
         instruction.cc instruction.h
-        program_state.cc program_state.h
-        submatch_program.cc submatch_program.h
-        program_mode.cc program_mode.h
+        dfa_compiler.cc dfa_compiler.h
+        program.cc program.h
+        instruction_translator.cc instruction_translator.h
+        util.cc util.h
+        program_translator.h program_translator.cc
+        regex_compiler.h regex_compiler.cc
+        program_info_provider.cc program_info_provider.h
+        aotrc_compiler.cc aotrc_compiler.h
         linker.cc linker.h
-        passes/pass.cc passes/pass.h
-        passes/flag_start_state_pass.cc passes/flag_start_state_pass.h
-        passes/reject_to_conditional.cc passes/reject_to_conditional.h search_program.cc search_program.h passes/accept_to_store_loc_pass.cc passes/accept_to_store_loc_pass.h)
+        # full_match specific components
+        full_match/full_match_dfa_compiler.cc full_match/full_match_dfa_compiler.h
+        full_match/full_match_translator.cc full_match/full_match_translator.h
+        full_match/full_match_program_info_provider.cc
+        full_match/full_match_program_info_provider.h
+        # submatch specific components
+        sub_match/sub_match_program_info_provider.cc sub_match/sub_match_program_info_provider.h
+        sub_match/sub_match_dfa_compiler.cc sub_match/sub_match_dfa_compiler.h
+        # searching specific components
+        searching/search_program_info_provider.cc searching/search_program_info_provider.h
+        searching/search_dfa_compiler.cc searching/search_dfa_compiler.h
+        searching/search_translator.cc searching/search_translator.h)
 
 execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)
 execute_process(COMMAND llvm-config --includedir OUTPUT_VARIABLE llvm_include_dirs)

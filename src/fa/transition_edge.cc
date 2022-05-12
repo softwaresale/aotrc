@@ -43,6 +43,9 @@ void aotrc::fa::Edge::optimizeRanges() {
     if (rangesOptimized)
         return;
 
+    // First, sort the ranges
+    std::sort(this->ranges.begin(), this->ranges.end(), RangeCompare {});
+
     // Iterate over the ranges twice. If any two have any overlap, collapse the second one into the first one
     for (auto first = this->ranges.begin(); first != this->ranges.end(); ++first) {
         for (auto second = first + 1; second != this->ranges.end();) {
@@ -68,6 +71,9 @@ void aotrc::fa::Edge::optimizeRanges() {
                 second = this->ranges.erase(second);
             } else if (second->upper + 1 == first->lower) {
                 // These two are adjacent on the other side
+                first->lower = second->lower;
+                second = this->ranges.erase(second);
+            } else if (second->upper <= first->lower) {
                 first->lower = second->lower;
                 second = this->ranges.erase(second);
             } else ++second; // Otherwise, do nothing and check the next one

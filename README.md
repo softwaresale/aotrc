@@ -8,18 +8,18 @@ program that runs within the programming language.
 
 ## Project Status
 AOTRC is still in its infancy. As might be able to tell from this project's git history, I
-started it in Dec. 2021. Some features so far include:
+started it in Dec. 2021. The project has undergone a number of rewrites, migrations, and more.
+Some features so far include:
 - Quite a bit of basic regex syntax, including literals, character classes, and quantifiers.
-- Anchored and (basic) unanchored matching. Anchored matching (or fullmatching, as it's usually
+- Anchored and un-anchored matching. Anchored matching (or *full-matching*, as it's usually
 referred to in this project) return true if the entire input string matches the pattern.
-Unanchored matching (or submatching) returns true if there is some submatch within the input
-text.
+Un-anchored matching (or *sub-matching*) returns true if there is *some* submatch within the input
+text. There is also a more useful version of sub-matching called *searching*, which actually describes
+where in the subject string the match occurs.
 - Support for C/C++
 
 There is still quite a ways to go though.
 - There is no capture group support
-- There is little flexibility in how matching works. Submatching gives no information about
-where the match is internally
 - And there is likely plenty more issues that I don't quite know about yet.
 - No other languages are currently supported other than C/C++
 
@@ -95,8 +95,18 @@ int main(void) {
     const char *input = "email@test.com";
     unsigned int input_length = strlen(input);
     
-    // fullmatch_<regex_name> is the match function generated for each regex
-    int matches = fullmatch_email(input, input_length);
+    // <regex_name>_full_match is the match function generated for each regex
+    // This function determines that the string completely matches
+    int matches = email_full_match(input, input_length);
+    if (matches) {
+        printf("Matches!\n");
+    } else {
+        printf("Does not match\n");
+    }
+    
+    const char *invalid_input = "email@";
+    unsigned int invalid_input_length = strlen(invalid_input);
+    matches = email_full_match(invalid_input, invalid_input_length);
     if (matches) {
         printf("Matches!\n");
     } else {
@@ -112,6 +122,7 @@ defs.yml validators.h validators.o main.c
 $ gcc main.c validators.o -o test
 $ ./test
 Matches!
+Does not match
 ```
 
 ## Caveats
@@ -122,9 +133,11 @@ cannot build regexes at runtime.
 
 ## How It Works
 AOTRC compiles regular expressions into machine-readable executables. To get there, a number of
-steps have to be taken by the user and the compiler. Here's how it works:
+steps have to be taken by the user and the compiler. To get a more in-depth explanation for the
+actual architecture of the compiler, see the relevant wiki page (TODO: actually make the page).
+The overview of how the compiler works is:
 
-### Step 1: define regexes to compile
+### Step 1: Define regexes to compile
 First, the regexes to be compiled must be defined by the user in the regex definition file,
 which is just a yaml file. The definition file consists of *module definitions*. A module is
 a collection of regular expressions. All regexes defined in the same module are compiled into
@@ -169,17 +182,59 @@ Automata via Powerset Construction (also known as subset construction).
 
 Now that all regexes are turned into DFAs, they can begin the next step.
 
-### Step 3: DFA => Match Function
+### Step 3: DFA => High-level Intermediate Representation (hir)
 At this point in the compilation process, we have a DFA that can be used to match a string
 against a pattern. Now, this DFA has to be converted into machine code. To make that possible,
-AOTRC creates a function that represents the DFA. Without getting too much into the details,
-the match function represents DFA states as basic blocks. As the function steps through the
-input text, the program switches to different states based on the encountered character. When
-the program ends on an accept state, it returns true. Otherwise, it returns false.
+AOTRC creates a function that represents the DFA. A DFA, however, is nothing more than a
+transition graph, which is not really a "program." Enter High-level Intermediate Representation,
+or hir.
 
-Once a match function is created from a DFA, it can be compiled into machine code. This match
-function is first built into LLVM Intermediate Representation (IR), and is then compiled into
-actual machine code for the current target.
+HIR is an instruction set that describes the high level moves of the graph. Its purpose is to
+take a graph and convert it into a linear sequence of instructions that symbolize the process
+of simulating a DFA. The HIR for the regex `/abcd/` might look something like this:
+```text
+DECLARE counter: SIZE = 0        ;; These variables are used internally
+DECLARE cursor: CHAR = 0         ;; 
 
-At this point, we finally have machine code! This machine code can be linked into another
-executable or loaded dynamically into a program.
+START_STATE 0                    ;; Begin DFA state 0
+CHECK_END:                       ;; See if we are at the end of the subject string
+	REJECT                   ;; We are, then reject (this is not an accept state)
+CONSUME                          ;; We are not at the end, so take another char from the input string
+GOTO {TEST_EDGE {[a,a]}} 1       ;; See if the consumed char matches a. If it does, go to state 1
+REJECT                           ;; There are no more edges to take, so reject
+
+START_STATE 1
+CHECK_END:
+	REJECT
+CONSUME
+GOTO {TEST_EDGE {[b,b]}} 2       ;; Like above, but go to state 2
+REJECT
+
+START_STATE 2
+CHECK_END:
+	REJECT
+CONSUME
+GOTO {TEST_EDGE {[c,c]}} 3
+REJECT
+
+START_STATE 3
+CHECK_END:
+	REJECT
+CONSUME
+GOTO {TEST_EDGE {[d,d]}} 4
+REJECT
+
+START_STATE 4 **                 ;; Here we have an accept state
+CHECK_END:                       ;; If we end on an accept state...
+	ACCEPT                   ;; ...then accept...
+REJECT                           ;; ...otherwise, reject
+```
+The HIR instructions represent things like starting new states, consuming characters from the subject string,
+and moving across edges described in the graph. The HIR representation for each program can be different based
+on the kind of program we are compiling (e.g. sub-matching, searching).
+
+### Step 4: HIR => LLVM IR
+Once we have a HIR program representation for a DFA, we can then translate/compile it into LLVM IR. In fact, the main
+reason for having HIR in the first place is to simply the process of generating LLVM IR. LLVM IR is an intermediate
+representation that consists of instructions that are closer to the metal. This IR is what actually gets compiled into
+the target machine code.

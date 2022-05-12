@@ -1,86 +1,109 @@
 //
-// Created by charlie on 3/13/22.
+// Created by charlie on 5/11/22.
 //
 
-#ifndef ATORC_PROGRAM_H
-#define ATORC_PROGRAM_H
+#ifndef AOTRC_PROGRAM_H
+#define AOTRC_PROGRAM_H
 
+#include <vector>
 #include "instruction.h"
-#include "../fa/dfa.h"
-#include "src/compiler/passes/pass.h"
-#include "program_mode.h"
-
-#include <llvm/IR/Value.h>
-#include <llvm/IR/IRBuilder.h>
+#include "dfa_compiler.h"
+#include "src/compiler/full_match/full_match_dfa_compiler.h"
+#include "src/compiler/sub_match/sub_match_dfa_compiler.h"
+#include "src/compiler/searching/search_dfa_compiler.h"
 
 namespace aotrc::compiler {
 
     /**
-     * A high level regular expression program. These program is designed to transform a
-     * finite automaton into a "program," which is a sequence of instructions. This program
-     * can be modified and optimized, and then converted into real machine code.
+     * A high-level program that describes a DFA in a sequence of HIR instructions.
+     * This is the first intermediate representation that a DFA will take.
      *
-     * TODO: 1) add a mode parameter that gives the mode of the program (should inform the name and parameters)
+     * TODO make this class iterable (like LLVM)
+     * @tparam DFACompilerTp The DFA compiler to use to compile a DFA into a sequence of instructions
      */
-    template <class ProgramModeTp>
+    template <class DFACompilerTp>
     class Program {
     public:
-        using ProgramModeType = ProgramModeTp;
+        /**
+         * Type of compiler being used to compile the DFA
+         */
+        using DFACompilerType = DFACompilerTp;
 
         /**
-         * Compile a new regular expression program from a dfa
-         * @param dfa regex to compile
+         * Creates an empty program
          */
-        Program(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module);
+        Program()
+        : compiled(false) {
+            // Make sure that the DFA compiler type can be used
+            static_assert(
+                    std::is_base_of_v<DFACompiler, DFACompilerTp> &&
+                    std::is_default_constructible_v<DFACompilerTp>
+                    );
+
+            // Make a new DFA compiler
+            // TODO this might not be necessary. We can also just make the unique ptr a DFACompilerTp
+            this->dfaCompiler = std::make_unique<DFACompilerTp>();
+        }
 
         /**
-         * Builds the program for a given dfa
-         * @param dfa dfa to build
+         * Compiles the given DFA into a sequence of instructions. This should only be called once. If it
+         * has been compiled, and is compiled again, it will throw a runtime_error
+         * @param dfa The DFA to compile
          */
-        virtual void build(const fa::DFA &dfa);
+        void compile(const fa::DFA &dfa) {
+            if (compiled)
+                throw std::runtime_error("Program has already been compiled");
+
+            // First, compile the setup
+            std::vector<InstructionPtr> setupInstructions = this->dfaCompiler->buildSetup();
+            std::move(setupInstructions.begin(), setupInstructions.end(), std::back_inserter(this->instructions));
+
+            // for each state in the DFA, compile it
+            for (unsigned int state = dfa.getStartState(); state < dfa.stateCount(); state++) {
+                std::vector<InstructionPtr> stateInsts = this->dfaCompiler->buildState(state, dfa);
+                std::move(stateInsts.begin(), stateInsts.end(), std::back_inserter(this->instructions));
+            }
+            // Done
+            compiled = true;
+        }
 
         /**
-         * Run a pass on this program. This pass may modify the instructions of this
-         * program.
-         * @param pass Pass to run
+         * Gets the sequence of instructions for this program
+         * @return The vector of instructions used by this program
          */
-        void runPass(std::unique_ptr<Pass> &pass);
-
-        /**
-         * Compiles the current program
-         */
-        virtual void compile();
-
-        const std::vector<std::unique_ptr<Instruction>> &getInstructions() const {
+        const std::vector<InstructionPtr> &getInstructions() const {
             return this->instructions;
         }
 
-    protected:
-        std::string name;
-        llvm::Function *function{};
-        /// Vector of instructions to be read simultaneously
-        std::vector<std::unique_ptr<Instruction>> instructions;
-        std::unique_ptr<ProgramState> programState;
+    private:
+        std::vector<InstructionPtr> instructions;
+        std::unique_ptr<DFACompiler> dfaCompiler;
+        bool compiled;
     };
 
-    /**
-     * A very simple implementation of program. This class represents the default mode of the program, which is
-     * full matching. No additional modifications must be made.
-     */
-    class FullMatchProgram : public Program<FullMatchProgramMode> {
-    public:
-        FullMatchProgram(std::string name, llvm::LLVMContext &ctx, const std::unique_ptr<llvm::Module> &module)
-        : Program(std::move(name), ctx, module)
-        {}
-    };
-
-    template<class ProgramTp>
-    std::ostream &operator<<(std::ostream &os, const aotrc::compiler::Program<ProgramTp> &program) {
-        for (const auto &instruction : program.getInstructions()) {
-            os << instruction->str() << '\n';
+    template <class DFACompilerTp>
+    std::ostream &operator<<(std::ostream &os, const Program<DFACompilerTp> &prog) {
+        for (const auto &inst : prog.getInstructions()) {
+            os << inst->str() << std::endl;
         }
+
         return os;
     }
+
+    /**
+     * Specialization of program that uses the full-match DFA compiler
+     */
+    using FullMatchProgram = Program<FullMatchDFACompiler>;
+
+    /**
+     * Specialization of program that uses the sub-match DFA compiler
+     */
+    using SubMatchProgram = Program<SubMatchDFACompiler>;
+
+    /**
+     * Specialization of program that uses the search DFA compiler
+     */
+    using SearchProgram = Program<SearchDFACompiler>;
 }
 
-#endif //ATORC_PROGRAM_H
+#endif //AOTRC_PROGRAM_H

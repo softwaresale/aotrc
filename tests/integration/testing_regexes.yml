@@ -33,6 +33,11 @@ testing_regexes:
     options:
       fullmatch: true
       submatch: true
+  alter:
+    pattern: /(?:abc)|(?:def)|([A-Z]+)/
+    options:
+      fullmatch: true
+      # TODO add submatch tests here
   # bounded_range:
   #   pattern: /a{3,5}/
   #   options:
