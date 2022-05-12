@@ -46,3 +46,6 @@ compatible with those. Here are some languages to support:
 ## Future Goals/Ideas
 - **JIT compiler** - Allow JIT for on the fly regex compilation. This will hopefully
 make regexes compilable at runtime.
+- **Debugging TOols** - Create a debugger/debugger plugin for aotrc regexes. Something
+to help visualize the instructions would be greatly helpful in figuring out what's wrong
+with regexes.
