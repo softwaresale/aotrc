@@ -68,8 +68,6 @@ namespace aotrc::compiler {
             ProgramTp program;
             program.compile(regexDFA);
 
-            std::cout << program << std::endl;
-
             // Now that the program is compiled, we need to translate it into LLVM IR
             llvm::IRBuilder<> builder(ctx);
             ProgramTranslatorTp programTranslator(this->ctx, builder, function);
@@ -81,19 +79,6 @@ namespace aotrc::compiler {
     private:
         llvm::LLVMContext &ctx;
         std::unique_ptr<ProgramInfoProvider> progInfoProvider;
-
-        /**
-         * Gets the desired function type for the given program
-         * @param label Name/label of the regex
-         * @return The name of the function
-         */
-        std::string getFunctionName(const std::string &label) const {
-            if constexpr(std::is_same_v<ProgramTp, FullMatchProgram>) {
-                return label + "_full_match";
-            } else {
-                return label + "_unknown";
-            }
-        }
     };
 
     /**
@@ -106,6 +91,9 @@ namespace aotrc::compiler {
      */
     using SubMatchProgramCompiler = RegexCompiler<SubMatchProgramTranslator, SubMatchProgram, SubMatchProgramInfoProvider>;
 
+    /**
+     * A specialised search program compiler. Compiles a regex into a searching program
+     */
     using SearchProgramCompiler = RegexCompiler<SearchProgramTranslator, SearchProgram , SearchProgramInfoProvider>;
 }
 
