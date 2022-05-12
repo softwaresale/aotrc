@@ -19,13 +19,24 @@ llvm::Value *aotrc::compiler::SearchTranslator::makeGoToInst(const aotrc::compil
     // Get the destined block
     auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(this->symbolTable.at(getStateBlockLabel(goToInst->destId)));
 
+    // Create a block that increments the end position, then goes to the destination block
+    auto backup = this->storeInsertPoint();
+    auto incrementBlock = llvm::BasicBlock::Create(ctx, "INCREMENT_END", function);
+    this->builder.SetInsertPoint(incrementBlock);
+    // Increment the end position variable
+    auto endPosVar = llvm::dyn_cast<llvm::AllocaInst>(this->symbolTable.at("end_pos"));
+    auto endPosVal = this->builder.CreateLoad(endPosVar->getAllocatedType(), endPosVar, "end_pos_val");
+    auto updated = this->builder.CreateAdd(endPosVal, llvm::ConstantInt::get(endPosVar->getAllocatedType(), 1), "incremented_end_pos_val");
+    this->builder.CreateStore(updated, endPosVar);
+    // Branch to the actual dest block
+    this->builder.CreateBr(destBlock);
+    this->restoreInsertPoint(backup);
+
     if (goToInst->testInstruction) {
         // If there is a test instruction, build it out, make a branch, and return the collect block
         auto canGoTo = this->makeInstruction(goToInst->testInstruction);
 
-        // backup
-        auto backup = this->storeInsertPoint();
-
+        backup = this->storeInsertPoint();
         llvm::BasicBlock *onFalse, *collect;
         collect = llvm::BasicBlock::Create(ctx, "GO_TO_INST_COLLECT", function);
 
@@ -33,23 +44,16 @@ llvm::Value *aotrc::compiler::SearchTranslator::makeGoToInst(const aotrc::compil
         builder.SetInsertPoint(onFalse);
         builder.CreateBr(collect);
 
-        // Build a cond br
-        this->restoreInsertPoint(backup);
-        // Increment the end position variable
-        auto endPosVar = llvm::dyn_cast<llvm::AllocaInst>(this->symbolTable.at("end_pos"));
-        auto endPosVal = this->builder.CreateLoad(endPosVar->getAllocatedType(), endPosVar, "end_pos_val");
-        auto updated = this->builder.CreateAdd(endPosVal, llvm::ConstantInt::get(endPosVar->getAllocatedType(), 1), "incremented_end_pos_val");
-        this->builder.CreateStore(updated, endPosVar);
-
         // Actually do the branch
-        builder.CreateCondBr(canGoTo, destBlock, onFalse);
+        this->restoreInsertPoint(backup);
+        builder.CreateCondBr(canGoTo, incrementBlock, onFalse);
 
         builder.SetInsertPoint(collect);
         return collect;
 
     } else {
         // If there is no condition, then just branch
-        builder.CreateBr(destBlock);
+        builder.CreateBr(incrementBlock);
         return nullptr;
     }
 }
