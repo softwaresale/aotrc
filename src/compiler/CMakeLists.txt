@@ -19,12 +19,15 @@ add_library(aotrc_compiler
         program_info_provider.cc program_info_provider.h
         aotrc_compiler.cc aotrc_compiler.h
         linker.cc linker.h
+        # full_match specific components
         full_match/full_match_dfa_compiler.cc full_match/full_match_dfa_compiler.h
         full_match/full_match_translator.cc full_match/full_match_translator.h
         full_match/full_match_program_info_provider.cc
         full_match/full_match_program_info_provider.h
+        # submatch specific components
         sub_match/sub_match_program_info_provider.cc sub_match/sub_match_program_info_provider.h
         sub_match/sub_match_dfa_compiler.cc sub_match/sub_match_dfa_compiler.h
+        # searching specific components
         searching/search_program_info_provider.cc searching/search_program_info_provider.h
         searching/search_dfa_compiler.cc searching/search_dfa_compiler.h
         searching/search_translator.cc searching/search_translator.h)

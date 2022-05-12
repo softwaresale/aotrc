@@ -29,8 +29,8 @@ jobs:
     - name: Link llvm-config-12 to llvm-config
       run: ln -s /usr/bin/llvm-config-12 /usr/local/bin/llvm-config
 
-    - name: Set llvm symbolizer
-      run: export LLVM_SYMBOLIZER_PATH=`which llvm-symbolizer-12`
+    - name: Link llvm-symbolizer-12 to llvm-symbolizer
+      run: ln -s /usr/bin/llvm-symbolizer-12 /usr/local/bin/llvm-symbolizer
     
     - name: Checkout Repository w/ Submodules
       uses: actions/checkout@v2
