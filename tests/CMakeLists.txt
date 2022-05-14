@@ -4,3 +4,5 @@ enable_testing()
 add_subdirectory(unit)
 # Add integration tests
 add_subdirectory(integration)
+# Add tests for JIT
+add_subdirectory(jit)
