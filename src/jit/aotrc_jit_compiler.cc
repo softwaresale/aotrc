@@ -9,16 +9,21 @@
 #include "src/compiler/regex_compiler.h"
 
 #include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include <llvm/Support/TargetSelect.h>
 
 aotrc::jit::AotrcJITCompiler::AotrcJITCompiler()
 : ctx(std::make_unique<llvm::LLVMContext>()) {
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+
     llvm::orc::LLJITBuilder builder;
     auto expectedJIT = builder.create();
     if (expectedJIT) {
         // Create a JIT instance
         this->jit = std::move(expectedJIT.get());
     } else {
-        throw std::runtime_error("Could not initialize JIT engine");
+        auto err = expectedJIT.takeError();
+        throw std::runtime_error("Could not initialize JIT engine: " + toString(std::move(err)));
     }
 }
 
