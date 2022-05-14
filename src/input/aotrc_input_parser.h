@@ -6,6 +6,7 @@
 #define _AOTRC_INPUT_PARSER_H
 
 #include <yaml-cpp/yaml.h>
+#include <unordered_map>
 
 namespace aotrc::input {
 

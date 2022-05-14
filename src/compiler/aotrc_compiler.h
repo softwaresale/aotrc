@@ -10,7 +10,7 @@
 #include <llvm/IR/Type.h>
 #include <llvm/Support/CodeGen.h>
 #include <llvm/IR/LLVMContext.h>
-#include <llvm/Support/TargetRegistry.h>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Target/TargetMachine.h>
 #include "src/fa/dfa.h"
