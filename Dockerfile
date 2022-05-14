@@ -1,11 +1,11 @@
 
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 RUN apt-get update
 
-RUN apt-get install -y llvm-12 llvm-12-runtime llvm-12-dev cmake g++ bison flex
+RUN apt-get install -y llvm-14 llvm-14-runtime llvm-14-dev cmake g++ bison flex
 
-RUN ln -s /usr/bin/llvm-config-12 /usr/local/bin/llvm-config
+RUN ln -s /usr/bin/llvm-config-14 /usr/local/bin/llvm-config
 
 WORKDIR /usr/local/src/
 

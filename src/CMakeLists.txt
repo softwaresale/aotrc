@@ -14,6 +14,9 @@ add_subdirectory(fa)
 # Add in the compiler
 add_subdirectory(compiler)
 
+# JIT compilation support
+add_subdirectory(jit)
+
 add_executable(aotrc
         main.cc
         args_parser.cc args_parser.h)
