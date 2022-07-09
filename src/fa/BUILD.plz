@@ -1,0 +1,21 @@
+
+cc_library(
+    name="libaotrc-fa",
+    srcs=[
+        "dfa.cc",
+        "nfa.cc",
+        "graphviz_renderer.cc",
+        "nfa_builders.cc",
+        "transition_edge.cc",
+        "transition_table.cc",
+    ],
+    hdrs=[
+        "dfa.h",
+        "graphviz_renderer.h",
+        "nfa.h",
+        "nfa_builders.h",
+        "transition_edge.h",
+        "transition_table.h",
+    ],
+    visibility=["PUBLIC"],
+)
