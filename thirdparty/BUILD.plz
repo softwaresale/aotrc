@@ -1,0 +1,15 @@
+
+github_repo(
+    name="yaml-cpp",
+    bazel_compat=True,
+    repo="jbeder/yaml-cpp",
+    revision="yaml-cpp-0.7.0",
+    build_file="yaml-cpp.plz",
+)
+
+github_repo(
+    name = "gtest",
+    bazel_compat = True,
+    repo = "google/googletest",
+    revision = "release-1.8.1",
+)

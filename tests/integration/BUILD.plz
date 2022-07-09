@@ -1,0 +1,44 @@
+
+genrule(
+    name="integration_regexes",
+    cmd="$TOOLS_AOTRC -a $SRCS",
+    srcs=["testing_regexes.yml"],
+    outs={
+        "hdr": ["testing_regexes.h"],
+        "obj": ["testing_regexes.o"],
+    },
+    tools={
+        'aotrc': "//src:aotrc",
+    },
+    deps=['//src:aotrc'],
+    visibility=["//tests/integration:int-base"],
+)
+
+cc_library(
+    name="int-base",
+    srcs=["int_base_test.cc"],
+    hdrs=[
+        "int_base_test.h",
+        ":integration_regexes|hdr",
+    ],
+    deps=[
+        ":integration_regexes",
+        "///thirdparty/gtest//:gtest"
+    ],
+    test_only=True,
+)
+
+def aotrc_int_test(name: str):
+    return cc_test(
+        name=name,
+        srcs=[f"{name}.cc"],
+        deps=[":int-base"],
+    )
+
+aotrc_int_test("test_alter")
+aotrc_int_test("test_cc")
+aotrc_int_test("test_literal")
+aotrc_int_test("test_neg_cc")
+aotrc_int_test("test_plus")
+aotrc_int_test("test_search")
+aotrc_int_test("test_star")

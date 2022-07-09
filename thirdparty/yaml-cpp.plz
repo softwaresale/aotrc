@@ -1,0 +1,7 @@
+cc_library(
+    name = "yaml-cpp",
+    visibility = ["//visibility:public"],
+    includes = ["include"],
+    hdrs = glob(["include/**/*.h"]),
+    srcs = glob(["src/**/*.cpp", "src/**/*.h"]),
+)

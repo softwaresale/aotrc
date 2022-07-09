@@ -1,0 +1,50 @@
+
+genrule(
+    name="gen_scanner",
+    cmd="flex --header-file=$OUTS_HDR -o $OUTS_LEX $SRCS",
+    srcs=["re_lexer.ll"],
+    outs={
+        "lex": ["lex.yy.cc"],
+        "hdr": ["re_scanner.yy.hh"]
+    },
+    building_description="[FLEX] Generating regex lexer",
+    visibility=["//src/parser:libaotrc-parser"]
+)
+
+genrule(
+    name="gen_parser",
+    cmd="bison --header=$OUTS_HDR -o $OUTS_SRC $SRCS",
+    srcs=["re_grammar.yy"],
+    outs={
+        "hdr": ["re_grammar.tab.hh"],
+        "src": ["re_grammar.tab.cc"],
+        "locs": ["location.hh"]
+    },
+    building_description="[BISON] Generating bison grammar",
+    visibility=[
+        "//src/parser:libaotrc-parser",
+    ]
+)
+
+cc_library(
+    name="libaotrc-parser",
+    srcs=[
+        "re_parser_driver.cc",
+        "regex_parser.cc",
+        ":gen_scanner|lex",
+        ":gen_parser|src",
+    ],
+    hdrs=[
+        "re_parser_driver.h",
+        "regex_parser.h",
+        ":gen_scanner|hdr",
+        ":gen_parser|hdr",
+        ":gen_parser|locs",
+    ],
+    deps=[
+        "//src/parser:gen_scanner",
+        "//src/parser:gen_parser",
+        "//src/fa:libaotrc-fa",
+    ],
+    visibility=["PUBLIC"],
+)

@@ -1,0 +1,24 @@
+
+cc_binary(
+    name="aotrc",
+    srcs=[
+        "args_parser.cc",
+        "main.cc"
+    ],
+    private_hdrs=[
+        'args_parser.h'
+    ],
+    deps=[
+        "//src/input:libaotrc-input",
+        "//src/fa:libaotrc-fa",
+        "//src/parser:libaotrc-parser",
+        "//src/compiler:libaotrc-compiler",
+    ],
+    visibility=['PUBLIC'],
+    compiler_flags=[
+        "-I $(llvm-config --includedir)"
+    ],
+    linker_flags=[
+        "$(llvm-config --libs all)"
+    ]
+)

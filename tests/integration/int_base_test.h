@@ -5,8 +5,9 @@
 #ifndef AOTRC_INT_BASE_TEST_H
 #define AOTRC_INT_BASE_TEST_H
 
+#include <functional>
 #include <gtest/gtest.h>
-#include <testing_regexes.h>
+#include "testing_regexes.h"
 
 class IntBaseTest : public ::testing::Test {
 public:

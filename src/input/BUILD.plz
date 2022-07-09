@@ -1,0 +1,15 @@
+cc_static_library(
+    name = "libaotrc-input",
+    srcs = [
+        'aotrc_input_parser.cc'
+    ],
+    hdrs = [
+        'aotrc_input_parser.h'
+    ],
+    visibility = [
+        "//src:aotrc",
+    ],
+    deps=[
+        "///thirdparty/yaml-cpp//:yaml-cpp"
+    ]
+)

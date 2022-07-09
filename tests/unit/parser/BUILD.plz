@@ -1,0 +1,36 @@
+
+cc_test(
+    name="parse_literal",
+    srcs=["parse_literal.cc"],
+    deps=[
+        "///thirdparty/gtest//:gtest",
+        "//src/parser:libaotrc-parser"
+    ]
+)
+
+cc_test(
+    name="parse_numbers",
+    srcs=["parse_numbers.cc"],
+    deps=[
+        "///thirdparty/gtest//:gtest",
+        "//src/parser:libaotrc-parser"
+    ],
+)
+
+cc_test(
+    name="parse_quants",
+    srcs=["parse_quants.cc"],
+    deps=[
+        "///thirdparty/gtest//:gtest",
+        "//src/parser:libaotrc-parser",
+    ]
+)
+
+cc_test(
+    name="parse_specials",
+    srcs=["parse_specials.cc"],
+    deps=[
+        "///thirdparty/gtest//:gtest",
+        "//src/parser:libaotrc-parser",
+    ]
+)

@@ -1,0 +1,42 @@
+
+cc_library(
+    name="fa-test",
+    srcs=["fa_base_test.cc"],
+    hdrs=["fa_base_test.h"],
+    deps=[
+        "///thirdparty/gtest//:gtest",
+        "//src/fa:libaotrc-fa",
+        "//src/parser:libaotrc-parser",
+    ],
+    test_only=True,
+)
+
+def aotrc_fa_unit_test(name: str):
+    return cc_test(
+        name=name,
+        srcs=[f"{name}.cc"],
+        deps=[":fa-test",]
+    )
+
+aotrc_fa_unit_test("fa_alternation_literal")
+aotrc_fa_unit_test("fa_character_class")
+aotrc_fa_unit_test("fa_character_class2")
+aotrc_fa_unit_test("fa_combo_one")
+aotrc_fa_unit_test("fa_combo_two")
+aotrc_fa_unit_test("fa_literal")
+aotrc_fa_unit_test("fa_literal_str")
+aotrc_fa_unit_test("fa_meta_chars")
+aotrc_fa_unit_test("fa_neg_cc")
+aotrc_fa_unit_test("fa_plus_literal")
+aotrc_fa_unit_test("fa_plus_single")
+aotrc_fa_unit_test("fa_star_literal")
+aotrc_fa_unit_test("fa_star_single")
+
+cc_test(
+    name="edge_test",
+    srcs=["edge_test.cc"],
+    deps=[
+        "///thirdparty/gtest//:gtest",
+        "//src/fa:libaotrc-fa",
+    ],
+)
