@@ -16,6 +16,9 @@ cc_binary(
     ],
     visibility=['PUBLIC'],
     compiler_flags=[
-        "-lLLVM-14"
+        "-I $(llvm-config --includedir)"
+    ],
+    linker_flags=[
+        "$(llvm-config --libs all)"
     ]
 )
