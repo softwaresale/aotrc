@@ -23,7 +23,7 @@ jobs:
         run: sudo apt-get update
 
       - name: Install llvm
-        run: sudo apt get install -y llvm-14 llvm-14-runtime llvm-14-dev
+        run: sudo apt-get install -y llvm-14 llvm-14-runtime llvm-14-dev
 
       - name: Link llvm-config-14 to llvm-config
         run: sudo ln -s /usr/bin/llvm-config-14 /usr/local/bin/llvm-config
