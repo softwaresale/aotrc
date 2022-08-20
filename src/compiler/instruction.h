@@ -61,6 +61,8 @@ namespace aotrc::compiler {
         : instType(type)
         {}
 
+        virtual ~Instruction() = default;
+
         /**
          * Get the type of the instruction
          * @return Type of instruction
