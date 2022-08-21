@@ -36,6 +36,16 @@ std::ostream &aotrc::fa::operator<<(std::ostream &os, const aotrc::fa::Edge &edg
         os << "}";
     }
 
+    if (edge.tagged()) {
+        os << "/t";
+        for (auto it = std::begin(edge.getTags()); it != std::end(edge.getTags()); ++it) {
+            os << *it;
+            if (std::next(it) != std::end(edge.getTags())) {
+                os << ",";
+            }
+        }
+    }
+
     return os;
 }
 
@@ -190,6 +200,10 @@ void aotrc::fa::Edge::addChar(char c) {
 }
 
 bool aotrc::fa::Edge::accept(char c) const {
+    if (this->epsilon()) {
+        return true;
+    }
+
     return std::any_of(ranges.cbegin(), ranges.cend(),
                        [c](const Range &range) { return range.lower <= c && c <= range.upper; });
 }

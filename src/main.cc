@@ -1,5 +1,6 @@
 #include <llvm/Support/InitLLVM.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "args_parser.h"
 #include "input/aotrc_input_parser.h"
@@ -7,6 +8,7 @@
 #include "src/fa/dfa.h"
 #include "src/compiler/aotrc_compiler.h"
 #include "src/compiler/linker.h"
+#include "src/fa/graphviz_renderer.h"
 
 #if 0
 static std::string getOutputFileName(const std::string &moduleName, aotrc::OutputType outputType) {
@@ -52,7 +54,10 @@ int main(int argc, char **argv) {
             for (const auto &regexDef : regexDefs) {
                 // build the NFA and DFA for the given regex
                 auto nfa = aotrc::parser::parseRegex(regexDef.pattern);
+                // auto *nfaTab = dynamic_cast<aotrc::fa::TransitionTable*>(&nfa);
+                aotrc::fa::graphvizRenderOutput(&nfa, "nfa", std::cout);
                 aotrc::fa::DFA dfa(nfa);
+                aotrc::fa::graphvizRenderOutput(&dfa, "dfa", std::cout);
 
                 if (regexDef.genFullMatch) {
                     compiler.compileRegex(moduleName, regexDef.label, dfa);

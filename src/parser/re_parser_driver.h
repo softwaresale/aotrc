@@ -31,11 +31,16 @@ namespace aotrc::parser {
 
     class RegexParserDriver {
     public:
+        RegexParserDriver()
+        : groups(0)
+        {}
         // TODO parse function
 
         aotrc::parser::location &get_loc() {
             return this->loc;
         }
+
+        int getNextGroupId();
 
         aotrc::fa::NFA parse(const std::string &subject);
 
@@ -45,6 +50,9 @@ namespace aotrc::parser {
 
         // Reference to the location class
         aotrc::parser::location loc;
+
+        // Group count
+        int groups;
     };
 }
 

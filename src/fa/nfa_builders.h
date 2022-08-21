@@ -31,6 +31,7 @@ namespace aotrc::fa::nfa_builders {
     NFA questionMark(NFA &&nfa);
     NFA numberBounded(NFA &&nfa, unsigned int lower, unsigned int higher);
     NFA numberUnbounded(NFA &&nfa, unsigned int lower);
+    NFA group(NFA &&nfa, int groupId);
 }
 
 #endif //_NFA_BUILDERS_H

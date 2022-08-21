@@ -62,7 +62,8 @@ aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
         // For each range in the language, create a new dfa state
         for (const auto &langChar : nfaLangChars) {
             // Create a new state
-            auto newDfaState = nfa.epsilonClosure(nfa.move(state, langChar));
+            auto unclosedDfaState = nfa.move(state, langChar);
+            auto newDfaState = nfa.epsilonClosure(unclosedDfaState);
             // Filter out empty transitions
             if (newDfaState.empty()) {
                 continue;
@@ -87,8 +88,15 @@ aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
                 dfaStateQueue.push(newDfaState);
             }
 
+            // Get the tag closure between the two as well
+            std::unordered_set<int> tags = nfa.tagClosure(state, unclosedDfaState, langChar);
+            auto newEdge = Edge { Range(langChar) };
+            for (const auto &tag : tags) {
+                newEdge.addTag(tag);
+            }
+
             // make an edge in this transition table
-            this->addEdge(dfaStateTranslations[state], existingDFAState, Edge { Range(langChar) });
+            this->addEdge(dfaStateTranslations[state], existingDFAState, newEdge);
         }
     }
 

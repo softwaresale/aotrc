@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <queue>
 
 unsigned int aotrc::fa::TransitionTable::addState() {
     // Add a new state
@@ -104,11 +105,11 @@ std::unordered_set<unsigned int>
 aotrc::fa::TransitionTable::move(unsigned int state, unsigned char c) const {
     std::unordered_set<unsigned int> states;
     auto stateTransitions = this->transitions[state];
-    for (const auto &trans : stateTransitions) {
-        const auto ranges = trans.second.getRanges();
+    for (const auto &[dest, edge] : stateTransitions) {
+        const auto ranges = edge.getRanges();
         for (const auto &transRange : ranges) {
             if (c >= transRange.lower && c <= transRange.upper) {
-                states.insert(trans.first);
+                states.insert(dest);
                 break;
             }
         }
@@ -132,11 +133,11 @@ std::unordered_set<unsigned int>
 aotrc::fa::TransitionTable::move(unsigned int state, const aotrc::fa::Range &range) const {
     std::unordered_set<unsigned int> states;
     auto stateTransitions = this->transitions[state];
-    for (const auto &trans : stateTransitions) {
-        const auto ranges = trans.second.getRanges();
+    for (const auto &[dest, edge] : stateTransitions) {
+        const auto ranges = edge.getRanges();
         for (const auto &transRange : ranges) {
             if (transRange == range) {
-                states.insert(trans.first);
+                states.insert(dest);
                 break;
             }
         }
@@ -154,4 +155,89 @@ aotrc::fa::TransitionTable::move(const std::unordered_set<unsigned int> &states,
     }
 
     return destinations;
+}
+
+std::vector<unsigned int> aotrc::fa::TransitionTable::pathNodes(unsigned int start, unsigned int end, char testChar) const {
+    std::vector<unsigned int> reachabilityPaths(this->stateCount());
+    reachabilityPaths[start] = start;
+    std::queue<unsigned int> traversalOrder;
+    std::unordered_set<unsigned int> visited;
+    traversalOrder.push(start);
+    bool pathFound = false;
+    while (!traversalOrder.empty()) {
+        auto state = traversalOrder.front();
+        traversalOrder.pop();
+        visited.insert(state);
+
+        // If we found it, then we are done
+        if (state == end) {
+            pathFound = true;
+            break;
+        }
+
+        // Otherwise, push children and build out the list
+        auto stateTransitions = this->edgesForState(state);
+        for (const auto &[dest, edge] : stateTransitions) {
+            if (edge.accept(testChar) && visited.count(dest) == 0) {
+                traversalOrder.push(dest);
+                // reachabilityPaths.insert(reachabilityPaths.begin() + dest, state);
+                reachabilityPaths[dest] = state;
+            }
+        }
+    }
+
+    // The path should be in reachability paths now. Work backwards to find
+    if (!pathFound) {
+        return {};
+    }
+
+    std::vector<unsigned int> path;
+    path.push_back(end);
+    while (path.back() != start) {
+        auto parent = reachabilityPaths[path.back()];
+        path.push_back(parent);
+    }
+    std::reverse(path.begin(), path.end());
+
+    return path;
+}
+
+std::vector<aotrc::fa::Edge> aotrc::fa::TransitionTable::pathEdges(unsigned int start, unsigned int end, char testChar) const {
+    std::vector<Edge> edges;
+    auto nodePath = this->pathNodes(start, end, testChar);
+    for (auto it = nodePath.cbegin(); it != nodePath.cend() && std::next(it) != nodePath.cend(); ++it) {
+        auto left = *it;
+        auto right = *std::next(it);
+        auto edge = this->edgesForState(left).at(right);
+        edges.push_back(edge);
+    }
+
+    return edges;
+}
+
+std::unordered_set<int>
+aotrc::fa::TransitionTable::tagClosure(unsigned int start, unsigned int end, char testChar) const {
+    std::unordered_set<int> tags;
+    auto edges = this->pathEdges(start, end, testChar);
+    for (const auto &edge : edges) {
+        std::copy(std::cbegin(edge.getTags()), std::cend(edge.getTags()), std::inserter(tags, tags.begin()));
+    }
+
+    return tags;
+}
+
+std::unordered_set<int> aotrc::fa::TransitionTable::tagClosure(const std::unordered_set<unsigned int> &startStates,
+                                                               const std::unordered_set<unsigned int> &endStates,
+                                                               char testChar) const {
+    std::unordered_set<int> tags;
+    for (const auto &startState : startStates) {
+        for (const auto &endState : endStates) {
+            auto stateTags = tagClosure(startState, endState, testChar);
+            std::set_union(stateTags.cbegin(), stateTags.cend(),
+                           tags.cbegin(), tags.cend(),
+                           std::inserter(tags, tags.begin()));
+        }
+    }
+
+    return tags;
 }

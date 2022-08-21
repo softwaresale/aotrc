@@ -11,7 +11,12 @@ void aotrc::parser::RegexParserDriver::stopScan() {
     cleanup_buffer();
 }
 
+int aotrc::parser::RegexParserDriver::getNextGroupId() {
+    return ++this->groups;
+}
+
 aotrc::fa::NFA aotrc::parser::RegexParserDriver::parse(const std::string &subject) {
+    this->groups = 0;
     // Start parsing
     this->startScan(subject);
     fa::NFA resulting_nfa;

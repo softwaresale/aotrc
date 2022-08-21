@@ -64,7 +64,7 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::characterClass(const std::vector<Range> 
     return cc;
 }
 
-static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&right, unsigned int leftStartState, bool startEpsilon) {
+static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&right, unsigned int leftStartState, std::optional<aotrc::fa::Edge> startingEdge = {}) {
 
     // if either left or right are empty, then just return through
     if (left.stateCount() == 0 && right.stateCount() > 0) {
@@ -77,10 +77,10 @@ static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&righ
 
     // For each state in right, add one to left, except for the first state
     std::unordered_map<unsigned int, unsigned int> rightStateTranslations;
-    if (startEpsilon) {
+    if (startingEdge) {
         // Add a state real quick that will be the new zero state
         auto newZero = left.addState();
-        left.addEdge(leftStartState, newZero, aotrc::fa::Edge());
+        left.addEdge(leftStartState, newZero, *startingEdge);
         rightStateTranslations[0] = newZero;
     } else {
         rightStateTranslations[0] = leftStartState;
@@ -110,7 +110,7 @@ static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&righ
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::concat(NFA &&left, NFA &&right) {
     auto lastState = left.stopState();
-    return concat_helper(std::move(left), std::move(right), lastState, false);
+    return concat_helper(std::move(left), std::move(right), lastState);
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::concatMany(std::vector<NFA> &&nfas) {
@@ -137,7 +137,7 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::alternation(std::vector<NFA> &&nfas) {
     // For each NFA
     for (auto &&nfa : nfas) {
         // Concat this branch to alter
-        alter = concat_helper(std::move(alter), std::move(nfa), startState, true);
+        alter = concat_helper(std::move(alter), std::move(nfa), startState, { /* start w/ epsilon */ Edge() });
         // Cache the end state for this particular branch
         branch_final_states[current_nfa++] = alter.stopState();
     }
@@ -158,7 +158,7 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::star(NFA &&nfa) {
     // Add a start state
     auto start = star.addState();
     // epsilon concat in the state
-    star = concat_helper(std::move(star), std::move(nfa), start, true);
+    star = concat_helper(std::move(star), std::move(nfa), start, { /* start w/ epsilon */ Edge() });
     auto enclosedStart = start + 1; // This is the state that the internal nfa starts with
     auto enclosedEnd = star.stopState(); // this is the state the internal nfa ends with
 
@@ -220,4 +220,15 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::numberUnbounded(aotrc::fa::NFA &&nfa, un
     NFA nfaStar = star(std::move(parent));
     result = concat(std::move(result), std::move(nfaStar));
     return result;
+}
+
+aotrc::fa::NFA aotrc::fa::nfa_builders::group(aotrc::fa::NFA &&nfa, int groupId) {
+    NFA groupNfa;
+    auto rootState = groupNfa.addState();
+    groupNfa = concat_helper(std::move(groupNfa), std::move(nfa), rootState, { Edge {groupId} });
+    auto currentLastState = groupNfa.stopState();
+    auto newLastState = groupNfa.addState();
+    groupNfa.addEdge(currentLastState, newLastState, Edge {-groupId});
+
+    return groupNfa;
 }

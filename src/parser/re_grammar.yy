@@ -306,7 +306,8 @@ literal
 capture
 : OPEN_GROUP alternation CLOSE_GROUP
 {
-    $$ = aotrc::fa::nfa_builders::alternation(std::move($2));
+    auto internalNFA = aotrc::fa::nfa_builders::alternation(std::move($2));
+    $$ = aotrc::fa::nfa_builders::group(std::move(internalNFA), this->driver.getNextGroupId());
 }
 ;
 

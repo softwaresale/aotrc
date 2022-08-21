@@ -17,6 +17,15 @@ static void renderAcceptNodes(const aotrc::fa::TransitionTable *table, std::ostr
 static void renderEdge(const aotrc::fa::Edge &edge, std::ostream &output) {
     if (edge.epsilon()) {
         output << "$";
+        if (edge.tagged()) {
+            output << "/t";
+            for (auto it = std::begin(edge.getTags()); it != std::end(edge.getTags()); ++it) {
+                output << *it;
+                if (std::next(it) != std::end(edge.getTags())) {
+                    output << ",";
+                }
+            }
+        }
         return;
     }
     auto ranges = edge.getRanges();
@@ -31,6 +40,16 @@ static void renderEdge(const aotrc::fa::Edge &edge, std::ostream &output) {
     output << it->lower;
     if (it->lower != it->upper) {
         output << '-' << it->upper;
+    }
+
+    if (edge.tagged()) {
+        output << "/t";
+        for (auto tagIt = std::begin(edge.getTags()); tagIt != std::end(edge.getTags()); ++tagIt) {
+            output << *tagIt;
+            if (std::next(tagIt) != std::end(edge.getTags())) {
+                output << ",";
+            }
+        }
     }
 }
 

@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <unordered_set>
+#include <optional>
 
 namespace aotrc::fa {
     /**
@@ -80,11 +81,18 @@ namespace aotrc::fa {
     class Edge {
     public:
         Edge()
-        : rangesOptimized(false) {  }
+        : rangesOptimized(false)
+        {  }
 
         Edge(std::initializer_list<Range> ranges)
         : ranges(ranges)
-        , rangesOptimized(false) { }
+        , rangesOptimized(false)
+        { }
+
+        Edge(std::initializer_list<int> tagIds)
+        : rangesOptimized(false)
+        , tags(tagIds)
+        {}
 
         /**
          * Collapse any ranges with overlap in order to minimize the number of ranges involved
@@ -117,6 +125,10 @@ namespace aotrc::fa {
                 this->addRange(range);
             }
             this->rangesOptimized = false;
+
+            for (auto &tag : other.tags) {
+                this->tags.push_back(tag);
+            }
         }
 
         void merge(const Edge &other) {
@@ -135,9 +147,29 @@ namespace aotrc::fa {
          */
         bool accept(char c) const;
 
+        /*
+         * Tells if this edge has a tag associated with it
+         */
+        bool tagged() const {
+            return !this->tags.empty();
+        }
+
+        void addTag(int tagId) {
+            this->tags.push_back(tagId);
+        }
+
+        /**
+         * Gets this edges tag id
+         * @return edges tag Id, -1 if no tag id
+         */
+        const std::vector<int>& getTags() const {
+            return this->tags;
+        }
+
     private:
         std::vector<Range> ranges;
         bool rangesOptimized;
+        std::vector<int> tags;
     };
 
     std::ostream &operator<<(std::ostream &os, const Range &range);

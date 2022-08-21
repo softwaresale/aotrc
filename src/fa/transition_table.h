@@ -114,6 +114,36 @@ namespace aotrc::fa {
 
         virtual inline bool isAcceptState(unsigned int state) const = 0;
 
+        /**
+         * Find the shortest path between the given start and end state
+         * @param start Starting point
+         * @param end ending point
+         * @param testChar character to use to get between the two
+         * @return A list of edges to take
+         */
+        std::vector<unsigned int> pathNodes(unsigned int start, unsigned int end, char testChar) const;
+
+        /**
+         * Find the shortest path between the given endpoints taking only the character. Take the edges on
+         * the path
+         * @param start Starting point
+         * @param end Ending point
+         * @param testChar character to take along path
+         * @return Sequence of edges between the two
+         */
+        std::vector<Edge> pathEdges(unsigned int start, unsigned int end, char testChar) const;
+
+        /**
+         * Get all tags coverered when traversing between the two states
+         * @param start
+         * @param end
+         * @param testChar
+         * @return
+         */
+        std::unordered_set<int> tagClosure(unsigned int start, unsigned int end, char testChar) const;
+
+        std::unordered_set<int> tagClosure(const std::unordered_set<unsigned int> &startStates, const std::unordered_set<unsigned int> &endStates, char testChar) const;
+
     protected:
         // Sparse matrix of transitions
         std::vector<std::unordered_map<unsigned int, Edge>> transitions;
