@@ -41,6 +41,13 @@ std::string aotrc::compiler::GoToInstruction::str() const noexcept {
     if (this->testInstruction) {
         ss << "{" << testInstruction->str() << "} ";
     }
+    if (!this->onTrueInstructions.empty()) {
+        ss << "TRUE:{";
+        for (const auto &inst : this->onTrueInstructions) {
+            ss << inst->str() << ", ";
+        }
+        ss << "} ";
+    }
     ss << this->destId;
 
     return ss.str();

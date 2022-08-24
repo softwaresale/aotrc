@@ -32,7 +32,7 @@ add_library(aotrc_compiler
         # searching specific components
         searching/search_program_info_provider.cc searching/search_program_info_provider.h
         searching/search_dfa_compiler.cc searching/search_dfa_compiler.h
-        searching/search_translator.cc searching/search_translator.h)
+        searching/search_translator.cc searching/search_translator.h capture/capture_info_builder.cc capture/capture_info_builder.h capture/capture_program_info_provider.cc capture/capture_program_info_provider.h capture/capture_dfa_compiler.cc capture/capture_dfa_compiler.h capture/capture_translator.cc capture/capture_translator.h)
 
 execute_process(COMMAND llvm-config --libs all OUTPUT_VARIABLE llvm_libs)
 execute_process(COMMAND llvm-config --includedir OUTPUT_VARIABLE llvm_include_dirs)

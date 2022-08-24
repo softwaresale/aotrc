@@ -33,7 +33,11 @@ public:
  * Determinize an NFA
  * @param nfa fa to determinize
  */
-aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa) {
+aotrc::fa::DFA::DFA(const aotrc::fa::NFA &nfa)
+: TransitionTable() {
+    // Copy over the group count
+    this->setGroupCount(nfa.getGroupCount());
+
     // Map that holds the fa states to dfa states (the key is a set of fa states that corresponds to a single state
     // in the dfa's transition table)
     std::unordered_map<std::unordered_set<unsigned int>, unsigned int, StateSetHash> dfaStateTranslations;

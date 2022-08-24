@@ -27,7 +27,7 @@ namespace aotrc::compiler {
          * before evaluating the actual DFA. This can be optional.
          * @return A sequence of instructions to be run before
          */
-        virtual std::vector<InstructionPtr> buildSetup() = 0;
+        virtual std::vector<InstructionPtr> buildSetup(const aotrc::fa::DFA &dfa) = 0;
 
         /**
          * Builds out the instructions used in a DFA state. This pattern assumes that each state should be

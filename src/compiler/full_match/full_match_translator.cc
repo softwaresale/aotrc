@@ -131,6 +131,18 @@ llvm::Value * aotrc::compiler::FullMatchTranslator::makeGoToInst(const aotrc::co
     // Get the destined block
     auto destBlock = llvm::dyn_cast<llvm::BasicBlock>(this->symbolTable.at(getStateBlockLabel(goToInst->destId)));
 
+    llvm::BasicBlock *onTrueInstructions = nullptr;
+    if (!goToInst->onTrueInstructions.empty()) {
+        auto [backupBlock, backupInst] = this->storeInsertPoint();
+        onTrueInstructions = llvm::BasicBlock::Create(ctx, "GO_TO_INST_ON_TRUE_INSTS", this->function, destBlock);
+        this->builder.SetInsertPoint(onTrueInstructions);
+        for (const auto &onTrueInst : goToInst->onTrueInstructions) {
+            this->makeInstruction(onTrueInst);
+        }
+        this->builder.CreateBr(destBlock);
+        this->builder.SetInsertPoint(backupBlock, backupInst);
+    }
+
     if (goToInst->testInstruction) {
         // If there is a test instruction, build it out, make a branch, and return the collect block
         auto canGoTo = this->makeInstruction(goToInst->testInstruction);
@@ -147,11 +159,13 @@ llvm::Value * aotrc::compiler::FullMatchTranslator::makeGoToInst(const aotrc::co
 
         // Build a cond br
         this->restoreInsertPoint(backup);
-        builder.CreateCondBr(canGoTo, destBlock, onFalse);
+        if (onTrueInstructions)
+            builder.CreateCondBr(canGoTo, onTrueInstructions, onFalse);
+        else
+            builder.CreateCondBr(canGoTo, destBlock, onFalse);
 
         builder.SetInsertPoint(collect);
         return collect;
-
     } else {
         // If there is no condition, then just branch
         builder.CreateBr(destBlock);

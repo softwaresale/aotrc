@@ -68,6 +68,30 @@ void aotrc::compiler::AotrcCompiler::compileSearchRegex(const std::string &modul
     searchProgramCompiler.compile(mod, label, regexDFA);
 }
 
+
+void aotrc::compiler::AotrcCompiler::compileCaptureRegex(const std::string &module, const std::string &label,
+                                                         const aotrc::fa::DFA &regexDFA) {
+
+    // Create a new module if necessary
+    if (this->modules.find(module) == this->modules.end()) {
+        this->modules[module] = std::make_unique<llvm::Module>(module, this->llvmContext);
+    }
+    std::unique_ptr<llvm::Module> &mod = this->modules.at(module);
+
+    std::vector<std::string> groupNames;
+    for (unsigned int i = 1; i <= regexDFA.getGroupCount(); i++) {
+        groupNames.push_back("group" + std::to_string(i));
+    }
+
+    // Create the group info
+    CaptureInfoBuilder infoBuilder(this->llvmContext, label, groupNames);
+
+    // Get the appropriate regex compiler
+    CaptureProgramCompiler captureProgramCompiler(this->llvmContext, infoBuilder.buildStruct());
+    captureProgramCompiler.compile(mod, label, regexDFA);
+}
+
+
 std::string aotrc::compiler::AotrcCompiler::emitCode(const std::string &module, const std::string &outputPath, llvm::CodeGenFileType type) {
     auto &mod = this->modules.at(module);
     mod->setDataLayout(this->targetMachine->createDataLayout());

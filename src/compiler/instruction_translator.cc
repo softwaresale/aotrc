@@ -26,6 +26,11 @@ llvm::Value * aotrc::compiler::InstructionTranslator::makeInstruction(const aotr
         case DECLARE_VAR:
             val = this->makeDeclareVarInst(inst);
             break;
+#if 0
+        case DECLARE_ARRAY:
+            val = this->makeDeclareArrayInst(inst);
+            break;
+#endif
         case TEST:
             val = this->makeTestEdgeInst(inst);
             break;
@@ -41,6 +46,11 @@ llvm::Value * aotrc::compiler::InstructionTranslator::makeInstruction(const aotr
         case STORE_VAR:
             val = this->makeStoreVarInst(inst);
             break;
+#if 0
+        case STORE_ARRAY:
+            val = this->makeStoreArrayInst(inst);
+            break;
+#endif
         default:
             throw std::runtime_error("InstructionTranslator - invalid instruction");
     }

@@ -28,8 +28,12 @@ namespace aotrc::compiler {
         CHECK_END,
         /// Create a new variable
         DECLARE_VAR,
+        /// Create a new array
+        DECLARE_ARRAY,
         /// Store a value into a variable
         STORE_VAR,
+        /// Store a value to an array
+        STORE_ARRAY,
         /// See if a character fits within an edge
         TEST,
         /// Go to another state, potentially conditionally
@@ -52,6 +56,8 @@ namespace aotrc::compiler {
         CHAR,
         /// A boolean value
         BOOL,
+        /// A mulitdimensional array
+        ARRAY,
     };
 
     /**
@@ -204,6 +210,13 @@ namespace aotrc::compiler {
         , testInstruction(std::move(testInst))
         {}
 
+        GoToInstruction(unsigned int destId, InstructionPtr testInst, std::vector<InstructionPtr> onTrueInsts)
+        : Instruction(InstructionType::GOTO)
+        , destId(destId)
+        , testInstruction(std::move(testInst))
+        , onTrueInstructions(std::move(onTrueInsts))
+        {}
+
         std::string str() const noexcept override;
 
         /**
@@ -219,6 +232,8 @@ namespace aotrc::compiler {
         unsigned int destId;
         /// Optional instruction to see if we can jump
         std::unique_ptr<Instruction> testInstruction;
+        /// Optional instructions to run if we do jump
+        std::vector<std::unique_ptr<Instruction>> onTrueInstructions;
     };
 
     /**

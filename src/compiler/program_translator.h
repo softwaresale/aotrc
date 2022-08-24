@@ -10,6 +10,7 @@
 #include "src/compiler/full_match/full_match_translator.h"
 #include "src/compiler/full_match/full_match_dfa_compiler.h"
 #include "src/compiler/searching/search_translator.h"
+#include "src/compiler/capture/capture_translator.h"
 
 namespace aotrc::compiler {
     /**
@@ -37,7 +38,8 @@ namespace aotrc::compiler {
          * @param builder The LLVM IR builder
          * @param function The function to compile the program into
          */
-        ProgramTranslator(llvm::LLVMContext &ctx, llvm::IRBuilder<> &builder, llvm::Function *function) {
+        ProgramTranslator(llvm::LLVMContext &ctx, llvm::IRBuilder<> &builder, llvm::Function *function)
+        : func(function) {
             // First, check that we can use the given translator
             static_assert(
                     std::is_base_of_v<InstructionTranslator, TranslatorTp> &&
@@ -93,11 +95,12 @@ namespace aotrc::compiler {
                 this->translator->makeInstruction(*instIter);
             }
 
-            // At this point, we should be done
+            // At this point, we should be done. Verify that the function is okay
         }
 
     private:
         std::unique_ptr<InstructionTranslator> translator;
+        llvm::Function *func;
     };
 
     /**
@@ -116,6 +119,8 @@ namespace aotrc::compiler {
      * Specialization of program translator that translates a search program
      */
     using SearchProgramTranslator = ProgramTranslator<SearchTranslator, SearchProgram>;
+
+    using CaptureProgramTranslator = ProgramTranslator<CaptureTranslator, CaptureProgram>;
 }
 
 #endif //AOTRC_PROGRAM_TRANSLATOR_H

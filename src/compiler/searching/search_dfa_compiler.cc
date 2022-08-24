@@ -4,8 +4,8 @@
 
 #include "search_dfa_compiler.h"
 
-std::vector<aotrc::compiler::InstructionPtr> aotrc::compiler::SearchDFACompiler::buildSetup() {
-    auto fullMatchSetups = FullMatchDFACompiler::buildSetup();
+std::vector<aotrc::compiler::InstructionPtr> aotrc::compiler::SearchDFACompiler::buildSetup(const aotrc::fa::DFA &dfa) {
+    auto fullMatchSetups = FullMatchDFACompiler::buildSetup(dfa);
     // Add an extra variable
     fullMatchSetups.push_back(std::make_unique<DeclareVarInstruction>("start_pos", ctx, VariableType::SIZE));
     fullMatchSetups.push_back(std::make_unique<DeclareVarInstruction>("end_pos", ctx, VariableType::SIZE));

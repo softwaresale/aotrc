@@ -4,7 +4,7 @@
 
 #include "full_match_dfa_compiler.h"
 
-std::vector<aotrc::compiler::InstructionPtr> aotrc::compiler::FullMatchDFACompiler::buildSetup() {
+std::vector<aotrc::compiler::InstructionPtr> aotrc::compiler::FullMatchDFACompiler::buildSetup(const aotrc::fa::DFA &dfa) {
     // Declare two variables:
     std::vector<InstructionPtr> insts;
     // counter - keeps track of where in the subject string we are

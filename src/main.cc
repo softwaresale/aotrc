@@ -54,10 +54,8 @@ int main(int argc, char **argv) {
             for (const auto &regexDef : regexDefs) {
                 // build the NFA and DFA for the given regex
                 auto nfa = aotrc::parser::parseRegex(regexDef.pattern);
-                // auto *nfaTab = dynamic_cast<aotrc::fa::TransitionTable*>(&nfa);
-                aotrc::fa::graphvizRenderOutput(&nfa, "nfa", std::cout);
                 aotrc::fa::DFA dfa(nfa);
-                aotrc::fa::graphvizRenderOutput(&dfa, "dfa", std::cout);
+                compiler.compileCaptureRegex(moduleName, regexDef.label, dfa);
 
                 if (regexDef.genFullMatch) {
                     compiler.compileRegex(moduleName, regexDef.label, dfa);

@@ -15,6 +15,8 @@
 #include "src/compiler/full_match/full_match_program_info_provider.h"
 #include "src/compiler/sub_match/sub_match_program_info_provider.h"
 #include "src/compiler/searching/search_program_info_provider.h"
+#include "src/compiler/capture/capture_translator.h"
+#include "src/compiler/capture/capture_program_info_provider.h"
 
 namespace aotrc::compiler {
 
@@ -28,10 +30,10 @@ namespace aotrc::compiler {
      * @tparam ProgramTp The type of program being compiled. Must be accepted by ProgramTranslatorTp
      * @tparam ProgramInfoProviderTp The type that provides program info
      */
-    template <class ProgramTranslatorTp, class ProgramTp, class ProgramInfoProviderTp>
+    template <class ProgramTranslatorTp, class ProgramTp, class ProgramInfoProviderTp, typename... ProgramInfoArgsTypes>
     class RegexCompiler {
     public:
-        explicit RegexCompiler(llvm::LLVMContext &ctx)
+        explicit RegexCompiler(llvm::LLVMContext &ctx, ProgramInfoArgsTypes... programInfoArgs)
         : ctx(ctx)
         {
             // First, verify that translator is the correct type
@@ -50,12 +52,15 @@ namespace aotrc::compiler {
                     );
             // Finally, verify that ProgramInfoProvider is the right type
             static_assert(
-                    std::is_base_of_v<ProgramInfoProvider, ProgramInfoProviderTp>
+                    std::is_base_of_v<ProgramInfoProvider, ProgramInfoProviderTp> &&
+                    std::is_constructible_v<ProgramInfoProviderTp, ProgramInfoArgsTypes...>
                     );
 
             // Templating is correct, so we're good
-            progInfoProvider = std::make_unique<ProgramInfoProviderTp>();
+            progInfoProvider = std::make_unique<ProgramInfoProviderTp>(programInfoArgs...);
         }
+
+        virtual ~RegexCompiler() = default;
 
         /**
          * Compiles a regular regular expression DFA into LLVM IR
@@ -101,6 +106,8 @@ namespace aotrc::compiler {
      * A specialised search program compiler. Compiles a regex into a searching program
      */
     using SearchProgramCompiler = RegexCompiler<SearchProgramTranslator, SearchProgram , SearchProgramInfoProvider>;
+
+    using CaptureProgramCompiler = RegexCompiler<CaptureProgramTranslator, CaptureProgram , CaptureProgramInfoProvider, llvm::StructType*>;
 }
 
 #endif //AOTRC_REGEX_COMPILER_H

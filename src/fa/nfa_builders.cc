@@ -109,8 +109,12 @@ static aotrc::fa::NFA concat_helper(aotrc::fa::NFA &&left, aotrc::fa::NFA &&righ
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::concat(NFA &&left, NFA &&right) {
+    auto leftGroups = left.getGroupCount();
+    auto rightGroups = right.getGroupCount();
     auto lastState = left.stopState();
-    return concat_helper(std::move(left), std::move(right), lastState);
+    auto combined = concat_helper(std::move(left), std::move(right), lastState);
+    combined.setGroupCount(leftGroups + rightGroups);
+    return combined;
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::concatMany(std::vector<NFA> &&nfas) {
@@ -133,9 +137,11 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::alternation(std::vector<NFA> &&nfas) {
     auto startState = alter.addState();
     std::vector<unsigned int> branch_final_states(nfas.size());
     unsigned int current_nfa = 0;
+    unsigned int groupCount = 0;
 
     // For each NFA
     for (auto &&nfa : nfas) {
+        groupCount += nfa.getGroupCount();
         // Concat this branch to alter
         alter = concat_helper(std::move(alter), std::move(nfa), startState, { /* start w/ epsilon */ Edge() });
         // Cache the end state for this particular branch
@@ -150,10 +156,13 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::alternation(std::vector<NFA> &&nfas) {
         alter.addEdge(state, realFinalState, Edge());
     }
 
+    alter.setGroupCount(groupCount);
+
     return alter;
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::star(NFA &&nfa) {
+    auto groups = nfa.getGroupCount();
     NFA star;
     // Add a start state
     auto start = star.addState();
@@ -169,6 +178,7 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::star(NFA &&nfa) {
     star.addEdge(enclosedEnd, enclosedStart, Edge());
     star.addEdge(start, finalState, Edge());
     star.addEdge(enclosedEnd, finalState, Edge());
+    star.setGroupCount(groups);
 
     return star;
 }
@@ -223,12 +233,15 @@ aotrc::fa::NFA aotrc::fa::nfa_builders::numberUnbounded(aotrc::fa::NFA &&nfa, un
 }
 
 aotrc::fa::NFA aotrc::fa::nfa_builders::group(aotrc::fa::NFA &&nfa, int groupId) {
+    auto childGroupCount = nfa.getGroupCount();
     NFA groupNfa;
     auto rootState = groupNfa.addState();
     groupNfa = concat_helper(std::move(groupNfa), std::move(nfa), rootState, { Edge {groupId} });
     auto currentLastState = groupNfa.stopState();
     auto newLastState = groupNfa.addState();
     groupNfa.addEdge(currentLastState, newLastState, Edge {-groupId});
+
+    groupNfa.setGroupCount(childGroupCount + 1);
 
     return groupNfa;
 }

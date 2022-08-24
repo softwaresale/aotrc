@@ -16,7 +16,7 @@ namespace aotrc::compiler {
         explicit FullMatchDFACompiler(llvm::LLVMContext &ctx)
         : DFACompiler(ctx) {}
 
-        std::vector<InstructionPtr> buildSetup() override;
+        std::vector<InstructionPtr> buildSetup(const aotrc::fa::DFA &dfa) override;
         std::vector<InstructionPtr> buildState(unsigned int state, const fa::DFA &dfa) override;
     };
 }

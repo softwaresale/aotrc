@@ -18,11 +18,12 @@ namespace aotrc::compiler {
     std::string getStateBlockLabel(unsigned int stateId);
 
     /**
-    * Converts an LLVM type to C text
-    * @param type The type to convert
-    * @return The C type
-    */
-    std::string llvmTypeToCType(llvm::LLVMContext &ctx, llvm::Type *type);
+     * Stringify llvm types to C types
+     * @param ctx llvm context
+     * @param type The type to convert
+     * @return c string form of the llvm type
+     */
+    std::string llvmTypeToCType(llvm::LLVMContext& ctx, llvm::Type *type);
 }
 
 #endif //AOTRC_UTIL_H

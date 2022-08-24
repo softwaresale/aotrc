@@ -59,6 +59,8 @@ namespace aotrc::compiler {
         */
         void compileSearchRegex(const std::string &module, const std::string &label, const aotrc::fa::DFA &regexDFA);
 
+        void compileCaptureRegex(const std::string &module, const std::string &label, const aotrc::fa::DFA &regexDFA);
+
         /**
          * Writes the LLVM IR of a module
          * @param module The module to write

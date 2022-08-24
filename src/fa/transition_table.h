@@ -20,7 +20,10 @@ namespace aotrc::fa {
      */
     class TransitionTable {
     public:
-        TransitionTable() = default;
+        TransitionTable()
+        : groups(0)
+        {}
+
         virtual ~TransitionTable() = default;
 
         /**
@@ -144,9 +147,22 @@ namespace aotrc::fa {
 
         std::unordered_set<int> tagClosure(const std::unordered_set<unsigned int> &startStates, const std::unordered_set<unsigned int> &endStates, char testChar) const;
 
+        unsigned int getGroupCount() const {
+            return this->groups;
+        }
+
+        void setGroupCount(unsigned int count) {
+            this->groups = count;
+        }
+
+        void incrementGroupCount() {
+            this->groups += 1;
+        };
+
     protected:
         // Sparse matrix of transitions
         std::vector<std::unordered_map<unsigned int, Edge>> transitions;
+        unsigned int groups;
     };
 
     std::ostream &operator<<(std::ostream &os, const TransitionTable &table);

@@ -11,6 +11,7 @@
 #include "src/compiler/full_match/full_match_dfa_compiler.h"
 #include "src/compiler/sub_match/sub_match_dfa_compiler.h"
 #include "src/compiler/searching/search_dfa_compiler.h"
+#include "src/compiler/capture/capture_dfa_compiler.h"
 
 namespace aotrc::compiler {
 
@@ -55,7 +56,7 @@ namespace aotrc::compiler {
                 throw std::runtime_error("Program has already been compiled");
 
             // First, compile the setup
-            std::vector<InstructionPtr> setupInstructions = this->dfaCompiler->buildSetup();
+            std::vector<InstructionPtr> setupInstructions = this->dfaCompiler->buildSetup(dfa);
             std::move(setupInstructions.begin(), setupInstructions.end(), std::back_inserter(this->instructions));
 
             // for each state in the DFA, compile it
@@ -104,6 +105,8 @@ namespace aotrc::compiler {
      * Specialization of program that uses the search DFA compiler
      */
     using SearchProgram = Program<SearchDFACompiler>;
+
+    using CaptureProgram = Program<CaptureDFACompiler>;
 }
 
 #endif //AOTRC_PROGRAM_H

@@ -3,14 +3,14 @@
 //
 
 #include "util.h"
-#include <llvm/IR/Constants.h>
 #include <sstream>
+#include <llvm/IR/Constants.h>
 
 std::string aotrc::compiler::getStateBlockLabel(unsigned int stateId) {
     return "STATE_" + std::to_string(stateId);
 }
 
-std::string aotrc::compiler::llvmTypeToCType(llvm::LLVMContext &ctx, llvm::Type *type) {
+std::string aotrc::compiler::llvmTypeToCType(llvm::LLVMContext& ctx, llvm::Type *type) {
     static auto boolWidth = llvm::IntegerType::getInt1Ty(ctx)->getBitWidth();
     static auto charWidth = llvm::IntegerType::getInt8Ty(ctx)->getBitWidth();
     static auto shortWidth = llvm::IntegerType::getInt16Ty(ctx)->getBitWidth();
@@ -28,7 +28,7 @@ std::string aotrc::compiler::llvmTypeToCType(llvm::LLVMContext &ctx, llvm::Type 
             if (elementType == "char") // Make char pointers const-char
                 elementType = "const char";
             typeStr << elementType << "*";
-            return typeStr.str();
+            break;
         }
 
         case llvm::Type::IntegerTyID: {
@@ -45,6 +45,17 @@ std::string aotrc::compiler::llvmTypeToCType(llvm::LLVMContext &ctx, llvm::Type 
                 typeStr << "long";
             }
 
+            break;
+        }
+
+        case llvm::Type::StructTyID: {
+            auto structType = (llvm::StructType*) type;
+            typeStr << "struct " << structType->getName().str();
+            break;
+        }
+
+        case llvm::Type::VoidTyID: {
+            typeStr << "void";
             break;
         }
 
