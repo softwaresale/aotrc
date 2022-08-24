@@ -8,9 +8,9 @@ std::vector<aotrc::compiler::InstructionPtr> aotrc::compiler::FullMatchDFACompil
     // Declare two variables:
     std::vector<InstructionPtr> insts;
     // counter - keeps track of where in the subject string we are
-    insts.push_back(std::make_unique<DeclareVarInstruction>("counter", VariableType::SIZE));
+    insts.push_back(std::make_unique<DeclareVarInstruction>("counter", this->ctx, VariableType::SIZE));
     // cursor - the current value being examined in the subject string
-    insts.push_back(std::make_unique<DeclareVarInstruction>("cursor", VariableType::CHAR));
+    insts.push_back(std::make_unique<DeclareVarInstruction>("cursor", this->ctx, VariableType::CHAR));
     return insts;
 }
 

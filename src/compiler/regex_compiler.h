@@ -45,7 +45,8 @@ namespace aotrc::compiler {
             // program translator program type
             static_assert(
                     std::is_base_of_v<Program<typename ProgramTp::DFACompilerType>, ProgramTp> &&
-                    std::is_same_v<typename ProgramTranslatorTp::ProgramType, ProgramTp>
+                    std::is_same_v<typename ProgramTranslatorTp::ProgramType, ProgramTp> &&
+                    std::is_constructible_v<ProgramTp, llvm::LLVMContext&>
                     );
             // Finally, verify that ProgramInfoProvider is the right type
             static_assert(
@@ -70,7 +71,7 @@ namespace aotrc::compiler {
             auto function = module->getFunction(functionName);
 
             // Next, create the program
-            ProgramTp program;
+            ProgramTp program(ctx);
             program.compile(regexDFA);
 
             // Now that the program is compiled, we need to translate it into LLVM IR

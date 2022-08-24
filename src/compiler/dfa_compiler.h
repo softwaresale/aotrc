@@ -16,6 +16,12 @@ namespace aotrc::compiler {
      */
     class DFACompiler {
     public:
+        explicit DFACompiler(llvm::LLVMContext &ctx)
+        : ctx(ctx)
+        {}
+
+        virtual ~DFACompiler() = default;
+
         /**
          * Builds setup of the program, which in includes any instructions that should occur
          * before evaluating the actual DFA. This can be optional.
@@ -31,6 +37,9 @@ namespace aotrc::compiler {
          * @return A sequence of instructions that represent the given state
          */
         virtual std::vector<InstructionPtr> buildState(unsigned int state, const aotrc::fa::DFA &dfa) = 0;
+
+    protected:
+        llvm::LLVMContext &ctx;
     };
 }
 

@@ -176,51 +176,6 @@ void aotrc::compiler::AotrcCompiler::generatePatternFunc(const std::string &modu
     // Get pointer to the global
     auto ptr = builder.CreateGEP(charPtrType, patternGlobal, llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->llvmContext), 0), "pointerToFirst");
     builder.CreateRet(ptr);
-};
-
-std::string aotrc::compiler::AotrcCompiler::llvmTypeToCType(llvm::Type *type) {
-    static auto boolWidth = llvm::IntegerType::getInt1Ty(this->llvmContext)->getBitWidth();
-    static auto charWidth = llvm::IntegerType::getInt8Ty(this->llvmContext)->getBitWidth();
-    static auto shortWidth = llvm::IntegerType::getInt16Ty(this->llvmContext)->getBitWidth();
-    static auto intWidth = llvm::IntegerType::getInt32Ty(this->llvmContext)->getBitWidth();
-    static auto longWidth = llvm::IntegerType::getInt64Ty(this->llvmContext)->getBitWidth();
-    std::stringstream typeStr;
-
-    switch (type->getTypeID()) {
-
-        case llvm::Type::PointerTyID: {
-            auto ptr = (llvm::PointerType *) type;
-            // TODO `getPointerElementType` is actually deprecated and will be removed in the next version...
-            std::string elementType = this->llvmTypeToCType(ptr->getPointerElementType());
-            // TODO yet another naive instance that I might get away with for now...
-            if (elementType == "char") // Make char pointers const-char
-                elementType = "const char";
-            typeStr << elementType << "*";
-            return typeStr.str();
-        }
-
-        case llvm::Type::IntegerTyID: {
-            auto intType = (llvm::IntegerType *) type;
-            if (intType->getBitWidth() == boolWidth) {
-                typeStr << "bool";
-            } else if (intType->getBitWidth() == charWidth) {
-                typeStr << "char";
-            } else if (intType->getBitWidth() == shortWidth) {
-                typeStr << "short";
-            } else if (intType->getBitWidth() == intWidth) {
-                typeStr << "int";
-            } else if (intType->getBitWidth() == longWidth) {
-                typeStr << "long";
-            }
-
-            break;
-        }
-
-        default:
-            throw std::runtime_error("Invalid type");
-    }
-
-    return typeStr.str();
 }
 
 std::string aotrc::compiler::AotrcCompiler::emitHeaderFile(const std::string &module, const std::string &outputPath) {
@@ -240,19 +195,19 @@ std::string aotrc::compiler::AotrcCompiler::emitHeaderFile(const std::string &mo
 
     // For each function, output a function definition
     for (const auto &func : mod->functions()) {
-        headerOutput << this->llvmTypeToCType(func.getReturnType()) << ' ' << func.getName().str() << '(';
+        headerOutput << llvmTypeToCType(llvmContext, func.getReturnType()) << ' ' << func.getName().str() << '(';
         // comma separated list of all the parameters
         if (!func.arg_empty()) {
             auto argIt = func.arg_begin();
             for (; argIt != func.arg_end() - 1; ++argIt) {
-                headerOutput << this->llvmTypeToCType(argIt->getType());
+                headerOutput << llvmTypeToCType(llvmContext, argIt->getType());
                 if (argIt->hasName()) {
                     headerOutput << argIt->getName().str();
                 }
                 headerOutput << ", ";
             }
             // Do the last arg
-            headerOutput << this->llvmTypeToCType(argIt->getType());
+            headerOutput << llvmTypeToCType(llvmContext, argIt->getType());
             if (argIt->hasName()) {
                 headerOutput << argIt->getName().str();
             }

@@ -120,14 +120,6 @@ namespace aotrc::compiler {
         void generatePatternFunc(const std::string &module, const std::string &label, const std::string &regex);
 
     private:
-
-        /**
-         * Converts an LLVM type to C text
-         * @param type The type to convert
-         * @return The C type
-         */
-        std::string llvmTypeToCType(llvm::Type *type);
-
         /**
          * Helper function to write a given output type to a file
          * @param module The module to write

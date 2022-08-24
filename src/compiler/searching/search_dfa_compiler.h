@@ -10,8 +10,11 @@
 namespace aotrc::compiler {
     class SearchDFACompiler : public FullMatchDFACompiler {
     public:
-        std::vector<InstructionPtr> buildSetup() override;
+        explicit SearchDFACompiler(llvm::LLVMContext &ctx)
+        : FullMatchDFACompiler(ctx)
+        {}
 
+        std::vector<InstructionPtr> buildSetup() override;
         std::vector<InstructionPtr> buildState(unsigned int state, const fa::DFA &dfa) override;
     };
 }

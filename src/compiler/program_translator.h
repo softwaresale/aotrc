@@ -52,6 +52,8 @@ namespace aotrc::compiler {
             translator = std::make_unique<TranslatorTp>(ctx, builder, function);
         }
 
+        virtual ~ProgramTranslator() = default;
+
         /**
          * Translates a program using the provided translator
          * @param program

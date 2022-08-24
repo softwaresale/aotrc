@@ -29,6 +29,8 @@ namespace aotrc::compiler {
          */
         InstructionTranslator(llvm::LLVMContext &ctx, llvm::IRBuilder<> &builder, llvm::Function *func);
 
+        virtual ~InstructionTranslator() = default;
+
         /**
          * Compiles any kind of instruction. This is a wrapper around specific makeInstruction functions
          * defined in this class
@@ -69,7 +71,12 @@ namespace aotrc::compiler {
          */
         virtual llvm::Value *linkFirstStateToEntry();
 
-        virtual llvm::Value *makeDeclareVarInst(const InstructionPtr &inst) = 0;
+        /**
+         * Creates a new variable and stores it in the symbol table
+         * @param inst Instruction
+         * @return Pointer to alloca instance
+         */
+        virtual llvm::Value *makeDeclareVarInst(const InstructionPtr &inst);
         virtual llvm::Value *makeStartStateInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeConsumeInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeCheckEndInst(const InstructionPtr &inst) = 0;

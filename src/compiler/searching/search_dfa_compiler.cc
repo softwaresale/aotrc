@@ -7,8 +7,8 @@
 std::vector<aotrc::compiler::InstructionPtr> aotrc::compiler::SearchDFACompiler::buildSetup() {
     auto fullMatchSetups = FullMatchDFACompiler::buildSetup();
     // Add an extra variable
-    fullMatchSetups.push_back(std::make_unique<DeclareVarInstruction>("start_pos", VariableType::SIZE));
-    fullMatchSetups.push_back(std::make_unique<DeclareVarInstruction>("end_pos", VariableType::SIZE));
+    fullMatchSetups.push_back(std::make_unique<DeclareVarInstruction>("start_pos", ctx, VariableType::SIZE));
+    fullMatchSetups.push_back(std::make_unique<DeclareVarInstruction>("end_pos", ctx, VariableType::SIZE));
 
     return fullMatchSetups;
 }

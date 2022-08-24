@@ -6,6 +6,8 @@
 #define AOTRC_UTIL_H
 
 #include <string>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Type.h>
 
 namespace aotrc::compiler {
     /**
@@ -14,6 +16,13 @@ namespace aotrc::compiler {
      * @return label used for the corresponding label
      */
     std::string getStateBlockLabel(unsigned int stateId);
+
+    /**
+    * Converts an LLVM type to C text
+    * @param type The type to convert
+    * @return The C type
+    */
+    std::string llvmTypeToCType(llvm::LLVMContext &ctx, llvm::Type *type);
 }
 
 #endif //AOTRC_UTIL_H
