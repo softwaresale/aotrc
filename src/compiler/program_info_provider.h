@@ -14,6 +14,9 @@ namespace aotrc::compiler {
      * create the function prototype (name and function type).
      */
     struct ProgramInfoProvider {
+
+        virtual ~ProgramInfoProvider() = default;
+
         /**
          * Builds out the desired function type
          * @param ctx llvm context

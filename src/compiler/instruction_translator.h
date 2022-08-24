@@ -29,6 +29,8 @@ namespace aotrc::compiler {
          */
         InstructionTranslator(llvm::LLVMContext &ctx, llvm::IRBuilder<> &builder, llvm::Function *func);
 
+        virtual ~InstructionTranslator() = default;
+
         /**
          * Compiles any kind of instruction. This is a wrapper around specific makeInstruction functions
          * defined in this class
