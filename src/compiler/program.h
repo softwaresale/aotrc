@@ -32,17 +32,17 @@ namespace aotrc::compiler {
         /**
          * Creates an empty program
          */
-        Program()
+        explicit Program(llvm::LLVMContext &ctx)
         : compiled(false) {
             // Make sure that the DFA compiler type can be used
             static_assert(
                     std::is_base_of_v<DFACompiler, DFACompilerTp> &&
-                    std::is_default_constructible_v<DFACompilerTp>
+                    std::is_constructible_v<DFACompilerTp, llvm::LLVMContext&>
                     );
 
             // Make a new DFA compiler
             // TODO this might not be necessary. We can also just make the unique ptr a DFACompilerTp
-            this->dfaCompiler = std::make_unique<DFACompilerTp>();
+            this->dfaCompiler = std::make_unique<DFACompilerTp>(ctx);
         }
 
         /**

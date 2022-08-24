@@ -69,7 +69,12 @@ namespace aotrc::compiler {
          */
         virtual llvm::Value *linkFirstStateToEntry();
 
-        virtual llvm::Value *makeDeclareVarInst(const InstructionPtr &inst) = 0;
+        /**
+         * Creates a new variable and stores it in the symbol table
+         * @param inst Instruction
+         * @return Pointer to alloca instance
+         */
+        virtual llvm::Value *makeDeclareVarInst(const InstructionPtr &inst);
         virtual llvm::Value *makeStartStateInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeConsumeInst(const InstructionPtr &inst) = 0;
         virtual llvm::Value *makeCheckEndInst(const InstructionPtr &inst) = 0;

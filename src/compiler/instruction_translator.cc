@@ -111,3 +111,18 @@ llvm::Value *aotrc::compiler::InstructionTranslator::linkFirstStateToEntry() {
     this->builder.CreateBr(firstStateBlock);
     return nullptr;
 }
+
+llvm::Value *aotrc::compiler::InstructionTranslator::makeDeclareVarInst(const aotrc::compiler::InstructionPtr &inst) {
+    // build an alloca instance
+    auto declareVarInst = dynamic_cast<DeclareVarInstruction *>(inst.get());
+
+    // Build an alloca instance
+    auto varInst = builder.CreateAlloca(declareVarInst->varType, nullptr, declareVarInst->name);
+    builder.CreateStore(declareVarInst->initialValue, varInst);
+
+    // Add variable to the symbol table
+    this->symbolTable[declareVarInst->name] = varInst;
+
+    // Done
+    return varInst;
+}

@@ -13,35 +13,6 @@ aotrc::compiler::FullMatchTranslator::FullMatchTranslator(llvm::LLVMContext &ctx
     this->symbolTable["subject_len"] = func->getArg(1);
 }
 
-llvm::Value * aotrc::compiler::FullMatchTranslator::makeDeclareVarInst(const aotrc::compiler::InstructionPtr &inst) {
-    // build an alloca instance
-    auto declareVarInst = dynamic_cast<DeclareVarInstruction *>(inst.get());
-
-    // Get the type and initial value of the variable
-    llvm::Type *varType;
-    llvm::Value *initialValue;
-    if (declareVarInst->varType == VariableType::BOOL) {
-        varType = llvm::Type::getInt1Ty(this->ctx);
-        initialValue = llvm::ConstantInt::get(varType, std::get<bool>(declareVarInst->initialValue));
-    } else if (declareVarInst->varType == VariableType::CHAR) {
-        varType = llvm::Type::getInt8Ty(ctx);
-        initialValue = llvm::ConstantInt::get(varType, std::get<char>(declareVarInst->initialValue));
-    } else {
-        varType = llvm::Type::getInt64Ty(ctx);
-        initialValue = llvm::ConstantInt::get(varType, std::get<size_t>(declareVarInst->initialValue));
-    }
-
-    // Build an alloca instance
-    auto varInst = builder.CreateAlloca(varType, nullptr, declareVarInst->name);
-    builder.CreateStore(initialValue, varInst);
-
-    // Add variable to the symbol table
-    this->symbolTable[declareVarInst->name] = varInst;
-
-    // Done
-    return varInst;
-}
-
 llvm::Value * aotrc::compiler::FullMatchTranslator::makeStartStateInst(const aotrc::compiler::InstructionPtr &inst) {
     auto startStateInst = dynamic_cast<StartStateInstruction *>(inst.get());
     // Create a new blockValue and place it in the symbol table if it hasn't been already

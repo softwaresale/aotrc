@@ -16,14 +16,6 @@ namespace aotrc::compiler {
         FullMatchTranslator(llvm::LLVMContext &ctx, llvm::IRBuilder<> &builder, llvm::Function *func);
 
         /**
-         * Execute a declare variable instruction. Creates a new variable and places it in the symbol
-         * table.
-         * @param inst declare var inst to execute
-         * @return Pointer to alloca inst for the newly created variable
-         */
-        llvm::Value *makeDeclareVarInst(const InstructionPtr &inst) override;
-
-        /**
          * Create a new basic block for the described state if one does not already exist. Also, sets the insertion
          * point on this particular block
          * @param inst StartStateInstruction inst

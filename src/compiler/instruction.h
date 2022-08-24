@@ -9,6 +9,8 @@
 #include <memory>
 #include <variant>
 #include <optional>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
 #include "src/fa/transition_edge.h"
 #include "util.h"
 
@@ -91,17 +93,18 @@ namespace aotrc::compiler {
      */
     struct DeclareVarInstruction : public Instruction {
 
-        DeclareVarInstruction(std::string name, VariableType varType);
-        DeclareVarInstruction(std::string name, VariableType varType, std::variant<size_t, char, bool> initialVal);
+        DeclareVarInstruction(std::string name, llvm::Type *varType);
+        DeclareVarInstruction(std::string name, llvm::LLVMContext &ctx, VariableType varType);
+        DeclareVarInstruction(std::string name, llvm::Type *varType, llvm::Value *initialValue);
 
         std::string str() const noexcept override;
 
         /// The name of the variable
         std::string name;
         /// The type of the variable
-        VariableType varType;
+        llvm::Type *varType;
         /// Some sort of initial value the variable should hold
-        std::variant<size_t, char, bool> initialValue;
+        llvm::Value *initialValue;
     };
 
     /**
