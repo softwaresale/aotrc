@@ -81,6 +81,9 @@ aotrc::compiler::DeclareVarInstruction::DeclareVarInstruction(std::string name, 
         case BOOL:
             this->varType = llvm::IntegerType::getInt1Ty(ctx);
             break;
+        default:
+            this->varType = nullptr;
+            break;
     }
     this->initialValue = llvm::ConstantInt::get(this->varType, 0);
 }

@@ -55,6 +55,8 @@ int main(int argc, char **argv) {
                 // build the NFA and DFA for the given regex
                 auto nfa = aotrc::parser::parseRegex(regexDef.pattern);
                 aotrc::fa::DFA dfa(nfa);
+                aotrc::fa::graphvizRenderOutput(&dfa, regexDef.label, std::cout);
+                exit(0);
                 compiler.compileCaptureRegex(moduleName, regexDef.label, dfa);
 
                 if (regexDef.genFullMatch) {

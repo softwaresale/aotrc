@@ -23,7 +23,7 @@ std::string aotrc::compiler::llvmTypeToCType(llvm::LLVMContext& ctx, llvm::Type 
         case llvm::Type::PointerTyID: {
             auto ptr = (llvm::PointerType *) type;
             // TODO `getPointerElementType` is actually deprecated and will be removed in the next version...
-            std::string elementType = llvmTypeToCType(ctx, ptr->getPointerElementType());
+            std::string elementType = llvmTypeToCType(ctx, ptr->getNonOpaquePointerElementType());
             // TODO yet another naive instance that I might get away with for now...
             if (elementType == "char") // Make char pointers const-char
                 elementType = "const char";
