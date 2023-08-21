@@ -23,7 +23,7 @@ aotrc::compiler::AotrcCompiler::AotrcCompiler()
 
     llvm::TargetOptions options;
     this->targetMachine = std::unique_ptr<llvm::TargetMachine>(
-            target->createTargetMachine(LLVM_DEFAULT_TARGET_TRIPLE, "generic", "", options, llvm::Optional<llvm::Reloc::Model>())
+            target->createTargetMachine(LLVM_DEFAULT_TARGET_TRIPLE, "generic", "", options, std::optional<llvm::Reloc::Model>())
     );
 }
 
